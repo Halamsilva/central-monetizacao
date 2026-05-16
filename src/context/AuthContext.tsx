@@ -17,100 +17,139 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setLoading(false);
-      return;
-    }
-
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (!existingProfile) {
-          await supabase.from('profiles').insert({
-            id: session.user.id,
-            email: session.user.email,
-            full_name: session.user.email?.split('@')[0] || 'Usuário',
-            is_admin: false
-          });
-        }
-
-        fetchProfile(session.user.id);
-
-      } else {
-        setProfile(null);
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const fetchProfile = async (userId: string) => {
+  const loadProfile = async (currentUser: User) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
-        .single();
+        .eq('id', currentUser.id)
+        .maybeSingle();
 
       if (error) {
-        console.error('Error fetching profile:', error);
-        // Fallback for demo if profiling fails but auth exists
-        setProfile({
-          id: userId,
-          email: user?.email || '',
-          full_name: user?.email?.split('@')[0] || 'Usuário',
-          is_admin: false,
-          created_at: new Date().toISOString()
-        });
-      } else {
+        console.error('Erro ao buscar perfil:', error);
+      }
+
+      if (data) {
         setProfile(data);
+        return;
+      }
+
+      const newProfile: UserProfile = {
+        id: currentUser.id,
+        email: currentUser.email || '',
+        full_name: currentUser.email?.split('@')[0] || 'Usuário',
+        avatar_url: null,
+        is_admin: false,
+        created_at: new Date().toISOString(),
+      };
+
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert(newProfile);
+
+      if (insertError) {
+        console.error('Erro ao criar perfil:', insertError);
+      }
+
+      setProfile(newProfile);
+    } catch (err) {
+      console.error('Falha geral ao carregar perfil:', err);
+
+      setProfile({
+        id: currentUser.id,
+        email: currentUser.email || '',
+        full_name: currentUser.email?.split('@')[0] || 'Usuário',
+        avatar_url: null,
+        is_admin: false,
+        created_at: new Date().toISOString(),
+      });
+    }
+  };
+
+  const initAuth = async () => {
+    try {
+      if (!isSupabaseConfigured) {
+        setUser(null);
+        setProfile(null);
+        return;
+      }
+
+      const { data } = await supabase.auth.getSession();
+      const currentUser = data.session?.user ?? null;
+
+      setUser(currentUser);
+
+      if (currentUser) {
+        await loadProfile(currentUser);
+      } else {
+        setProfile(null);
       }
     } catch (err) {
-      console.error('Profile fetch failed:', err);
+      console.error('Erro ao iniciar autenticação:', err);
+      setUser(null);
+      setProfile(null);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    initAuth();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const currentUser = session?.user ?? null;
+
+      setUser(currentUser);
+
+      if (!currentUser) {
+        setProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
+      setTimeout(async () => {
+        await loadProfile(currentUser);
+        setLoading(false);
+      }, 0);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
   const signOut = async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    setLoading(false);
   };
 
-  const value = {
-    user,
-    profile,
-    loading,
-    isAdmin: profile?.is_admin || false,
-    signOut
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        isAdmin: profile?.is_admin || false,
+        signOut,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
+
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+
   return context;
 };

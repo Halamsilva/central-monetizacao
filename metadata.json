@@ -1,0 +1,8 @@
+{
+  "name": "Central Monetização",
+  "description": "Plataforma exclusiva para alunos acessarem avisos, atualizações e agentes de IA para monetização de redes sociais.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

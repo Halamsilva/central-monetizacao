@@ -37,7 +37,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
+
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!existingProfile) {
+          await supabase.from('profiles').insert({
+            id: session.user.id,
+            email: session.user.email,
+            full_name: session.user.email?.split('@')[0] || 'Usuário',
+            is_admin: false
+          });
+        }
+
         fetchProfile(session.user.id);
+
       } else {
         setProfile(null);
         setLoading(false);
@@ -61,8 +78,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile({
           id: userId,
           email: user?.email || '',
-          full_name: 'Halam Silva',
-          is_admin: true,
+          full_name: user?.email?.split('@')[0] || 'Usuário',
+          is_admin: false,
           created_at: new Date().toISOString()
         });
       } else {

@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('users_profile')
+        .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
@@ -61,8 +61,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile({
           id: userId,
           email: user?.email || '',
-          full_name: 'Usuário Aluno',
-          is_admin: false,
+          full_name: 'Halam Silva',
+          is_admin: true,
           created_at: new Date().toISOString()
         });
       } else {

@@ -1,13 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Mocking some data for when Supabase is not connected
 // We check if it's the default placeholder from .env.example or empty
-export const isSupabaseConfigured = 
-  !!supabaseUrl && 
-  !!supabaseAnonKey && 
+export const isSupabaseConfigured =
+  !!supabaseUrl &&
+  !!supabaseAnonKey &&
   !supabaseUrl.includes('your-project-id') &&
   supabaseUrl !== '';
 

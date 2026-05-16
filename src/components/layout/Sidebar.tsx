@@ -1,17 +1,17 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Bell, 
-  RefreshCw, 
-  Bot, 
-  Zap, 
-  ShoppingBag, 
-  Facebook, 
-  Youtube, 
-  Wrench, 
-  Download, 
-  User, 
+import {
+  LayoutDashboard,
+  Bell,
+  RefreshCw,
+  Bot,
+  Zap,
+  ShoppingBag,
+  Facebook,
+  Youtube,
+  Wrench,
+  Download,
+  User,
   Settings,
   ShieldCheck,
   ChevronLeft
@@ -30,7 +30,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
-  const { profile, isAdmin } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
 
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
@@ -48,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
   ];
 
   return (
-    <aside 
+    <aside
       className={cn(
         "fixed inset-y-0 left-0 z-30 w-[240px] h-full transform bg-white border-r border-slate-200 flex flex-col shrink-0 transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
         !isOpen && "-translate-x-full lg:hidden"
@@ -65,7 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
             <p className="text-[10px] font-semibold text-amber-600 tracking-wider mt-1">REDES SOCIAIS</p>
           </div>
         </div>
-        <button 
+        <button
           onClick={toggle}
           className="lg:hidden text-slate-400 hover:text-slate-600"
         >
@@ -84,8 +84,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
               to={item.path}
               className={({ isActive }) => cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
-                isActive 
-                  ? "bg-blue-50 text-blue-700 font-medium" 
+                isActive
+                  ? "bg-blue-50 text-blue-700 font-medium"
                   : "text-slate-600 hover:bg-slate-50"
               )}
             >
@@ -102,8 +102,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
               to="/admin"
               className={({ isActive }) => cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all",
-                isActive 
-                  ? "bg-amber-50 text-amber-700 font-medium" 
+                isActive
+                  ? "bg-amber-50 text-amber-700 font-medium"
                   : "text-slate-600 hover:bg-slate-50"
               )}
             >
@@ -125,8 +125,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggle }) => {
             )}
           </div>
           <div className="overflow-hidden">
-            <p className="text-xs font-bold text-slate-900 truncate">{profile?.full_name || 'Aluno'}</p>
-            <p className="text-[10px] text-slate-500 truncate">{profile?.email || 'aluno@exemplo.com'}</p>
+            <p className="text-xs font-bold text-slate-900 truncate">
+              {profile?.full_name || user?.email?.split('@')[0] || 'Halam Silva'}
+            </p>
+
+            <p className="text-[10px] text-slate-500 truncate">
+              {profile?.email || user?.email || 'silvahalam@gmail.com'}
+            </p>
+
           </div>
         </div>
       </div>

@@ -18,6 +18,7 @@ import {
   Megaphone,
   Users,
   LogOut,
+  X,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -27,19 +28,31 @@ interface SidebarProps {
   toggle?: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  isOpen = true,
+  toggle,
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, isAdmin, signOut } = useAuth();
 
   const [avatarFailed, setAvatarFailed] = useState(false);
 
-  const userInitial = profile?.full_name?.charAt(0)?.toUpperCase() || 'U';
-  const showAvatar = Boolean(profile?.avatar_url) && !avatarFailed;
+  const userInitial =
+    profile?.full_name?.charAt(0)?.toUpperCase() || 'U';
+
+  const showAvatar =
+    Boolean(profile?.avatar_url) && !avatarFailed;
 
   const handleLogout = async () => {
     await signOut();
     navigate('/login', { replace: true });
+  };
+
+  const handleNavigate = () => {
+    if (window.innerWidth < 1024 && toggle) {
+      toggle();
+    }
   };
 
   const mainMenu = [
@@ -73,18 +86,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
     path: string;
   }) => {
     const Icon = item.icon;
+
     const active = location.pathname === item.path;
 
     return (
       <Link
         key={item.path}
         to={item.path}
-        className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all ${active
-            ? 'bg-blue-50 text-blue-600'
+        onClick={handleNavigate}
+        className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${active
+            ? 'bg-blue-50 text-blue-600 shadow-sm'
             : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
       >
-        <Icon size={20} />
+        <Icon
+          size={20}
+          className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-105'
+            }`}
+        />
+
         <span>{item.title}</span>
       </Link>
     );
@@ -92,17 +112,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-30 flex h-screen w-72 flex-col border-r border-slate-200 bg-white transition-transform duration-300 lg:static ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      className={`fixed left-0 top-0 z-40 flex h-screen w-[88%] max-w-[320px] flex-col border-r border-slate-200 bg-white shadow-2xl transition-transform duration-300 lg:static lg:w-72 lg:max-w-none lg:translate-x-0 lg:shadow-none ${isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
     >
-      <div className="border-b border-slate-100 p-6">
+      <div className="flex items-center justify-between border-b border-slate-100 p-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-sm font-black text-white">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-lg font-black text-white shadow-lg shadow-blue-500/20">
             CM
           </div>
 
           <div>
-            <h1 className="text-lg font-black leading-none text-slate-900">
+            <h1 className="text-xl font-black leading-none text-slate-900">
               CENTRAL
               <br />
               MONETIZAÇÃO
@@ -113,9 +133,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
             </p>
           </div>
         </div>
+
+        <button
+          onClick={toggle}
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 lg:hidden"
+        >
+          <X size={22} />
+        </button>
       </div>
 
-      <nav className="custom-scrollbar flex-1 space-y-6 overflow-y-auto p-4">
+      <nav className="custom-scrollbar flex-1 space-y-6 overflow-y-auto px-4 py-5">
         <div className="space-y-2">
           {mainMenu.map(renderMenuItem)}
         </div>
@@ -143,9 +170,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
         )}
       </nav>
 
-      <div className="border-t border-slate-100 p-4">
+      <div className="border-t border-slate-100 bg-white p-4">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-lg font-black text-slate-600 ring-2 ring-slate-100">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-lg font-black text-slate-600 ring-2 ring-slate-100">
             {showAvatar ? (
               <img
                 src={profile?.avatar_url || ''}
@@ -159,11 +186,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
           </div>
 
           <div className="min-w-0">
-            <p className="truncate text-sm font-black text-slate-900">
+            <p className="truncate text-base font-black text-slate-900">
               {profile?.full_name || 'Usuário'}
             </p>
 
-            <p className="truncate text-xs text-slate-500">
+            <p className="truncate text-sm text-slate-500">
               {profile?.email}
             </p>
           </div>

@@ -27,6 +27,7 @@ export interface UserProfile {
   is_admin?: boolean;
   role?: 'admin' | 'student';
   access_status?: 'pending' | 'active' | 'blocked';
+  approved_at?: string | null;
   created_at: string;
 }
 

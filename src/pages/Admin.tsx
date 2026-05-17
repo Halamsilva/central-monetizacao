@@ -9,6 +9,7 @@ import {
   UserCheck,
   UserX,
   ShieldAlert,
+  CalendarCheck,
 } from 'lucide-react';
 
 import {
@@ -100,6 +101,16 @@ const Admin: React.FC = () => {
     }
   };
 
+  const formatDate = (date?: string | null) => {
+    if (!date) return null;
+
+    return new Date(date).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -152,9 +163,11 @@ const Admin: React.FC = () => {
           <h2 className="text-2xl font-black text-slate-900">
             Avisos
           </h2>
+
           <p className="mt-2 text-slate-500">
             Use a página Gerenciar Avisos para criar, editar e excluir avisos.
           </p>
+
           <p className="mt-4 text-sm text-slate-400">
             {notices.length} avisos carregados neste painel.
           </p>
@@ -166,9 +179,11 @@ const Admin: React.FC = () => {
           <h2 className="text-2xl font-black text-slate-900">
             Agentes
           </h2>
+
           <p className="mt-2 text-slate-500">
             Use a página Gerenciar Agentes para criar, editar e excluir agentes.
           </p>
+
           <p className="mt-4 text-sm text-slate-400">
             {agents.length} agentes carregados neste painel.
           </p>
@@ -212,8 +227,16 @@ const Admin: React.FC = () => {
                     {student.email}
                   </p>
 
-                  <div className="mt-3">
+                  <div className="mt-3 flex flex-col items-start gap-2">
                     {getStatusBadge(student.access_status)}
+
+                    {student.access_status === 'active' &&
+                      student.approved_at && (
+                        <span className="inline-flex items-center gap-2 text-xs font-medium text-slate-500">
+                          <CalendarCheck className="h-3.5 w-3.5" />
+                          Aprovado em {formatDate(student.approved_at)}
+                        </span>
+                      )}
                   </div>
                 </div>
 

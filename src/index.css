@@ -35,118 +35,9 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* FORÇA MOBILE GLOBAL */
 @media (max-width: 640px) {
   main {
-    padding: 10px !important;
-  }
-
-  section,
-  article,
-  .space-y-5,
-  .space-y-6,
-  .space-y-8 {
-    margin-top: 0 !important;
-  }
-
-  main>div {
-    max-width: 100% !important;
-  }
-
-  .grid {
-    gap: 8px !important;
-  }
-
-  .grid-cols-1,
-  .grid-cols-2 {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-  }
-
-  .rounded-\[28px\],
-  .rounded-\[30px\],
-  .rounded-3xl {
-    border-radius: 18px !important;
-  }
-
-  .p-8,
-  .p-7,
-  .p-6,
-  .p-5 {
     padding: 12px !important;
-  }
-
-  .px-8,
-  .px-7,
-  .px-6,
-  .px-5 {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-  }
-
-  .py-12,
-  .py-10,
-  .py-9,
-  .py-8,
-  .py-7,
-  .py-6,
-  .py-5 {
-    padding-top: 12px !important;
-    padding-bottom: 12px !important;
-  }
-
-  h1 {
-    font-size: 28px !important;
-    line-height: 0.95 !important;
-  }
-
-  h2 {
-    font-size: 18px !important;
-    line-height: 1 !important;
-  }
-
-  h3 {
-    font-size: 14px !important;
-  }
-
-  h4 {
-    font-size: 11px !important;
-    line-height: 1.15 !important;
-  }
-
-  p {
-    font-size: 10px !important;
-    line-height: 1.35 !important;
-  }
-
-  .h-80,
-  .h-72,
-  .h-64,
-  .h-60,
-  .h-56,
-  .h-52,
-  .h-48,
-  .h-44,
-  .h-40 {
-    height: 105px !important;
-  }
-
-  .min-h-\[42px\],
-  .min-h-\[70vh\] {
-    min-height: auto !important;
-  }
-
-  a,
-  button {
-    font-size: 10px !important;
-  }
-
-  .shadow-xl,
-  .shadow-2xl {
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08) !important;
-  }
-
-  .line-clamp-2 {
-    -webkit-line-clamp: 2 !important;
   }
 
   footer {
@@ -154,7 +45,20 @@ a {
   }
 }
 
-/* Custom Scrollbar */
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
@@ -170,18 +74,4 @@ a {
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #cbd5e1;
-}
-
-.animate-spin-slow {
-  animation: spin 3s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 }

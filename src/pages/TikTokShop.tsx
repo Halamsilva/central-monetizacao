@@ -341,11 +341,11 @@ const TikTokShop: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-5 sm:space-y-8">
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-black via-zinc-900 to-zinc-800 p-10 text-white shadow-xl shadow-slate-300"
+        className="relative hidden overflow-hidden rounded-[32px] bg-gradient-to-br from-black via-zinc-900 to-zinc-800 p-10 text-white shadow-xl shadow-slate-300 sm:block"
       >
         <div className="relative z-10 max-w-3xl">
           <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
@@ -559,7 +559,7 @@ const TikTokShop: React.FC = () => {
         </div>
       )}
 
-      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-2xl font-black text-slate-900">
@@ -578,7 +578,7 @@ const TikTokShop: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-[1fr_220px_240px]">
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-[1fr_220px_240px]">
           <div className="relative">
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -590,14 +590,14 @@ const TikTokShop: React.FC = () => {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar por título, descrição ou conteúdo"
-              className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white"
+              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white sm:h-14"
             />
           </div>
 
           <select
             value={selectedType}
             onChange={(event) => setSelectedType(event.target.value)}
-            className="h-14 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white"
+            className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white sm:h-14"
           >
             <option>Todos</option>
             {itemTypes.map((type) => (
@@ -608,7 +608,7 @@ const TikTokShop: React.FC = () => {
           <select
             value={selectedIntent}
             onChange={(event) => setSelectedIntent(event.target.value)}
-            className="h-14 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white"
+            className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white sm:h-14"
           >
             <option>Todas</option>
             {itemIntents.map((intent) => (
@@ -642,7 +642,7 @@ const TikTokShop: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
           {filteredItems.map((item, index) => {
             const TypeIcon = getTypeIcon(item.type);
 
@@ -652,24 +652,24 @@ const TikTokShop: React.FC = () => {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.03 }}
-                className="flex flex-col rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                className="flex min-w-0 flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:rounded-[24px]"
               >
-                <div className="mb-5 flex items-start justify-between gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                <div className="flex h-24 items-start justify-between gap-2 bg-gradient-to-br from-slate-100 to-slate-200 p-3 sm:h-36 sm:p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/90 text-slate-700 shadow-sm sm:h-12 sm:w-12">
                     <TypeIcon size={22} />
                   </div>
 
-                  <div className="flex flex-wrap justify-end gap-2">
+                  <div className="flex flex-wrap justify-end gap-1 sm:gap-2">
                     {item.is_featured && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-black text-amber-700">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2 py-1 text-[10px] font-black text-slate-900 sm:px-3 sm:text-xs">
                         <Star size={13} />
-                        Destaque
+                        PRO
                       </span>
                     )}
 
                     {isAdmin && (
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-black ${item.is_published
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-black sm:px-3 sm:text-xs ${item.is_published
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'bg-slate-100 text-slate-500'
                           }`}
@@ -685,91 +685,95 @@ const TikTokShop: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mb-3 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-600">
+                <div className="flex flex-wrap gap-1 px-3 pt-3 sm:gap-2 sm:px-4 sm:pt-4">
+                  <span className="max-w-full truncate rounded-full bg-blue-50 px-2 py-1 text-[9px] font-black uppercase text-blue-600 sm:px-3 sm:text-xs">
                     {item.type}
                   </span>
 
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+                  <span className="max-w-full truncate rounded-full bg-slate-100 px-2 py-1 text-[9px] font-black text-slate-600 sm:px-3 sm:text-xs">
                     {item.intent}
                   </span>
                 </div>
 
-                <h3 className="text-xl font-black text-slate-900">
-                  {item.title}
-                </h3>
+                <div className="flex flex-1 flex-col px-3 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3">
+                  <h3 className="line-clamp-2 min-h-[34px] text-[13px] font-black leading-tight text-slate-900 sm:min-h-[56px] sm:text-xl">
+                    {item.title}
+                  </h3>
 
-                <p className="mt-2 text-sm font-medium leading-relaxed text-slate-500">
-                  {item.description}
-                </p>
+                  <p className="mt-1 line-clamp-2 text-[11px] font-medium leading-snug text-slate-500 sm:mt-2 sm:text-sm sm:leading-relaxed">
+                    {item.description}
+                  </p>
 
-                {item.content && (
-                  <div className="mt-4 flex-1 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="line-clamp-5 whitespace-pre-wrap text-sm font-medium leading-relaxed text-slate-600">
-                      {item.content}
-                    </p>
-                  </div>
-                )}
-
-                <div className="mt-5 flex flex-col gap-3">
                   {item.content && (
-                    <button
-                      type="button"
-                      onClick={() => copyContent(item)}
-                      className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-900 text-sm font-black text-white transition hover:bg-slate-800"
-                    >
-                      {copiedId === item.id ? (
-                        <>
-                          <Check size={18} />
-                          Copiado
-                        </>
-                      ) : (
-                        <>
-                          <Copy size={18} />
-                          Copiar Conteúdo
-                        </>
-                      )}
-                    </button>
+                    <div className="mt-2 hidden rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:block">
+                      <p className="line-clamp-3 whitespace-pre-wrap text-xs font-medium leading-relaxed text-slate-600">
+                        {item.content}
+                      </p>
+                    </div>
                   )}
 
-                  {item.external_link && (
-                    <a
-                      href={item.external_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 text-sm font-black text-white transition hover:bg-blue-700"
-                    >
-                      <ExternalLink size={18} />
-                      Abrir Link
-                    </a>
-                  )}
-
-                  {isAdmin && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => editItem(item)}
-                        className="flex h-11 items-center justify-center gap-2 rounded-2xl bg-amber-500 text-sm font-black text-white transition hover:bg-amber-600"
+                  <div className="mt-auto flex flex-col gap-2 pt-3">
+                    {item.external_link && (
+                      <a
+                        href={item.external_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex h-10 items-center justify-center gap-1.5 rounded-2xl bg-blue-600 text-[11px] font-black text-white transition hover:bg-blue-700 sm:h-12 sm:gap-2 sm:text-sm"
                       >
-                        <Pencil size={17} />
-                        Editar
-                      </button>
+                        <ExternalLink size={15} />
+                        Abrir
+                      </a>
+                    )}
 
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {item.content && (
+                        <button
+                          type="button"
+                          onClick={() => copyContent(item)}
+                          className="flex h-10 items-center justify-center gap-1.5 rounded-2xl border border-slate-200 bg-white text-[11px] font-black text-slate-700 transition hover:bg-slate-50 sm:h-11 sm:gap-2 sm:text-sm"
+                        >
+                          {copiedId === item.id ? (
+                            <>
+                              <Check size={15} />
+                              Copiado
+                            </>
+                          ) : (
+                            <>
+                              <Copy size={15} />
+                              Prompt
+                            </>
+                          )}
+                        </button>
+                      )}
+
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => editItem(item)}
+                          className="flex h-10 items-center justify-center gap-1.5 rounded-2xl bg-amber-500 text-[11px] font-black text-white transition hover:bg-amber-600 sm:h-11 sm:gap-2 sm:text-sm"
+                        >
+                          <Pencil size={15} />
+                          Editar
+                        </button>
+                      )}
+                    </div>
+
+                    {isAdmin && (
                       <button
                         type="button"
                         onClick={() => deleteItem(item)}
                         disabled={deletingId === item.id}
-                        className="flex h-11 items-center justify-center gap-2 rounded-2xl bg-red-500 text-sm font-black text-white transition hover:bg-red-600 disabled:opacity-70"
+                        className="flex h-10 items-center justify-center gap-1.5 rounded-2xl bg-red-500 text-[11px] font-black text-white transition hover:bg-red-600 disabled:opacity-70 sm:h-11 sm:gap-2 sm:text-sm"
                       >
                         {deletingId === item.id ? (
-                          <Loader2 className="animate-spin" size={17} />
+                          <Loader2 className="animate-spin" size={15} />
                         ) : (
-                          <Trash2 size={17} />
+                          <Trash2 size={15} />
                         )}
                         Excluir
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </motion.div>
             );

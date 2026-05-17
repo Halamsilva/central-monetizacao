@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import {
-  Menu,
-  Bell,
-  Clock,
-  ShieldAlert,
-} from 'lucide-react';
+import { Menu, Bell, Clock, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -47,15 +42,10 @@ const AppLayout: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setSidebarOpen(true);
-      } else {
-        setSidebarOpen(false);
-      }
+      setSidebarOpen(window.innerWidth >= 1024);
     };
 
     handleResize();
-
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -67,11 +57,8 @@ const AppLayout: React.FC = () => {
   }, [location.pathname]);
 
   useEffect(() => {
-    if (window.innerWidth < 1024 && sidebarOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow =
+      window.innerWidth < 1024 && sidebarOpen ? 'hidden' : '';
 
     return () => {
       document.body.style.overflow = '';
@@ -113,8 +100,8 @@ const AppLayout: React.FC = () => {
   const renderAccessGate = () => {
     if (isPending) {
       return (
-        <div className="flex min-h-[70vh] items-center justify-center px-4">
-          <div className="w-full max-w-2xl rounded-3xl border border-yellow-200 bg-white p-6 text-center shadow-sm sm:p-8">
+        <div className="flex min-h-[70vh] items-center justify-center px-2">
+          <div className="w-full max-w-2xl rounded-3xl border border-yellow-200 bg-white p-5 text-center shadow-sm sm:p-8">
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-yellow-100 text-yellow-700">
               <Clock className="h-8 w-8" />
             </div>
@@ -125,12 +112,7 @@ const AppLayout: React.FC = () => {
 
             <p className="mx-auto mt-3 max-w-xl text-sm text-slate-500 sm:text-base">
               Seu cadastro foi recebido e está aguardando aprovação do administrador.
-              Assim que for liberado, a biblioteca premium ficará disponível para você.
             </p>
-
-            <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
-              Status atual: aguardando aprovação
-            </div>
 
             <button
               onClick={signOut}
@@ -145,8 +127,8 @@ const AppLayout: React.FC = () => {
 
     if (isBlocked) {
       return (
-        <div className="flex min-h-[70vh] items-center justify-center px-4">
-          <div className="w-full max-w-2xl rounded-3xl border border-red-200 bg-white p-6 text-center shadow-sm sm:p-8">
+        <div className="flex min-h-[70vh] items-center justify-center px-2">
+          <div className="w-full max-w-2xl rounded-3xl border border-red-200 bg-white p-5 text-center shadow-sm sm:p-8">
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-red-100 text-red-700">
               <ShieldAlert className="h-8 w-8" />
             </div>
@@ -156,13 +138,8 @@ const AppLayout: React.FC = () => {
             </h1>
 
             <p className="mx-auto mt-3 max-w-xl text-sm text-slate-500 sm:text-base">
-              Seu acesso à plataforma foi bloqueado. Caso acredite que isso foi
-              um engano, entre em contato com o suporte ou administrador.
+              Seu acesso à plataforma foi bloqueado.
             </p>
-
-            <div className="mt-6 rounded-2xl bg-red-50 p-4 text-sm font-semibold text-red-700">
-              Status atual: acesso bloqueado
-            </div>
 
             <button
               onClick={signOut}
@@ -198,65 +175,50 @@ const AppLayout: React.FC = () => {
       />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-3 sm:h-16 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2">
             <button
               onClick={() => setSidebarOpen(true)}
               className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 transition hover:bg-slate-200 hover:text-slate-900 lg:hidden"
               aria-label="Abrir menu"
             >
-              <Menu size={22} />
+              <Menu size={21} />
             </button>
 
-            <h2 className="truncate text-base font-black text-slate-800 sm:text-lg">
+            <h2 className="truncate text-sm font-black text-slate-800 sm:text-lg">
               {currentTitle}
             </h2>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2">
             <div
               className={`hidden items-center gap-2 rounded-full px-4 py-1.5 sm:flex ${statusBadge.className}`}
             >
-              <span
-                className={`h-2 w-2 rounded-full ${statusBadge.dotClassName}`}
-              />
-
+              <span className={`h-2 w-2 rounded-full ${statusBadge.dotClassName}`} />
               <span className="text-xs font-semibold uppercase tracking-tight">
                 {statusBadge.label}
               </span>
             </div>
 
             <button className="relative flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-600">
-              <Bell size={20} />
+              <Bell size={19} />
               <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
             </button>
           </div>
         </header>
 
-        <main className="custom-scrollbar flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="custom-scrollbar flex-1 overflow-x-hidden overflow-y-auto px-2 py-3 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           <div className="mx-auto w-full max-w-7xl">
             {hasPremiumAccess ? <Outlet /> : renderAccessGate()}
           </div>
         </main>
 
         <footer className="hidden h-8 shrink-0 items-center justify-between border-t border-slate-200 bg-slate-100 px-6 text-[9px] font-medium text-slate-500 sm:flex">
-          <div className="flex gap-4">
-            <span>
-              Status do Sistema:{' '}
-              <span className="text-green-600">Online</span>
-            </span>
-            <span>Versão: v2.1.0-stable</span>
-          </div>
+          <span>
+            Status do Sistema: <span className="text-green-600">Online</span>
+          </span>
 
-          <div className="flex gap-4">
-            <a href="#" className="transition-colors hover:text-blue-600">
-              Termos de Uso
-            </a>
-            <a href="#" className="transition-colors hover:text-blue-600">
-              Políticas de Privacidade
-            </a>
-            <span>© 2024 Central Monetização</span>
-          </div>
+          <span>© 2024 Central Monetização</span>
         </footer>
       </div>
     </div>

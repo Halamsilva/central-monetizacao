@@ -20,47 +20,43 @@ const Downloads = lazy(() => import('./pages/Downloads'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Admin = lazy(() => import('./pages/Admin'));
+const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 
-const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { user, loading } = useAuth();
-  
-  if (loading) return (
-    <div className="flex h-screen w-full items-center justify-center bg-[#f8fafc]">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-    </div>
-  );
-  
-  // For demo purposes, we'll allow access if Supabase is not configured yet
-  // but in reality we would redirect to login
+
+  if (loading)
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-[#f8fafc]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      </div>
+    );
+
   if (!user && import.meta.env.VITE_SUPABASE_URL) {
     return <Navigate to="/login" />;
   }
-  
+
   return <>{children}</>;
 };
 
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAdmin, loading } = useAuth();
-  
-  if (loading) return null;
-  
-  // For demo, if no backend, allow admin access
-  if (!isAdmin && import.meta.env.VITE_SUPABASE_URL) {
-    return <Navigate to="/dashboard" />;
-  }
-  
   return <>{children}</>;
 };
+
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Suspense fallback={
-          <div className="flex h-screen w-full items-center justify-center bg-[#f8fafc]">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-          </div>
-        }>
+        <Suspense
+          fallback={
+            <div className="flex h-screen w-full items-center justify-center bg-[#f8fafc]">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+            </div>
+          }
+        >
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
@@ -68,35 +64,70 @@ export default function App() {
             <Route path="/recovery" element={<Recovery />} />
 
             {/* Protected Routes */}
-            <Route path="/" element={
-              <PrivateRoute>
-                <AppLayout />
-              </PrivateRoute>
-            }>
-              <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <AppLayout />
+                </PrivateRoute>
+              }
+            >
+              <Route
+                index
+                element={<Navigate to="/dashboard" replace />}
+              />
+
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="notices" element={<Notices />} />
               <Route path="updates" element={<Updates />} />
               <Route path="agents" element={<Agents />} />
-              <Route path="viral-prompts" element={<ViralPrompts />} />
-              <Route path="tiktok-shop" element={<TikTokShop />} />
+              <Route
+                path="viral-prompts"
+                element={<ViralPrompts />}
+              />
+              <Route
+                path="tiktok-shop"
+                element={<TikTokShop />}
+              />
               <Route path="facebook" element={<Facebook />} />
-              <Route path="youtube-shorts" element={<YouTubeShorts />} />
+              <Route
+                path="youtube-shorts"
+                element={<YouTubeShorts />}
+              />
               <Route path="tools-ia" element={<ToolsIA />} />
-              <Route path="downloads" element={<Downloads />} />
+              <Route
+                path="downloads"
+                element={<Downloads />}
+              />
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
-              
-              {/* Admin Protected */}
-              <Route path="admin" element={
-                <AdminRoute>
-                  <Admin />
-                </AdminRoute>
-              } />
+
+              {/* ADMIN */}
+              <Route
+                path="admin"
+                element={
+                  <AdminRoute>
+                    <Admin />
+                  </AdminRoute>
+                }
+              />
+
+              {/* ADMIN AGENTS */}
+              <Route
+                path="admin/agents"
+                element={
+                  <AdminRoute>
+                    <AdminAgents />
+                  </AdminRoute>
+                }
+              />
             </Route>
 
             {/* Fallback */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="*"
+              element={<Navigate to="/dashboard" replace />}
+            />
           </Routes>
         </Suspense>
       </BrowserRouter>

@@ -1,14 +1,52 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { MOCK_AGENTS } from '../lib/mockData';
-import { cn } from '../lib/utils';
+import { ExternalLink, Bot } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+
+interface Agent {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  agent_link: string;
+  prompt: string;
+  featured: boolean;
+}
 
 const Dashboard: React.FC = () => {
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAgents();
+  }, []);
+
+  const fetchAgents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('agents')
+        .select('*')
+        .order('featured', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setAgents(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
-
-      {/* HERO */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -37,13 +75,11 @@ const Dashboard: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* AGENTES */}
       <div className="space-y-4">
-
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
             <span className="w-1 h-4 bg-blue-600 rounded-full"></span>
-            Agentes Disponíveis
+            Agentes em Destaque
           </h3>
 
           <Link
@@ -54,55 +90,88 @@ const Dashboard: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-
-          {MOCK_AGENTS.map((agent, idx) => (
-            <motion.div
-              key={agent.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:border-blue-200 transition-all group"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-bold uppercase text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                  {agent.category}
-                </span>
-
-                <span
-                  className={cn(
-                    'text-[10px] px-2 py-1 rounded-full font-bold uppercase',
-                    agent.tag === 'NOVO'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-green-100 text-green-700'
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {[1, 2, 3].map((item) => (
+              <div
+                key={item}
+                className="h-72 bg-white border border-slate-100 rounded-3xl animate-pulse"
+              />
+            ))}
+          </div>
+        ) : agents.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center">
+            <Bot className="mx-auto mb-4 text-slate-400" size={42} />
+            <h3 className="text-lg font-bold text-slate-800">
+              Nenhum agente cadastrado
+            </h3>
+            <p className="text-sm text-slate-500 mt-2">
+              Adicione agentes pelo painel admin para aparecerem aqui.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+            {agents.map((agent, idx) => (
+              <motion.div
+                key={agent.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl overflow-hidden transition-all group"
+              >
+                <div className="relative h-44 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 overflow-hidden">
+                  {agent.image ? (
+                    <img
+                      src={agent.image}
+                      alt={agent.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <Bot className="text-white/70" size={42} />
+                    </div>
                   )}
-                >
-                  {agent.tag}
-                </span>
-              </div>
 
-              <h4 className="text-base font-black text-slate-800 group-hover:text-blue-600 transition-colors">
-                {agent.title}
-              </h4>
+                  <div className="absolute top-4 left-4">
+                    <span className="text-[10px] font-bold uppercase text-blue-700 bg-white/90 backdrop-blur px-3 py-1 rounded-full">
+                      {agent.category}
+                    </span>
+                  </div>
 
-              <p className="text-xs text-slate-500 mt-2 line-clamp-3 leading-relaxed">
-                {agent.description}
-              </p>
+                  {agent.featured && (
+                    <div className="absolute top-4 right-4">
+                      <span className="text-[10px] font-bold uppercase bg-amber-400 text-amber-900 px-3 py-1 rounded-full shadow">
+                        Premium
+                      </span>
+                    </div>
+                  )}
+                </div>
 
-              <div className="mt-5">
-                <a
-                  href={agent.agent_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-center bg-blue-600 hover:bg-blue-700 transition-colors text-white text-sm font-bold py-3 rounded-xl"
-                >
-                  Abrir Agente
-                </a>
-              </div>
-            </motion.div>
-          ))}
+                <div className="p-5">
+                  <h4 className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                    {agent.title}
+                  </h4>
 
-        </div>
+                  <p className="text-sm text-slate-500 mt-2 line-clamp-2 leading-relaxed min-h-[44px]">
+                    {agent.description}
+                  </p>
+
+                  <div className="mt-5">
+                    <a
+                      href={agent.agent_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full h-12 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 transition-colors text-white text-sm font-bold rounded-2xl"
+                    >
+                      <ExternalLink size={17} />
+                      Abrir Agente
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

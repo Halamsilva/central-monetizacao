@@ -21,6 +21,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminAgents = lazy(() => import('./pages/AdminAgents'));
+const AdminNotices = lazy(() => import('./pages/AdminNotices'));
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -41,10 +42,11 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
   return <>{children}</>;
 };
 
-const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   return <>{children}</>;
 };
-
 
 export default function App() {
   return (
@@ -58,12 +60,10 @@ export default function App() {
           }
         >
           <Routes>
-            {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/recovery" element={<Recovery />} />
 
-            {/* Protected Routes */}
             <Route
               path="/"
               element={
@@ -81,28 +81,15 @@ export default function App() {
               <Route path="notices" element={<Notices />} />
               <Route path="updates" element={<Updates />} />
               <Route path="agents" element={<Agents />} />
-              <Route
-                path="viral-prompts"
-                element={<ViralPrompts />}
-              />
-              <Route
-                path="tiktok-shop"
-                element={<TikTokShop />}
-              />
+              <Route path="viral-prompts" element={<ViralPrompts />} />
+              <Route path="tiktok-shop" element={<TikTokShop />} />
               <Route path="facebook" element={<Facebook />} />
-              <Route
-                path="youtube-shorts"
-                element={<YouTubeShorts />}
-              />
+              <Route path="youtube-shorts" element={<YouTubeShorts />} />
               <Route path="tools-ia" element={<ToolsIA />} />
-              <Route
-                path="downloads"
-                element={<Downloads />}
-              />
+              <Route path="downloads" element={<Downloads />} />
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
 
-              {/* ADMIN */}
               <Route
                 path="admin"
                 element={
@@ -112,7 +99,6 @@ export default function App() {
                 }
               />
 
-              {/* ADMIN AGENTS */}
               <Route
                 path="admin/agents"
                 element={
@@ -121,9 +107,17 @@ export default function App() {
                   </AdminRoute>
                 }
               />
+
+              <Route
+                path="admin/notices"
+                element={
+                  <AdminRoute>
+                    <AdminNotices />
+                  </AdminRoute>
+                }
+              />
             </Route>
 
-            {/* Fallback */}
             <Route
               path="*"
               element={<Navigate to="/dashboard" replace />}

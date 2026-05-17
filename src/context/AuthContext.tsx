@@ -43,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         avatar_url: null,
         is_admin: false,
         role: 'student',
+        access_status: 'pending',
         created_at: new Date().toISOString(),
       };
 
@@ -65,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         avatar_url: null,
         is_admin: false,
         role: 'student',
+        access_status: 'pending',
         created_at: new Date().toISOString(),
       });
     }

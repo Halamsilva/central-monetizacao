@@ -26,6 +26,7 @@ export interface UserProfile {
   avatar_url?: string | null;
   is_admin?: boolean;
   role?: 'admin' | 'student';
+  access_status?: 'pending' | 'active' | 'blocked';
   created_at: string;
 }
 

@@ -21,6 +21,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AdminNotices = lazy(() => import('./pages/AdminNotices'));
+const AdminStudents = lazy(() => import('./pages/AdminStudents'));
 
 const LoadingScreen = () => (
   <div className="flex h-screen w-full items-center justify-center bg-[#f8fafc]">
@@ -28,15 +29,63 @@ const LoadingScreen = () => (
   </div>
 );
 
+const PendingAccessScreen = () => (
+  <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] p-6">
+    <div className="max-w-md rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-xl">
+      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-3xl">
+        🔒
+      </div>
+
+      <h1 className="text-3xl font-black text-slate-900">
+        Acesso em análise
+      </h1>
+
+      <p className="mt-4 leading-relaxed text-slate-500">
+        Seu cadastro foi recebido. Aguarde a liberação da equipe.
+      </p>
+    </div>
+  </div>
+);
+
+const BlockedAccessScreen = () => (
+  <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] p-6">
+    <div className="max-w-md rounded-3xl border border-red-100 bg-white p-10 text-center shadow-xl">
+      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100 text-3xl">
+        🚫
+      </div>
+
+      <h1 className="text-3xl font-black text-slate-900">
+        Acesso bloqueado
+      </h1>
+
+      <p className="mt-4 leading-relaxed text-slate-500">
+        Seu acesso foi bloqueado.
+      </p>
+    </div>
+  </div>
+);
+
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { user, loading } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
 
   if (loading) return <LoadingScreen />;
 
   if (!user && import.meta.env.VITE_SUPABASE_URL) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (isAdmin) {
+    return <>{children}</>;
+  }
+
+  if (profile?.access_status === 'blocked') {
+    return <BlockedAccessScreen />;
+  }
+
+  if (profile?.access_status !== 'active') {
+    return <PendingAccessScreen />;
   }
 
   return <>{children}</>;
@@ -112,6 +161,15 @@ export default function App() {
                 element={
                   <AdminRoute>
                     <AdminNotices />
+                  </AdminRoute>
+                }
+              />
+
+              <Route
+                path="admin/students"
+                element={
+                  <AdminRoute>
+                    <AdminStudents />
                   </AdminRoute>
                 }
               />

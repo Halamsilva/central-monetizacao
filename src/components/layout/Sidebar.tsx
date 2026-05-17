@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -32,6 +32,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
   const navigate = useNavigate();
   const { profile, isAdmin, signOut } = useAuth();
 
+  const [avatarFailed, setAvatarFailed] = useState(false);
+
+  const userInitial = profile?.full_name?.charAt(0)?.toUpperCase() || 'U';
+  const showAvatar = Boolean(profile?.avatar_url) && !avatarFailed;
+
   const handleLogout = async () => {
     await signOut();
     navigate('/login', { replace: true });
@@ -62,13 +67,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
     { title: 'Gerenciar Alunos', icon: Users, path: '/admin/students' },
   ];
 
-  const renderMenuItem = (
-    item: {
-      title: string;
-      icon: React.ElementType;
-      path: string;
-    }
-  ) => {
+  const renderMenuItem = (item: {
+    title: string;
+    icon: React.ElementType;
+    path: string;
+  }) => {
     const Icon = item.icon;
     const active = location.pathname === item.path;
 
@@ -142,8 +145,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true }) => {
 
       <div className="border-t border-slate-100 p-4">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-lg font-black text-slate-600">
-            {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-lg font-black text-slate-600 ring-2 ring-slate-100">
+            {showAvatar ? (
+              <img
+                src={profile?.avatar_url || ''}
+                alt={profile?.full_name || 'Usuário'}
+                onError={() => setAvatarFailed(true)}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              userInitial
+            )}
           </div>
 
           <div className="min-w-0">

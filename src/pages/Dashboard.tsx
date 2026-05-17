@@ -63,7 +63,7 @@ const Dashboard: React.FC = () => {
         .select('*')
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false })
-        .limit(8);
+        .limit(9);
 
       if (error) {
         console.error(error);
@@ -125,7 +125,7 @@ const Dashboard: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {categories.map((category) => {
             const Icon = category.icon;
 
@@ -133,19 +133,15 @@ const Dashboard: React.FC = () => {
               <Link
                 key={category.title}
                 to={category.link}
-                className="group rounded-3xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+                className="group rounded-3xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                  <Icon size={20} />
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                  <Icon size={18} />
                 </div>
 
-                <h4 className="mt-4 text-sm font-black text-slate-900">
+                <h4 className="mt-3 text-[11px] font-black leading-tight text-slate-900">
                   {category.title}
                 </h4>
-
-                <p className="mt-1 text-xs text-slate-500">
-                  Conteúdos premium
-                </p>
               </Link>
             );
           })}
@@ -168,16 +164,16 @@ const Dashboard: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 gap-3">
-            {[1, 2, 3, 4].map((item) => (
+          <div className="grid grid-cols-3 gap-2">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
               <div
                 key={item}
-                className="h-64 animate-pulse rounded-3xl bg-white"
+                className="h-52 animate-pulse rounded-3xl bg-white"
               />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {agents.map((agent, idx) => (
               <motion.article
                 key={agent.id}
@@ -186,7 +182,7 @@ const Dashboard: React.FC = () => {
                 transition={{ delay: idx * 0.04 }}
                 className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="relative h-40 overflow-hidden bg-slate-100">
+                <div className="relative h-28 overflow-hidden bg-slate-100">
                   {agent.image ? (
                     <img
                       src={agent.image}
@@ -195,31 +191,23 @@ const Dashboard: React.FC = () => {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
-                      <Bot className="text-slate-400" size={32} />
+                      <Bot className="text-slate-400" size={24} />
                     </div>
                   )}
 
-                  <div className="absolute left-3 top-3">
-                    <span className="rounded-full bg-white/95 px-2 py-1 text-[9px] font-black uppercase text-blue-700 shadow">
+                  <div className="absolute left-2 top-2">
+                    <span className="rounded-full bg-white/95 px-2 py-1 text-[8px] font-black uppercase text-blue-700 shadow">
                       {agent.category}
                     </span>
                   </div>
-
-                  {agent.featured && (
-                    <div className="absolute right-3 top-3">
-                      <span className="rounded-full bg-amber-400 px-2 py-1 text-[9px] font-black uppercase text-amber-950 shadow">
-                        Premium
-                      </span>
-                    </div>
-                  )}
                 </div>
 
-                <div className="p-3">
-                  <h4 className="line-clamp-2 text-sm font-black leading-tight text-slate-900">
+                <div className="p-2.5">
+                  <h4 className="line-clamp-2 text-[11px] font-black leading-tight text-slate-900">
                     {agent.title}
                   </h4>
 
-                  <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500">
+                  <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-slate-500">
                     {agent.description}
                   </p>
 
@@ -227,9 +215,9 @@ const Dashboard: React.FC = () => {
                     href={agent.agent_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 text-[11px] font-black text-white transition hover:bg-blue-600"
+                    className="mt-2 flex h-9 w-full items-center justify-center gap-1 rounded-2xl bg-slate-950 text-[10px] font-black text-white transition hover:bg-blue-600"
                   >
-                    <ExternalLink size={14} />
+                    <ExternalLink size={12} />
                     Abrir
                   </a>
                 </div>

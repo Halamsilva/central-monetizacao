@@ -26,9 +26,7 @@ interface Agent {
   created_at?: string;
 }
 
-const normalizeText = (value?: string) => {
-  return value?.trim().toLowerCase() || '';
-};
+const normalizeText = (value?: string) => value?.trim().toLowerCase() || '';
 
 const formatCategoryLabel = (category?: string) => {
   if (!category) return 'Sem Categoria';
@@ -133,8 +131,7 @@ const Agents = () => {
           normalizeText(categoryLabel).includes(normalizedSearch);
 
         const matchesCategory =
-          selectedCategory === 'Todos' ||
-          categoryLabel === selectedCategory;
+          selectedCategory === 'Todos' || categoryLabel === selectedCategory;
 
         const matchesFeatured = !featuredOnly || agent.featured;
 
@@ -143,9 +140,7 @@ const Agents = () => {
   }, [agents, search, selectedCategory, featuredOnly]);
 
   const hasActiveFilters =
-    search.trim() !== '' ||
-    selectedCategory !== 'Todos' ||
-    featuredOnly;
+    search.trim() !== '' || selectedCategory !== 'Todos' || featuredOnly;
 
   const clearFilters = () => {
     setSearch('');
@@ -167,16 +162,16 @@ const Agents = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center p-6">
-        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-          <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-blue-600" />
+      <div className="flex min-h-[55vh] items-center justify-center p-3">
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <Loader2 className="mx-auto mb-4 h-9 w-9 animate-spin text-blue-600" />
 
-          <h2 className="text-xl font-black text-slate-900">
+          <h2 className="text-lg font-black text-slate-900">
             Carregando agentes...
           </h2>
 
           <p className="mt-2 text-sm text-slate-500">
-            Preparando a biblioteca premium para você.
+            Preparando a biblioteca premium.
           </p>
         </div>
       </div>
@@ -184,87 +179,89 @@ const Agents = () => {
   }
 
   return (
-    <div className="p-6 pb-24">
+    <div className="pb-20">
       {successMessage && (
-        <div className="fixed right-6 top-6 z-50 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 shadow-lg">
+        <div className="fixed left-3 right-3 top-4 z-50 flex items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-700 shadow-lg sm:left-auto sm:right-6 sm:top-6 sm:text-sm">
           <Check className="h-4 w-4" />
           {successMessage}
         </div>
       )}
 
-      <div className="mb-8">
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
-          <Sparkles size={16} />
+      <div className="mb-4 rounded-[24px] bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:mb-8 sm:p-6">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-wide text-blue-700 sm:text-sm">
+          <Sparkles size={14} />
           Biblioteca Premium
         </div>
 
-        <h1 className="text-4xl font-black text-slate-900">
+        <h1 className="text-3xl font-black leading-none text-slate-900 sm:text-4xl">
           Agentes IA
         </h1>
 
-        <p className="mt-3 max-w-3xl text-lg text-slate-500">
+        <p className="mt-2 max-w-3xl text-xs leading-relaxed text-slate-500 sm:mt-3 sm:text-lg">
           Biblioteca premium de agentes, prompts e automações para acelerar sua criação de conteúdo.
         </p>
       </div>
 
-      <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
-          <div className="relative flex-1">
+      <div className="mb-4 rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm sm:mb-8 sm:p-5">
+        <div className="grid grid-cols-1 gap-2 sm:gap-4 xl:grid-cols-[1fr_auto_auto_auto] xl:items-center">
+          <div className="relative">
             <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              size={20}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              size={16}
             />
 
             <input
               type="text"
-              placeholder="Buscar por agente, descrição ou categoria"
+              placeholder="Buscar agentes..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 font-medium text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 sm:h-14 sm:pl-12"
             />
           </div>
 
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="h-14 rounded-2xl border border-slate-200 bg-slate-50 px-5 font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+            className="h-11 rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 sm:h-14 sm:px-5"
           >
             {categories.map((category) => (
               <option key={category}>{category}</option>
             ))}
           </select>
 
-          <button
-            onClick={() => setFeaturedOnly((current) => !current)}
-            className={`inline-flex h-14 items-center justify-center gap-2 rounded-2xl px-5 font-semibold transition ${featuredOnly
-                ? 'bg-amber-500 text-white shadow-sm'
-                : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-              }`}
-          >
-            <Star className="h-4 w-4" />
-            Destaques
-          </button>
-
-          {hasActiveFilters && (
+          <div className="grid grid-cols-2 gap-2 xl:flex">
             <button
-              onClick={clearFilters}
-              className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-slate-100 px-5 font-semibold text-slate-600 transition hover:bg-slate-200"
+              onClick={() => setFeaturedOnly((current) => !current)}
+              className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-2xl px-3 text-xs font-black transition sm:h-14 sm:px-5 sm:text-sm ${featuredOnly
+                  ? 'bg-amber-500 text-white shadow-sm'
+                  : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                }`}
             >
-              <X className="h-4 w-4" />
-              Limpar
+              <Star className="h-3.5 w-3.5" />
+              Destaques
             </button>
-          )}
+
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-2xl bg-slate-100 px-3 text-xs font-black text-slate-600 transition hover:bg-slate-200 sm:h-14 sm:px-5 sm:text-sm"
+              >
+                <X className="h-3.5 w-3.5" />
+                Limpar
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-500">
-          <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1">
-            <Filter className="h-4 w-4" />
-            {filteredAgents.length} de {agents.length} agentes
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] font-black text-slate-500 sm:text-sm">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1">
+            <Filter className="h-3.5 w-3.5" />
+            {filteredAgents.length} de {agents.length}
           </span>
 
           {featuredOnly && (
             <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-700">
-              Exibindo destaques
+              Destaques
             </span>
           )}
 
@@ -277,29 +274,28 @@ const Agents = () => {
       </div>
 
       {filteredAgents.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-12 text-center">
-          <Bot className="mx-auto mb-5 text-slate-400" size={54} />
+        <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
+          <Bot className="mx-auto mb-4 text-slate-400" size={42} />
 
-          <h2 className="mb-3 text-2xl font-bold text-slate-700">
+          <h2 className="mb-2 text-xl font-black text-slate-700">
             Nenhum agente encontrado
           </h2>
 
-          <p className="text-slate-500">
+          <p className="text-sm text-slate-500">
             Ajuste a busca ou os filtros para encontrar outros agentes.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-7 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 2xl:grid-cols-4">
           {filteredAgents.map((agent, index) => (
             <motion.div
               key={agent.id}
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03 }}
-              whileHover={{ y: -4 }}
-              className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl"
+              transition={{ delay: index * 0.02 }}
+              className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl sm:rounded-3xl"
             >
-              <div className="relative aspect-video overflow-hidden bg-slate-100">
+              <div className="relative h-24 overflow-hidden bg-slate-100 sm:aspect-video sm:h-auto">
                 {agent.image ? (
                   <img
                     src={agent.image}
@@ -308,71 +304,63 @@ const Agents = () => {
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-slate-950">
-                    <div className="flex flex-col items-center">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-white/10 shadow-2xl backdrop-blur">
-                        <Bot size={42} className="text-white" />
-                      </div>
-
-                      <p className="mt-4 text-sm font-medium text-white/70">
-                        Agente Premium
-                      </p>
-                    </div>
+                    <Bot size={24} className="text-white sm:h-10 sm:w-10" />
                   </div>
                 )}
 
-                <div className="absolute left-4 top-4">
-                  <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-slate-800 shadow-sm backdrop-blur">
+                <div className="absolute left-1.5 top-1.5 sm:left-4 sm:top-4">
+                  <span className="line-clamp-1 max-w-[72px] rounded-full bg-white/90 px-1.5 py-0.5 text-[7px] font-black uppercase text-slate-800 shadow-sm backdrop-blur sm:max-w-none sm:px-3 sm:py-1 sm:text-xs">
                     {formatCategoryLabel(agent.category)}
                   </span>
                 </div>
 
                 {agent.featured && (
-                  <div className="absolute right-4 top-4">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1 text-xs font-black text-amber-950 shadow">
-                      <Star className="h-3 w-3" />
-                      PREMIUM
+                  <div className="absolute right-1.5 top-1.5 sm:right-4 sm:top-4">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-1.5 py-0.5 text-[7px] font-black text-amber-950 shadow sm:px-3 sm:py-1 sm:text-xs">
+                      <Star className="hidden h-3 w-3 sm:block" />
+                      PRO
                     </span>
                   </div>
                 )}
               </div>
 
-              <div className="flex flex-1 flex-col p-6">
-                <h2 className="mb-3 text-2xl font-black text-slate-900">
+              <div className="flex flex-1 flex-col p-2 sm:p-6">
+                <h2 className="line-clamp-2 text-[11px] font-black leading-tight text-slate-900 sm:mb-3 sm:text-2xl">
                   {agent.title}
                 </h2>
 
-                <p className="mb-6 line-clamp-3 text-sm leading-relaxed text-slate-500">
+                <p className="mt-1 line-clamp-2 text-[9px] leading-relaxed text-slate-500 sm:mb-6 sm:line-clamp-3 sm:text-sm">
                   {agent.description || 'Sem descrição disponível.'}
                 </p>
 
-                <div className="mt-auto grid gap-3">
+                <div className="mt-auto grid gap-1.5 pt-2 sm:gap-3 sm:pt-0">
                   {agent.agent_link && (
                     <a
                       href={agent.agent_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 font-bold text-white transition-all hover:bg-blue-700"
+                      className="flex h-8 items-center justify-center gap-1 rounded-xl bg-blue-600 text-[9px] font-black text-white transition-all hover:bg-blue-700 sm:h-12 sm:gap-2 sm:rounded-2xl sm:text-base"
                     >
-                      <ExternalLink size={18} />
-                      Abrir Agente
+                      <ExternalLink size={11} className="sm:h-[18px] sm:w-[18px]" />
+                      Abrir
                     </a>
                   )}
 
                   {agent.prompt && (
-                    <div className="grid grid-cols-[auto_1fr] gap-3">
+                    <div className="grid grid-cols-[28px_1fr] gap-1.5 sm:grid-cols-[auto_1fr] sm:gap-3">
                       <button
                         onClick={() => copyPrompt(agent.prompt)}
-                        className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 transition-all hover:bg-slate-100"
+                        className="flex h-8 w-7 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition-all hover:bg-slate-100 sm:h-12 sm:w-12 sm:rounded-2xl"
                         title="Copiar prompt"
                       >
-                        <Copy size={18} />
+                        <Copy size={12} className="sm:h-[18px] sm:w-[18px]" />
                       </button>
 
                       <button
                         onClick={() => openPrompt(agent)}
-                        className="h-12 rounded-2xl border border-slate-200 px-4 text-sm font-bold text-slate-700 transition-all hover:bg-slate-100"
+                        className="h-8 rounded-xl border border-slate-200 px-1 text-[9px] font-black text-slate-700 transition-all hover:bg-slate-100 sm:h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
                       >
-                        Ver Prompt
+                        Prompt
                       </button>
                     </div>
                   )}
@@ -384,15 +372,15 @@ const Agents = () => {
       )}
 
       {selectedPrompt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-4">
           <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 p-6">
+            <div className="flex items-center justify-between border-b border-slate-100 p-4 sm:p-6">
               <div>
-                <h3 className="text-2xl font-black text-slate-900">
+                <h3 className="text-xl font-black text-slate-900 sm:text-2xl">
                   Prompt do Agente
                 </h3>
 
-                <p className="mt-1 text-sm font-medium text-slate-500">
+                <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
                   {selectedPromptTitle}
                 </p>
               </div>
@@ -405,15 +393,15 @@ const Agents = () => {
               </button>
             </div>
 
-            <div className="p-6">
-              <div className="max-h-[500px] overflow-y-auto whitespace-pre-wrap rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-relaxed text-slate-700">
+            <div className="p-4 sm:p-6">
+              <div className="max-h-[500px] overflow-y-auto whitespace-pre-wrap rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 sm:p-5">
                 {selectedPrompt}
               </div>
 
               <div className="mt-5 flex justify-end">
                 <button
                   onClick={() => copyPrompt(selectedPrompt)}
-                  className="flex h-12 items-center gap-2 rounded-2xl bg-blue-600 px-6 font-bold text-white transition hover:bg-blue-700"
+                  className="flex h-11 items-center gap-2 rounded-2xl bg-blue-600 px-5 text-sm font-bold text-white transition hover:bg-blue-700 sm:h-12 sm:px-6"
                 >
                   <Copy size={18} />
                   Copiar Prompt

@@ -52,14 +52,19 @@ const Admin: React.FC = () => {
     userId: string,
     status: 'active' | 'pending' | 'blocked'
   ) => {
+    const updateData = {
+      access_status: status,
+      approved_at:
+        status === 'active' ? new Date().toISOString() : null,
+    };
+
     const { error } = await supabase
       .from('profiles')
-      .update({
-        access_status: status,
-      })
+      .update(updateData)
       .eq('id', userId);
 
     if (error) {
+      console.error(error);
       alert('Erro ao atualizar aluno');
       return;
     }
@@ -142,6 +147,34 @@ const Admin: React.FC = () => {
         </button>
       </div>
 
+      {activeTab === 'notices' && (
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <h2 className="text-2xl font-black text-slate-900">
+            Avisos
+          </h2>
+          <p className="mt-2 text-slate-500">
+            Use a página Gerenciar Avisos para criar, editar e excluir avisos.
+          </p>
+          <p className="mt-4 text-sm text-slate-400">
+            {notices.length} avisos carregados neste painel.
+          </p>
+        </div>
+      )}
+
+      {activeTab === 'agents' && (
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <h2 className="text-2xl font-black text-slate-900">
+            Agentes
+          </h2>
+          <p className="mt-2 text-slate-500">
+            Use a página Gerenciar Agentes para criar, editar e excluir agentes.
+          </p>
+          <p className="mt-4 text-sm text-slate-400">
+            {agents.length} agentes carregados neste painel.
+          </p>
+        </div>
+      )}
+
       {activeTab === 'users' && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -187,10 +220,7 @@ const Admin: React.FC = () => {
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() =>
-                      updateStudentStatus(
-                        student.id,
-                        'active'
-                      )
+                      updateStudentStatus(student.id, 'active')
                     }
                     className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-600"
                   >
@@ -200,10 +230,7 @@ const Admin: React.FC = () => {
 
                   <button
                     onClick={() =>
-                      updateStudentStatus(
-                        student.id,
-                        'pending'
-                      )
+                      updateStudentStatus(student.id, 'pending')
                     }
                     className="inline-flex items-center gap-2 rounded-xl bg-yellow-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-yellow-600"
                   >
@@ -213,10 +240,7 @@ const Admin: React.FC = () => {
 
                   <button
                     onClick={() =>
-                      updateStudentStatus(
-                        student.id,
-                        'blocked'
-                      )
+                      updateStudentStatus(student.id, 'blocked')
                     }
                     className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
                   >

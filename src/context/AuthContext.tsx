@@ -12,7 +12,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,6 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         full_name: currentUser.email?.split('@')[0] || 'Usuário',
         avatar_url: null,
         is_admin: false,
+        role: 'student',
         created_at: new Date().toISOString(),
       };
 
@@ -61,6 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         full_name: currentUser.email?.split('@')[0] || 'Usuário',
         avatar_url: null,
         is_admin: false,
+        role: 'student',
         created_at: new Date().toISOString(),
       });
     }
@@ -135,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         profile,
         loading,
-        isAdmin: profile?.is_admin || false,
+        isAdmin: profile?.role === 'admin',
         signOut,
       }}
     >

@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
 
-// Pages
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Recovery = lazy(() => import('./pages/Recovery'));
@@ -23,20 +22,21 @@ const Admin = lazy(() => import('./pages/Admin'));
 const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AdminNotices = lazy(() => import('./pages/AdminNotices'));
 
+const LoadingScreen = () => (
+  <div className="flex h-screen w-full items-center justify-center bg-[#f8fafc]">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+  </div>
+);
+
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { user, loading } = useAuth();
 
-  if (loading)
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-[#f8fafc]">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-      </div>
-    );
+  if (loading) return <LoadingScreen />;
 
   if (!user && import.meta.env.VITE_SUPABASE_URL) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
@@ -45,6 +45,14 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const { loading, isAdmin } = useAuth();
+
+  if (loading) return <LoadingScreen />;
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return <>{children}</>;
 };
 
@@ -52,13 +60,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Suspense
-          fallback={
-            <div className="flex h-screen w-full items-center justify-center bg-[#f8fafc]">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-            </div>
-          }
-        >
+        <Suspense fallback={<LoadingScreen />}>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -72,10 +74,7 @@ export default function App() {
                 </PrivateRoute>
               }
             >
-              <Route
-                index
-                element={<Navigate to="/dashboard" replace />}
-              />
+              <Route index element={<Navigate to="/dashboard" replace />} />
 
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="notices" element={<Notices />} />
@@ -118,10 +117,7 @@ export default function App() {
               />
             </Route>
 
-            <Route
-              path="*"
-              element={<Navigate to="/dashboard" replace />}
-            />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

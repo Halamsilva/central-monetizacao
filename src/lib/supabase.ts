@@ -3,27 +3,29 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Mocking some data for when Supabase is not connected
-// We check if it's the default placeholder from .env.example or empty
 export const isSupabaseConfigured =
   !!supabaseUrl &&
   !!supabaseAnonKey &&
   !supabaseUrl.includes('your-project-id') &&
   supabaseUrl !== '';
 
-// Use a placeholder if not configured to prevent "supabaseUrl is required" crash
-const finalUrl = isSupabaseConfigured ? supabaseUrl : 'https://placeholder-app.supabase.co';
-const finalKey = isSupabaseConfigured ? supabaseAnonKey : 'placeholder-anon-key';
+const finalUrl = isSupabaseConfigured
+  ? supabaseUrl
+  : 'https://placeholder-app.supabase.co';
+
+const finalKey = isSupabaseConfigured
+  ? supabaseAnonKey
+  : 'placeholder-anon-key';
 
 export const supabase = createClient(finalUrl, finalKey);
 
-// Types based on the required schema
 export interface UserProfile {
   id: string;
   email: string;
   full_name: string;
-  avatar_url?: string;
-  is_admin: boolean;
+  avatar_url?: string | null;
+  is_admin?: boolean;
+  role?: 'admin' | 'student';
   created_at: string;
 }
 

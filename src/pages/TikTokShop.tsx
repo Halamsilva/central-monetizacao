@@ -1,25 +1,25 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
-  ShoppingBag,
-  Plus,
-  Copy,
-  Search,
-  Star,
-  Trash2,
-  Pencil,
-  Check,
   AlertTriangle,
-  Loader2,
+  Check,
+  Copy,
+  ExternalLink,
   Eye,
   EyeOff,
-  ExternalLink,
-  PackageSearch,
-  Video,
   FileText,
-  ListChecks,
-  Target,
   Link as LinkIcon,
+  ListChecks,
+  Loader2,
+  PackageSearch,
+  Pencil,
+  Plus,
+  Search,
+  ShoppingBag,
+  Star,
+  Target,
+  Trash2,
+  Video,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
@@ -33,6 +33,7 @@ interface TikTokShopItem {
   description: string;
   content: string;
   external_link?: string | null;
+  image?: string | null;
   is_featured: boolean;
   is_published: boolean;
   created_at: string;
@@ -64,6 +65,7 @@ const emptyForm = {
   description: '',
   content: '',
   external_link: '',
+  image: '',
   is_featured: false,
   is_published: true,
 };
@@ -223,6 +225,7 @@ const TikTokShop: React.FC = () => {
         description: formData.description.trim(),
         content: formData.content.trim(),
         external_link: formData.external_link.trim() || null,
+        image: formData.image.trim() || null,
         is_featured: formData.is_featured,
         is_published: formData.is_published,
       };
@@ -275,6 +278,7 @@ const TikTokShop: React.FC = () => {
       description: item.description || '',
       content: item.content || '',
       external_link: item.external_link || '',
+      image: item.image || '',
       is_featured: item.is_featured || false,
       is_published: item.is_published ?? true,
     });
@@ -341,11 +345,11 @@ const TikTokShop: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 sm:space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8">
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative hidden overflow-hidden rounded-[32px] bg-gradient-to-br from-black via-zinc-900 to-zinc-800 p-10 text-white shadow-xl shadow-slate-300 sm:block"
+        className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-black via-zinc-900 to-zinc-800 p-10 text-white shadow-xl shadow-slate-300"
       >
         <div className="relative z-10 max-w-3xl">
           <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
@@ -453,7 +457,25 @@ const TikTokShop: React.FC = () => {
               placeholder="Link opcional"
               className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white"
             />
+
+            <input
+              type="text"
+              value={formData.image}
+              onChange={(event) => updateField('image', event.target.value)}
+              placeholder="URL da imagem do card"
+              className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white md:col-span-2"
+            />
           </div>
+
+          {formData.image && (
+            <div className="mt-4 overflow-hidden rounded-3xl border border-slate-200 bg-white p-3">
+              <img
+                src={formData.image}
+                alt="Preview da imagem"
+                className="h-56 w-full rounded-2xl object-cover"
+              />
+            </div>
+          )}
 
           <input
             type="text"
@@ -559,7 +581,7 @@ const TikTokShop: React.FC = () => {
         </div>
       )}
 
-      <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-2xl font-black text-slate-900">
@@ -578,7 +600,7 @@ const TikTokShop: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-[1fr_220px_240px]">
+        <div className="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-[1fr_220px_240px]">
           <div className="relative">
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -590,14 +612,14 @@ const TikTokShop: React.FC = () => {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar por título, descrição ou conteúdo"
-              className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white sm:h-14"
+              className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </div>
 
           <select
             value={selectedType}
             onChange={(event) => setSelectedType(event.target.value)}
-            className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white sm:h-14"
+            className="h-14 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white"
           >
             <option>Todos</option>
             {itemTypes.map((type) => (
@@ -608,7 +630,7 @@ const TikTokShop: React.FC = () => {
           <select
             value={selectedIntent}
             onChange={(event) => setSelectedIntent(event.target.value)}
-            className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white sm:h-14"
+            className="h-14 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white"
           >
             <option>Todas</option>
             {itemIntents.map((intent) => (
@@ -654,48 +676,55 @@ const TikTokShop: React.FC = () => {
                 transition={{ delay: index * 0.03 }}
                 className="flex min-w-0 flex-col overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:rounded-[24px]"
               >
-                <div className="flex h-24 items-start justify-between gap-2 bg-gradient-to-br from-slate-100 to-slate-200 p-3 sm:h-36 sm:p-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/90 text-slate-700 shadow-sm sm:h-12 sm:w-12">
-                    <TypeIcon size={22} />
-                  </div>
+                <div className="relative h-28 overflow-hidden bg-slate-100 sm:h-40">
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+                      <TypeIcon size={38} className="text-slate-400" />
+                    </div>
+                  )}
 
-                  <div className="flex flex-wrap justify-end gap-1 sm:gap-2">
+                  <div className="absolute left-2 top-2 flex max-w-[calc(100%-16px)] flex-wrap gap-1 sm:left-3 sm:top-3 sm:gap-2">
+                    <span className="max-w-full truncate rounded-full bg-white px-2 py-1 text-[9px] font-black uppercase text-slate-900 shadow-sm sm:px-3 sm:text-xs">
+                      {item.type}
+                    </span>
+
                     {item.is_featured && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-2 py-1 text-[10px] font-black text-slate-900 sm:px-3 sm:text-xs">
-                        <Star size={13} />
+                      <span className="rounded-full bg-amber-400 px-2 py-1 text-[9px] font-black text-slate-900 shadow-sm sm:px-3 sm:text-xs">
                         PRO
                       </span>
                     )}
+                  </div>
 
-                    {isAdmin && (
+                  {isAdmin && (
+                    <div className="absolute bottom-2 right-2">
                       <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-black sm:px-3 sm:text-xs ${item.is_published
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[9px] font-black shadow-sm sm:px-3 sm:text-xs ${item.is_published
                             ? 'bg-emerald-50 text-emerald-700'
                             : 'bg-slate-100 text-slate-500'
                           }`}
                       >
                         {item.is_published ? (
-                          <Eye size={13} />
+                          <Eye size={12} />
                         ) : (
-                          <EyeOff size={13} />
+                          <EyeOff size={12} />
                         )}
                         {item.is_published ? 'Publicado' : 'Oculto'}
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex flex-wrap gap-1 px-3 pt-3 sm:gap-2 sm:px-4 sm:pt-4">
-                  <span className="max-w-full truncate rounded-full bg-blue-50 px-2 py-1 text-[9px] font-black uppercase text-blue-600 sm:px-3 sm:text-xs">
-                    {item.type}
-                  </span>
-
-                  <span className="max-w-full truncate rounded-full bg-slate-100 px-2 py-1 text-[9px] font-black text-slate-600 sm:px-3 sm:text-xs">
+                <div className="flex flex-1 flex-col px-3 pb-3 pt-3 sm:px-4 sm:pb-4 sm:pt-4">
+                  <span className="mb-2 max-w-full truncate rounded-full bg-slate-100 px-2 py-1 text-[9px] font-black text-slate-600 sm:px-3 sm:text-xs">
                     {item.intent}
                   </span>
-                </div>
 
-                <div className="flex flex-1 flex-col px-3 pb-3 pt-2 sm:px-4 sm:pb-4 sm:pt-3">
                   <h3 className="line-clamp-2 min-h-[34px] text-[13px] font-black leading-tight text-slate-900 sm:min-h-[56px] sm:text-xl">
                     {item.title}
                   </h3>

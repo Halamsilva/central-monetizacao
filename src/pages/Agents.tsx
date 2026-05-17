@@ -169,12 +169,28 @@ const Agents = () => {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Bot size={48} className="text-slate-300" />
+                  <div className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 flex items-center justify-center">
+
+                    {/* Glow */}
+                    <div className="absolute w-40 h-40 bg-blue-500/20 blur-3xl rounded-full" />
+
+                    {/* Pattern */}
+                    <div className="absolute inset-0 opacity-10">
+                      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,white_1px,transparent_1px)] bg-[length:24px_24px]" />
+                    </div>
+
+                    {/* Icon */}
+                    <div className="relative z-10 flex flex-col items-center">
+                      <div className="w-20 h-20 rounded-3xl bg-white/10 backdrop-blur border border-white/10 flex items-center justify-center shadow-2xl">
+                        <Bot size={42} className="text-white" />
+                      </div>
+
+                      <p className="mt-4 text-sm font-medium text-white/70">
+                        Agente Premium
+                      </p>
+                    </div>
                   </div>
                 )}
-
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 
                 <div className="absolute top-4 left-4">
                   <span className="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-semibold text-slate-800">

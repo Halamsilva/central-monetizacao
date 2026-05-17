@@ -5,6 +5,7 @@ import {
   Star,
   Calendar,
   Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
@@ -13,6 +14,7 @@ interface Announcement {
   id: string;
   title: string;
   content: string;
+  link: string | null;
   is_pinned: boolean;
   is_highlighted: boolean;
   thumbnail_url: string | null;
@@ -189,6 +191,18 @@ const Notices: React.FC = () => {
                     <p className="whitespace-pre-line text-lg leading-relaxed text-slate-600">
                       {notice.content}
                     </p>
+
+                    {notice.link && (
+                      <a
+                        href={notice.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-black text-white transition hover:bg-blue-700"
+                      >
+                        <ExternalLink size={18} />
+                        Acessar Link
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>

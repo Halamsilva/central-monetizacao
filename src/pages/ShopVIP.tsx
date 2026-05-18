@@ -9,6 +9,7 @@ import {
     ExternalLink,
     Search,
     DollarSign,
+    Pencil,
     X
 } from 'lucide-react';
 
@@ -35,7 +36,7 @@ const emptyForm = {
     price: '',
     image_url: '',
     checkout_url: '',
-    button_text: 'Quero Acesso VIP',
+    button_text: 'QUER COMPRAR',
     is_active: true
 };
 
@@ -54,6 +55,7 @@ const ShopVIP: React.FC = () => {
 
     const [products, setProducts] = useState<ProductItem[]>([]);
     const [formData, setFormData] = useState(getInitialForm);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [search, setSearch] = useState('');
 
     const [loading, setLoading] = useState(true);
@@ -98,7 +100,22 @@ const ShopVIP: React.FC = () => {
 
     const resetForm = () => {
         setFormData(emptyForm);
+        setEditingId(null);
         localStorage.removeItem(draftKey);
+    };
+
+    const handleEdit = (product: ProductItem) => {
+        setEditingId(product.id);
+        setFormData({
+            title: product.title || '',
+            description: product.description || '',
+            price: product.price || '',
+            image_url: product.image_url || '',
+            checkout_url: product.checkout_url || '',
+            button_text: product.button_text || 'QUER COMPRAR',
+            is_active: product.is_active
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const saveProduct = async () => {
@@ -109,34 +126,56 @@ const ShopVIP: React.FC = () => {
 
         try {
             setSaving(true);
+
+            // Garante que o preço sempre tenha o "R$" bonitinho se o usuário esquecer
+            let formattedPrice = formData.price.trim();
+            if (!formattedPrice.startsWith('R$') && !formattedPrice.toLowerCase().includes('grátis')) {
+                formattedPrice = `R$ ${formattedPrice}`;
+            }
+
             const payload = {
                 title: formData.title.trim(),
                 description: formData.description.trim(),
-                price: formData.price.trim(),
+                price: formattedPrice,
                 image_url: formData.image_url.trim() || null,
                 checkout_url: formData.checkout_url.trim(),
-                button_text: formData.button_text.trim() || 'Quero Acesso VIP',
+                button_text: formData.button_text.trim() || 'QUER COMPRAR',
                 is_active: formData.is_active
             };
 
-            const { error } = await supabase.from('shop_products').insert([payload]);
-            if (error) throw error;
+            if (editingId) {
+                const { error } = await supabase
+                    .from('shop_products')
+                    .update(payload)
+                    .eq('id', editingId);
 
-            // Dispara notificação com som automático para os alunos
-            await supabase
-                .from('notifications')
-                .insert([
-                    {
-                        title: `💎 Nova Oferta VIP Liberada!`,
-                        message: `O item "${payload.title}" foi adicionado na Loja VIP por apenas ${payload.price}. Aproveite!`,
-                        type: 'facebook' // Usa ícone nativo
-                    }
-                ]);
+                if (error) throw error;
+                setMessage({ type: 'success', text: 'Produto atualizado com sucesso!' });
+            } else {
+                const { error } = await supabase
+                    .from('shop_products')
+                    .insert([payload]);
 
-            setMessage({ type: 'success', text: 'Produto publicado e alunos notificados!' });
+                if (error) throw error;
+
+                // Notificação automática com som para os alunos
+                await supabase
+                    .from('notifications')
+                    .insert([
+                        {
+                            title: `💎 Nova Oferta VIP Liberada!`,
+                            message: `O item "${payload.title}" foi adicionado na Loja VIP por apenas ${payload.price}. Aproveite!`,
+                            type: 'facebook'
+                        }
+                    ]);
+
+                setMessage({ type: 'success', text: 'Produto publicado e alunos notificados!' });
+            }
+
             resetForm();
             await loadProducts();
         } catch (err) {
+            console.error(err);
             setMessage({ type: 'error', text: 'Erro ao salvar produto.' });
         } finally {
             setSaving(false);
@@ -144,14 +183,19 @@ const ShopVIP: React.FC = () => {
     };
 
     const deleteProduct = async (id: string) => {
-        if (!window.confirm('Deseja remover este produto da vitrine?')) return;
+        if (!window.confirm('Deseja mesmo remover este produto da vitrine permanentemente?')) return;
         try {
-            const { error } = await supabase.from('shop_products').delete().eq('id', id);
+            const { error } = await supabase
+                .from('shop_products')
+                .delete()
+                .eq('id', id);
+
             if (error) throw error;
-            setMessage({ type: 'success', text: 'Removido com sucesso.' });
+            setMessage({ type: 'success', text: 'Produto removido com sucesso da loja!' });
             await loadProducts();
         } catch (err) {
-            setMessage({ type: 'error', text: 'Erro ao deletar.' });
+            console.error(err);
+            setMessage({ type: 'error', text: 'Erro ao deletar produto do banco.' });
         }
     };
 
@@ -192,11 +236,13 @@ const ShopVIP: React.FC = () => {
             {isAdmin && (
                 <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm space-y-4">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-black text-slate-900">Cadastrar Produto / Acesso</h2>
+                        <h2 className="text-2xl font-black text-slate-900">
+                            {editingId ? 'Editar Produto / Acesso' : 'Cadastrar Produto / Acesso'}
+                        </h2>
                         <div className="flex items-center gap-2">
                             {hasDraft && (
                                 <button onClick={resetForm} className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 transition hover:bg-slate-200">
-                                    <X size={12} /> Limpar
+                                    <X size={12} /> Cancelar
                                 </button>
                             )}
                             <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">Rascunho protegido</span>
@@ -204,18 +250,36 @@ const ShopVIP: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <input type="text" value={formData.title} onChange={e => updateField('title', e.target.value)} placeholder="Título do Produto *" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none focus:border-blue-500" />
-                        <input type="text" value={formData.price} onChange={e => updateField('price', e.target.value)} placeholder="Preço (Ex: R$ 47,00) *" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none focus:border-blue-500" />
-                        <input type="text" value={formData.button_text} onChange={e => updateField('button_text', e.target.value)} placeholder="Texto do Botão (Ex: Liberar Agora)" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none focus:border-blue-500" />
-                        <input type="text" value={formData.checkout_url} onChange={e => updateField('checkout_url', e.target.value)} placeholder="Link de Checkout (Kiwify/Perfect Pay) *" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 md:col-span-3 outline-none focus:border-blue-500" />
-                        <input type="text" value={formData.image_url} onChange={e => updateField('image_url', e.target.value)} placeholder="URL da imagem da capa (Opcional)" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 md:col-span-3 outline-none focus:border-blue-500" />
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-black uppercase text-slate-500">Título do Produto *</label>
+                            <input type="text" value={formData.title} onChange={e => updateField('title', e.target.value)} placeholder="Ex: Acesso Vitalício Pack Prompts" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none focus:border-blue-500" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-black uppercase text-slate-500">Preço *</label>
+                            <input type="text" value={formData.price} onChange={e => updateField('price', e.target.value)} placeholder="Ex: 47,00" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none focus:border-blue-500" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-black uppercase text-slate-500">Texto do Botão</label>
+                            <input type="text" value={formData.button_text} onChange={e => updateField('button_text', e.target.value)} placeholder="Ex: COMPRAR" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none focus:border-blue-500" />
+                        </div>
+                        <div className="flex flex-col gap-1 md:col-span-3">
+                            <label className="text-[10px] font-black uppercase text-slate-500">Link de Checkout (Kiwify/Perfect Pay) *</label>
+                            <input type="text" value={formData.checkout_url} onChange={e => updateField('checkout_url', e.target.value)} placeholder="https://pay.kiwify.com/..." className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none focus:border-blue-500" />
+                        </div>
+                        <div className="flex flex-col gap-1 md:col-span-3">
+                            <label className="text-[10px] font-black uppercase text-slate-500">URL da imagem da capa (Opcional)</label>
+                            <input type="text" value={formData.image_url} onChange={e => updateField('image_url', e.target.value)} placeholder="https://...imagem.jpg" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none focus:border-blue-500" />
+                        </div>
                     </div>
 
-                    <textarea value={formData.description} onChange={e => updateField('description', e.target.value)} placeholder="Descrição rápida das vantagens do produto..." className="w-full min-h-24 rounded-xl border border-slate-200 bg-slate-50 p-4 font-medium outline-none focus:border-blue-500" />
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-black uppercase text-slate-500">Descrição das Vantagens</label>
+                        <textarea value={formData.description} onChange={e => updateField('description', e.target.value)} placeholder="Digite os benefícios do produto aqui..." className="w-full min-h-24 rounded-xl border border-slate-200 bg-slate-50 p-4 font-medium outline-none focus:border-blue-500" />
+                    </div>
 
                     <button onClick={saveProduct} disabled={saving} className="w-full h-12 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-md">
                         {saving && <Loader2 className="animate-spin" size={16} />}
-                        {saving ? 'Publicando...' : 'Liberar Produto na Vitrine'}
+                        {saving ? 'Salvando...' : editingId ? 'Salvar Alterações do Produto' : 'Liberar Produto na Vitrine'}
                     </button>
                 </div>
             )}
@@ -254,15 +318,22 @@ const ShopVIP: React.FC = () => {
 
                             <p className="text-sm font-medium text-slate-500 line-clamp-3 mb-5 leading-relaxed">{product.description || 'Sem descrição cadastrada.'}</p>
 
-                            <a href={product.checkout_url} target="_blank" rel="noreferrer" className="mt-auto flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 text-sm font-black text-white hover:bg-slate-800 transition shadow-sm">
-                                <DollarSign size={16} /> {product.button_text}
+                            {/* MÁGICA: Botão de comprar agora verde esmeralda profissional */}
+                            <a href={product.checkout_url} target="_blank" rel="noreferrer" className="mt-auto flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 text-xs font-black uppercase tracking-wider text-white hover:bg-emerald-700 transition shadow-sm">
+                                <DollarSign size={14} /> {product.button_text}
                             </a>
                         </div>
 
+                        {/* Painel Flutuante de Ações (Apenas Admin) */}
                         {isAdmin && (
-                            <button onClick={() => deleteProduct(product.id)} className="absolute top-6 right-6 flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white shadow hover:bg-rose-600 transition">
-                                <Trash2 size={14} />
-                            </button>
+                            <div className="absolute top-6 right-6 flex items-center gap-2">
+                                <button onClick={() => handleEdit(product)} className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500 text-white shadow-sm hover:bg-amber-600 transition" title="Editar">
+                                    <Pencil size={14} />
+                                </button>
+                                <button onClick={() => deleteProduct(product.id)} className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500 text-white shadow-sm hover:bg-rose-600 transition" title="Excluir">
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
                         )}
                     </div>
                 ))}

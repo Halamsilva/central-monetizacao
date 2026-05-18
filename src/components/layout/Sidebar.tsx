@@ -39,6 +39,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Link do som de notificação (estilo push/ping moderno e limpo)
+  const audioUrl = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav';
+
   // Monitora notificações em tempo real no Supabase
   useEffect(() => {
     // 1. Busca a contagem inicial de notificações existentes
@@ -62,6 +65,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         { event: 'INSERT', schema: 'public', table: 'notifications' },
         () => {
           setUnreadCount((prev) => prev + 1);
+
+          // MÁGICA DO SOM: Toca o efeito sonoro na hora que o registro entra no banco
+          try {
+            const audio = new Audio(audioUrl);
+            audio.volume = 0.5; // Volume em 50% para não dar um susto no aluno
+            audio.play();
+          } catch (audioError) {
+            console.log('Navegador bloqueou o som automático até o usuário clicar na tela.');
+          }
         }
       )
       .subscribe();

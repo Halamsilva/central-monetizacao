@@ -5,7 +5,7 @@ import {
     Bell,
     Check,
     ExternalLink,
-    Image,
+    Image as ImageIcon,
     Loader2,
     Pencil,
     Plus,
@@ -13,6 +13,7 @@ import {
     Star,
     Trash2,
     Upload,
+    Link2,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
@@ -163,7 +164,7 @@ const AdminNotices: React.FC = () => {
 
             setMessage({
                 type: 'error',
-                text: 'Erro ao enviar imagem. Verifique o bucket uploads no Supabase.',
+                text: 'Erro ao enviar arquivo. Você também pode colar o link direto da imagem no campo de texto abaixo.',
             });
         } finally {
             setUploadingThumbnail(false);
@@ -309,8 +310,8 @@ const AdminNotices: React.FC = () => {
             {message && (
                 <div
                     className={`flex items-center gap-3 rounded-2xl border px-5 py-4 text-sm font-bold ${message.type === 'success'
-                            ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
-                            : 'border-red-100 bg-red-50 text-red-700'
+                        ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                        : 'border-red-100 bg-red-50 text-red-700'
                         }`}
                 >
                     {message.type === 'success' ? (
@@ -372,7 +373,6 @@ const AdminNotices: React.FC = () => {
                         className="min-h-44 w-full rounded-2xl border border-slate-200 bg-slate-50 p-5 text-base font-medium leading-relaxed outline-none transition focus:border-blue-500 focus:bg-white"
                     />
 
-                    {/* O CAMPO DE LINK FOI INTEGRADO EXATAMENTE NO LUGAR CERTO */}
                     <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                         <label className="mb-2 block text-sm font-bold text-slate-700">
                             Link clicável do aviso (Opcional)
@@ -387,9 +387,10 @@ const AdminNotices: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                        <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-5">
-                            <label className="mb-4 flex items-center gap-2 text-base font-black text-slate-800">
-                                <Image size={20} />
+                        {/* SEÇÃO DA THUMBNAIL MISTA (UPLOAD + CAMPO DE LINK) */}
+                        <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-5 space-y-3">
+                            <label className="flex items-center gap-2 text-base font-black text-slate-800">
+                                <ImageIcon size={20} />
                                 Thumbnail
                             </label>
 
@@ -399,9 +400,7 @@ const AdminNotices: React.FC = () => {
                                 ) : (
                                     <Upload size={18} />
                                 )}
-
-                                Selecionar thumbnail
-
+                                Selecionar arquivo de thumbnail
                                 <input
                                     ref={thumbnailInputRef}
                                     type="file"
@@ -414,6 +413,19 @@ const AdminNotices: React.FC = () => {
                                     }}
                                 />
                             </label>
+
+                            <div className="flex flex-col gap-1 bg-white p-3 rounded-xl border border-slate-200">
+                                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                    <Link2 size={12} /> Ou cole a URL da Thumbnail direto:
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.thumbnail_url}
+                                    onChange={e => updateField('thumbnail_url', e.target.value)}
+                                    placeholder="https://linkdaimagem.com/foto.jpg"
+                                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-xs font-semibold outline-none focus:border-blue-500 bg-slate-50/50"
+                                />
+                            </div>
 
                             {formData.thumbnail_url && (
                                 <div className="relative mt-4">
@@ -433,9 +445,10 @@ const AdminNotices: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-5">
-                            <label className="mb-4 flex items-center gap-2 text-base font-black text-slate-800">
-                                <Image size={20} />
+                        {/* SEÇÃO DO BANNER MISTO (UPLOAD + CAMPO DE LINK) */}
+                        <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-5 space-y-3">
+                            <label className="flex items-center gap-2 text-base font-black text-slate-800">
+                                <ImageIcon size={20} />
                                 Banner
                             </label>
 
@@ -445,9 +458,7 @@ const AdminNotices: React.FC = () => {
                                 ) : (
                                     <Upload size={18} />
                                 )}
-
-                                Selecionar banner
-
+                                Selecionar arquivo de banner
                                 <input
                                     ref={bannerInputRef}
                                     type="file"
@@ -460,6 +471,19 @@ const AdminNotices: React.FC = () => {
                                     }}
                                 />
                             </label>
+
+                            <div className="flex flex-col gap-1 bg-white p-3 rounded-xl border border-slate-200">
+                                <label className="text-xs font-bold text-slate-500 flex items-center gap-1">
+                                    <Link2 size={12} /> Ou cole a URL do Banner direto:
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.banner_url}
+                                    onChange={e => updateField('banner_url', e.target.value)}
+                                    placeholder="https://linkdaimagem.com/banner.jpg"
+                                    className="h-10 w-full rounded-lg border border-slate-200 px-3 text-xs font-semibold outline-none focus:border-blue-500 bg-slate-50/50"
+                                />
+                            </div>
 
                             {formData.banner_url && (
                                 <div className="relative mt-4">
@@ -629,7 +653,6 @@ const AdminNotices: React.FC = () => {
                                         ) : (
                                             <Trash2 size={16} />
                                         )}
-
                                         Excluir
                                     </button>
                                 </div>

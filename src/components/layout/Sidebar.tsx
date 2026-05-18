@@ -58,7 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const mainMenu = [
     { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { title: 'Avisos', icon: Bell, path: '/notices' },
-    { title: 'Atualizações', icon: RefreshCw, path: '/updates' },
+
   ];
 
   const strategyMenu = [

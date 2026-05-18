@@ -20,7 +20,8 @@ import {
   Target,
   Trash2,
   Video,
-  Play
+  Play,
+  X
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
@@ -59,6 +60,8 @@ const itemIntents = [
   'Analisar Algoritmo',
 ];
 
+const draftKey = 'youtube_page_draft';
+
 const emptyForm = {
   title: '',
   type: 'Estratégia',
@@ -71,11 +74,22 @@ const emptyForm = {
   is_published: true,
 };
 
+// Carrega o rascunho salvo se o usuário sair da página sem querer
+const getInitialForm = () => {
+  const savedDraft = localStorage.getItem(draftKey);
+  if (!savedDraft) return emptyForm;
+  try {
+    return JSON.parse(savedDraft);
+  } catch {
+    return emptyForm;
+  }
+};
+
 const YouTubePage: React.FC = () => {
   const { isAdmin } = useAuth();
 
   const [items, setItems] = useState<YouTubeItem[]>([]);
-  const [formData, setFormData] = useState(emptyForm);
+  const [formData, setFormData] = useState(getInitialForm);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [search, setSearch] = useState('');
@@ -95,6 +109,11 @@ const YouTubePage: React.FC = () => {
   useEffect(() => {
     loadItems();
   }, [isAdmin]);
+
+  // Salva o rascunho automaticamente a cada letra digitada
+  useEffect(() => {
+    localStorage.setItem(draftKey, JSON.stringify(formData));
+  }, [formData]);
 
   useEffect(() => {
     if (!message) return;
@@ -137,6 +156,12 @@ const YouTubePage: React.FC = () => {
     setFormData((current) => ({ ...current, [field]: value }));
   };
 
+  const resetForm = () => {
+    setFormData(emptyForm);
+    setEditingId(null);
+    localStorage.removeItem(draftKey);
+  };
+
   const saveItem = async () => {
     if (!formData.title.trim() || !formData.description.trim()) {
       setMessage({ type: 'error', text: 'Preencha os campos obrigatórios.' });
@@ -145,7 +170,11 @@ const YouTubePage: React.FC = () => {
 
     try {
       setSaving(true);
-      const payload = { ...formData, external_link: formData.external_link.trim() || null, image: formData.image.trim() || null };
+      const payload = {
+        ...formData,
+        external_link: formData.external_link.trim() || null,
+        image: formData.image.trim() || null
+      };
 
       if (editingId) {
         const { error } = await supabase.from('youtube_items').update(payload).eq('id', editingId);
@@ -154,10 +183,22 @@ const YouTubePage: React.FC = () => {
       } else {
         const { error } = await supabase.from('youtube_items').insert([payload]);
         if (error) throw error;
-        setMessage({ type: 'success', text: 'Criado com sucesso.' });
+
+        // Dispara notificação automática para os alunos no mural de avisos
+        await supabase
+          .from('notifications')
+          .insert([
+            {
+              title: `📺 Novo conteúdo de YouTube!`,
+              message: `O material "${payload.title}" foi adicionado em estratégias de YouTube e Shorts. Confira!`,
+              type: 'youtube_shorts'
+            }
+          ]);
+
+        setMessage({ type: 'success', text: 'Criado e alunos notificados com sucesso!' });
       }
-      setFormData(emptyForm);
-      setEditingId(null);
+
+      resetForm();
       await loadItems();
     } catch (err) {
       setMessage({ type: 'error', text: 'Erro ao salvar.' });
@@ -178,6 +219,13 @@ const YouTubePage: React.FC = () => {
     if (type === 'Thumbnail') return Play;
     return Youtube;
   };
+
+  const hasDraft =
+    formData.title ||
+    formData.description ||
+    formData.image ||
+    formData.content ||
+    formData.external_link;
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4">
@@ -200,25 +248,54 @@ const YouTubePage: React.FC = () => {
         <Youtube className="absolute -right-10 bottom-0 h-56 w-56 text-white/10" />
       </motion.div>
 
-      {/* ADMIN FORM - APENAS SE FOR ADMIN */}
+      {/* ADMIN FORM - PROTEGIDO COM RASCUNHO AUTOMÁTICO */}
       {isAdmin && (
         <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-          <h2 className="text-2xl font-black text-slate-900">{editingId ? 'Editar Conteúdo YouTube' : 'Novo Conteúdo YouTube'}</h2>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="text-2xl font-black text-slate-900">{editingId ? 'Editar Conteúdo YouTube' : 'Novo Conteúdo YouTube'}</h2>
+            <div className="flex flex-wrap gap-2">
+              {hasDraft && (
+                <button
+                  onClick={resetForm}
+                  disabled={saving}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 transition hover:bg-slate-200"
+                >
+                  <X size={12} /> Limpar rascunho
+                </button>
+              )}
+              <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700转">Rascunho protegido</span>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <input type="text" value={formData.title} onChange={e => updateField('title', e.target.value)} placeholder="Título" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4" />
-            <select value={formData.type} onChange={e => updateField('type', e.target.value)} className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4">
+            <input type="text" value={formData.title} onChange={e => updateField('title', e.target.value)} placeholder="Título *" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none focus:border-red-500" />
+            <select value={formData.type} onChange={e => updateField('type', e.target.value)} className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 font-bold outline-none">
               {itemTypes.map(t => <option key={t}>{t}</option>)}
             </select>
-            <select value={formData.intent} onChange={e => updateField('intent', e.target.value)} className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4">
+            <select value={formData.intent} onChange={e => updateField('intent', e.target.value)} className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 font-bold outline-none">
               {itemIntents.map(i => <option key={i}>{i}</option>)}
             </select>
-            <input type="text" value={formData.external_link} onChange={e => updateField('external_link', e.target.value)} placeholder="Link opcional" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4" />
-            <input type="text" value={formData.image} onChange={e => updateField('image', e.target.value)} placeholder="URL da imagem do card" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 md:col-span-2" />
+            <input type="text" value={formData.external_link} onChange={e => updateField('external_link', e.target.value)} placeholder="Link do botão (Opcional)" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 outline-none focus:border-red-500" />
+            <input type="text" value={formData.image} onChange={e => updateField('image', e.target.value)} placeholder="URL da imagem do card (Opcional)" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 md:col-span-2 outline-none focus:border-red-500" />
           </div>
-          <textarea value={formData.content} onChange={e => updateField('content', e.target.value)} placeholder="Roteiro, Prompt ou Estratégia..." className="w-full min-h-32 rounded-xl border border-slate-200 bg-slate-50 p-4" />
-          <button onClick={saveItem} disabled={saving} className="w-full h-12 bg-red-600 text-white font-black rounded-xl hover:bg-red-700 transition">
+
+          <div className="flex flex-col gap-1">
+            <input type="text" value={formData.description} onChange={e => updateField('description', e.target.value)} placeholder="Breve descrição do card *" className="h-12 rounded-xl border border-slate-200 bg-slate-50 px-4 font-semibold outline-none focus:border-red-500" />
+          </div>
+
+          <textarea value={formData.content} onChange={e => updateField('content', e.target.value)} placeholder="Cole aqui o Roteiro, Prompt ou Estratégia completa..." className="w-full min-h-40 rounded-xl border border-slate-200 bg-slate-50 p-4 font-medium outline-none focus:border-red-500" />
+
+          <button onClick={saveItem} disabled={saving} className="w-full h-12 bg-red-600 text-white font-black rounded-xl hover:bg-red-700 transition disabled:opacity-40 flex items-center justify-center gap-2">
+            {saving && <Loader2 className="animate-spin" size={16} />}
             {saving ? 'Salvando...' : editingId ? 'Salvar Alterações' : 'Publicar no YouTube'}
           </button>
+        </div>
+      )}
+
+      {/* Alerta de Feedback */}
+      {message && (
+        <div className={`p-4 rounded-xl font-bold text-white text-sm ${message.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+          {message.text}
         </div>
       )}
 
@@ -227,13 +304,13 @@ const YouTubePage: React.FC = () => {
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_220px_240px]">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar conteúdos do YouTube..." className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm font-semibold outline-none" />
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar conteúdos do YouTube..." className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm font-semibold outline-none focus:bg-white focus:border-red-500 transition" />
           </div>
-          <select value={selectedType} onChange={e => setSelectedType(e.target.value)} className="h-14 rounded-2xl border border-slate-200 bg-slate-50 px-4 font-bold">
+          <select value={selectedType} onChange={e => setSelectedType(e.target.value)} className="h-14 rounded-2xl border border-slate-200 bg-slate-50 px-4 font-bold outline-none">
             <option>Todos</option>
             {itemTypes.map(t => <option key={t}>{t}</option>)}
           </select>
-          <select value={selectedIntent} onChange={e => setSelectedIntent(e.target.value)} className="h-14 rounded-2xl border border-slate-200 bg-slate-50 px-4 font-bold">
+          <select value={selectedIntent} onChange={e => setSelectedIntent(e.target.value)} className="h-14 rounded-2xl border border-slate-200 bg-slate-50 px-4 font-bold outline-none">
             <option>Todas</option>
             {itemIntents.map(i => <option key={i}>{i}</option>)}
           </select>
@@ -255,7 +332,7 @@ const YouTubePage: React.FC = () => {
                 <h3 className="line-clamp-2 text-lg font-black leading-tight text-slate-900">{item.title}</h3>
                 <p className="mt-2 line-clamp-2 text-sm font-medium text-slate-500">{item.description}</p>
                 <div className="mt-auto pt-4 flex flex-col gap-2">
-                  {item.external_link && <a href={item.external_link} target="_blank" className="flex h-10 items-center justify-center gap-2 rounded-xl bg-red-600 text-xs font-black text-white hover:bg-red-700 transition"><ExternalLink size={14} /> Abrir Link</a>}
+                  {item.external_link && <a href={item.external_link} target="_blank" rel="noreferrer" className="flex h-10 items-center justify-center gap-2 rounded-xl bg-red-600 text-xs font-black text-white hover:bg-red-700 transition"><ExternalLink size={14} /> Abrir Link</a>}
                   <button onClick={() => copyContent(item)} className="flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-xs font-black text-slate-700 hover:bg-slate-50 transition">
                     {copiedId === item.id ? <Check size={14} /> : <Copy size={14} />} {copiedId === item.id ? 'Copiado' : 'Copiar Prompt'}
                   </button>

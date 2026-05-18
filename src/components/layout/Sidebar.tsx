@@ -66,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Prompts Virais', icon: Zap, path: '/viral-prompts' },
     { title: 'TikTok Shop', icon: ShoppingBag, path: '/tiktok-shop' },
     { title: 'Facebook', icon: Facebook, path: '/facebook' },
-    { title: 'YouTube Shorts', icon: Youtube, path: '/youtube-shorts' },
+    { title: 'YouTube e Shorts', icon: Youtube, path: '/youtube-shorts' },
     { title: 'Ferramentas IA', icon: Wrench, path: '/tools-ia' },
     { title: 'Downloads', icon: Download, path: '/downloads' },
     { title: 'Perfil', icon: User, path: '/profile' },
@@ -95,8 +95,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         to={item.path}
         onClick={handleNavigate}
         className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${active
-            ? 'bg-blue-50 text-blue-600 shadow-sm'
-            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          ? 'bg-blue-50 text-blue-600 shadow-sm'
+          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
       >
         <Icon

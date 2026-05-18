@@ -16,6 +16,7 @@ const Facebook = lazy(() => import('./pages/Facebook'));
 const YouTubeShorts = lazy(() => import('./pages/YouTubeShorts'));
 const ToolsIA = lazy(() => import('./pages/ToolsIA'));
 const Downloads = lazy(() => import('./pages/Downloads'));
+const ShopVIP = lazy(() => import('./pages/ShopVIP')); // <-- Importado com calma aqui!
 const Profile = lazy(() => import('./pages/Profile'));
 const Settings = lazy(() => import('./pages/Settings'));
 
@@ -54,7 +55,7 @@ const BlockedAccessScreen = () => (
       <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100 text-3xl">
         🚫
       </div>
-      <h1 className="text-3xl font-black text-slate-900">Acesso bloqueado</h1>
+      <h1 className="text-3xl font-black text-slate-900">Acesso blocked</h1>
       <p className="mt-4 leading-relaxed text-slate-500">
         Seu acesso foi bloqueado.
       </p>
@@ -130,6 +131,7 @@ export default function App() {
               <Route path="youtube-shorts" element={<YouTubeShorts />} />
               <Route path="tools-ia" element={<ToolsIA />} />
               <Route path="downloads" element={<Downloads />} />
+              <Route path="shop-vip" element={<ShopVIP />} /> {/* <-- Rota da loja registrada aqui! */}
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
 

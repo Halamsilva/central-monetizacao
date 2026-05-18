@@ -42,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   // Link do som de notificação (estilo push/ping moderno e limpo)
   const audioUrl = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav';
 
-  // Monitora notificações em tempo real no Supabase
+  // Monitora notifications em tempo real no Supabase
   useEffect(() => {
     // 1. Busca a contagem inicial de notificações existentes
     const fetchNotificationCount = async () => {
@@ -120,6 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'YouTube e Shorts', icon: Youtube, path: '/youtube-shorts' },
     { title: 'Ferramentas IA', icon: Wrench, path: '/tools-ia' },
     { title: 'Downloads', icon: Download, path: '/downloads' },
+    { title: 'Loja VIP', icon: ShoppingBag, path: '/shop-vip' }, // <-- Botão adicionado aqui com calma!
     { title: 'Perfil', icon: User, path: '/profile' },
     { title: 'Configurações', icon: Settings, path: '/settings' },
   ];
@@ -146,8 +147,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         to={item.path}
         onClick={handleNavigate}
         className={`group flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${active
-            ? 'bg-blue-50 text-blue-600 shadow-sm'
-            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+          ? 'bg-blue-50 text-blue-600 shadow-sm'
+          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
       >
         <div className="flex items-center gap-3">

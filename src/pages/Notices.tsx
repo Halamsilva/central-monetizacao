@@ -11,7 +11,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext'; // Importando seu contexto de autenticação
+import { useAuth } from '../context/AuthContext';
 
 interface Announcement {
   id: string;
@@ -23,16 +23,16 @@ interface Announcement {
   thumbnail_url: string | null;
   banner_url: string | null;
   created_at: string;
+  is_automated?: boolean; // Identifica se veio da tabela automática de agentes
 }
 
 const Notices: React.FC = () => {
-  const { isAdmin } = useAuth(); // Identifica se você é o admin logado
+  const { isAdmin } = useAuth();
 
   const [notices, setNotices] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Mantém rascunho salvo para você não perder nada se alternar de aba no navegador
   const [formData, setFormData] = useState(() => {
     const savedDraft = localStorage.getItem('notices_form_draft');
     return savedDraft ? JSON.parse(savedDraft) : { title: '', content: '', link: '', banner_url: '', is_pinned: false, is_highlighted: false };
@@ -60,21 +60,48 @@ const Notices: React.FC = () => {
   const fetchNotices = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+
+      // 1. Puxa os comunicados tradicionais do mural
+      const { data: manualAnnouncements, error: manualError } = await supabase
         .from('announcements')
-        .select('*')
-        .order('is_pinned', { ascending: false })
-        .order('is_highlighted', { ascending: false })
-        .order('created_at', { ascending: false });
+        .select('*');
 
-      if (error) {
-        console.error(error);
-        return;
-      }
+      if (manualError) throw manualError;
 
-      setNotices(data || []);
+      // 2. Puxa as notificações geradas automaticamente (como novos Agentes IA)
+      const { data: autoNotifications, error: autoError } = await supabase
+        .from('notifications')
+        .select('*');
+
+      // Se der erro porque a tabela está vazia ou algo assim, criamos um array vazio seguro
+      const safeAutoNotifications = autoError ? [] : (autoNotifications || []);
+
+      // 3. Formata as notificações automáticas para caberem no layout de cards
+      const formattedAuto = safeAutoNotifications.map((noti: any) => ({
+        id: noti.id,
+        title: noti.title,
+        content: noti.message,
+        link: '/agents', // Redireciona o aluno direto para a aba de Agentes se ele clicar
+        is_pinned: false,
+        is_highlighted: true, // Dá o destaque PRO azul para chamar atenção
+        thumbnail_url: null,
+        banner_url: null,
+        created_at: noti.created_at,
+        is_automated: true
+      }));
+
+      // 4. Junta tudo no mesmo mural
+      const allNotices = [...(manualAnnouncements || []), ...formattedAuto];
+
+      // 5. Ordena por fixados primeiro, e depois pelos mais recentes da fila
+      allNotices.sort((a, b) => {
+        if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+
+      setNotices(allNotices);
     } catch (err) {
-      console.error(err);
+      console.error('Erro ao unificar mural de avisos:', err);
     } finally {
       setLoading(false);
     }
@@ -97,23 +124,34 @@ const Notices: React.FC = () => {
     try {
       setSaving(true);
 
+      const payload = {
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        link: formData.link.trim() || null,
+        banner_url: formData.banner_url.trim() || null,
+        thumbnail_url: null,
+        is_pinned: formData.is_pinned,
+        is_highlighted: formData.is_highlighted,
+      };
+
       const { error } = await supabase
         .from('announcements')
-        .insert([
-          {
-            title: formData.title.trim(),
-            content: formData.content.trim(),
-            link: formData.link.trim() || null,
-            banner_url: formData.banner_url.trim() || null,
-            thumbnail_url: null, // Pode deixar nulo, usaremos o banner expandido de fundo
-            is_pinned: formData.is_pinned,
-            is_highlighted: formData.is_highlighted,
-          }
-        ]);
+        .insert([payload]);
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: 'Aviso publicado com sucesso no mural!' });
+      // Alimenta também a tabela de notificações globais para acender a bolinha na hora
+      await supabase
+        .from('notifications')
+        .insert([
+          {
+            title: `📢 ${payload.title}`,
+            message: payload.content,
+            type: 'notice'
+          }
+        ]);
+
+      setMessage({ type: 'success', text: 'Aviso publicado e alunos notificados com sucesso!' });
 
       setFormData({ title: '', content: '', link: '', banner_url: '', is_pinned: false, is_highlighted: false });
       localStorage.removeItem('notices_form_draft');
@@ -127,16 +165,18 @@ const Notices: React.FC = () => {
     }
   };
 
-  const deleteNotice = async (id: string) => {
+  const deleteNotice = async (notice: Announcement) => {
     if (!window.confirm('Deseja mesmo remover este aviso permanentemente?')) return;
 
     try {
-      const { error } = await supabase
-        .from('announcements')
-        .delete()
-        .eq('id', id);
+      if (notice.is_automated) {
+        // Se for um aviso automático de agente, deleta da tabela de notificações
+        await supabase.from('notifications').delete().eq('id', notice.id);
+      } else {
+        // Se for manual, deleta da tabela tradicional
+        await supabase.from('announcements').delete().eq('id', notice.id);
+      }
 
-      if (error) throw error;
       setMessage({ type: 'success', text: 'Aviso removido do mural.' });
       await fetchNotices();
     } catch (err) {
@@ -152,8 +192,9 @@ const Notices: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-slate-500 font-bold">Carregando avisos...</p>
+      <div className="flex h-full items-center justify-center py-20">
+        <Loader2 className="animate-spin text-blue-600 mr-2" size={20} />
+        <p className="text-slate-500 font-bold">Carregando quadro de avisos...</p>
       </div>
     );
   }
@@ -279,7 +320,6 @@ const Notices: React.FC = () => {
                 className={`group relative flex flex-col overflow-hidden rounded-[12px] sm:rounded-[24px] border transition-all ${notice.is_highlighted ? 'border-blue-200 ring-2 ring-blue-50' : 'border-slate-200'
                   } ${hasBg ? 'text-white h-32 xs:h-36 sm:h-52 bg-slate-900' : 'text-slate-900 bg-white min-h-[120px] sm:min-h-[190px]'}`}
               >
-                {/* Imagem de Fundo Expandida se houver banner_url */}
                 {hasBg && (
                   <>
                     <img src={notice.banner_url!} alt="" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
@@ -287,9 +327,7 @@ const Notices: React.FC = () => {
                   </>
                 )}
 
-                {/* Conteúdo Dinâmico Compacto para 3 Colunas Lado a Lado */}
                 <div className="relative z-10 p-1.5 sm:p-4 flex flex-col h-full justify-between space-y-1">
-
                   {/* Status superior */}
                   <div className="flex flex-wrap gap-0.5 sm:gap-1.5">
                     {notice.is_pinned && (
@@ -299,22 +337,22 @@ const Notices: React.FC = () => {
                     )}
                     {notice.is_highlighted && (
                       <span className="rounded bg-blue-600 px-1 py-0.5 text-[7px] sm:text-[9px] font-black uppercase text-white">
-                        PRO
+                        {notice.is_automated ? 'NOVO' : 'PRO'}
                       </span>
                     )}
                   </div>
 
-                  {/* Título responsivo com limite de 2 linhas */}
+                  {/* Título responsivo */}
                   <h2 className="text-[10px] sm:text-base font-black leading-tight tracking-tight line-clamp-2">
                     {notice.title}
                   </h2>
 
-                  {/* Descrição escondida no mobile e visível apenas no PC para caber no formato de grade tripla */}
+                  {/* Descrição em parágrafo */}
                   <p className={`hidden sm:block text-xs font-medium leading-relaxed line-clamp-3 whitespace-pre-wrap ${hasBg ? 'text-white/85' : 'text-slate-500'}`}>
                     {notice.content}
                   </p>
 
-                  {/* Base: Data e botão de link externo */}
+                  {/* Base: Data e link */}
                   <div className="mt-auto pt-1 flex items-center justify-between gap-1">
                     <div className={`text-[7px] sm:text-[10px] font-bold uppercase ${hasBg ? 'text-white/60' : 'text-slate-400'}`}>
                       {formatDate(notice.created_at)}
@@ -323,10 +361,10 @@ const Notices: React.FC = () => {
                     {notice.link && (
                       <a
                         href={notice.link}
-                        target="_blank"
+                        target={notice.is_automated ? '_self' : '_blank'}
                         rel="noopener noreferrer"
                         className="flex h-5 w-5 sm:h-7 sm:w-7 items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-700 transition shrink-0 shadow-xs"
-                        title="Acessar link"
+                        title={notice.is_automated ? 'Ver Agentes' : 'Acessar link'}
                       >
                         <ExternalLink size={10} className="sm:size-3.5" />
                       </a>
@@ -337,7 +375,7 @@ const Notices: React.FC = () => {
                 {/* Excluir Comunicado Flutuante (Apenas Admin) */}
                 {isAdmin && (
                   <button
-                    onClick={() => deleteNotice(notice.id)}
+                    onClick={() => deleteNotice(notice)}
                     className="absolute right-1 top-1 sm:right-2 sm:top-2 z-20 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-rose-500 text-white shadow-xs hover:bg-rose-600 transition"
                   >
                     <Trash2 size={10} className="sm:size-3.5" />

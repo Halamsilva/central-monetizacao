@@ -121,16 +121,16 @@ const DownloadsPage: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-4">
+    <div className="mx-auto max-w-7xl space-y-6 p-2 sm:p-4 sm:space-y-8">
       {/* Título da Página */}
-      <div>
-        <h1 className="text-3xl font-black text-slate-900">Biblioteca de Downloads</h1>
-        <p className="mt-1 text-sm text-slate-500">Materiais de apoio, checklists e templates exclusivos para alunos.</p>
+      <div className="px-1">
+        <h1 className="text-2xl font-black text-slate-900 sm:text-3xl">Biblioteca de Downloads</h1>
+        <p className="mt-1 text-xs text-slate-500 sm:text-sm">Materiais de apoio, checklists e templates exclusivos para alunos.</p>
       </div>
 
       {/* Mensagens de feedback */}
       {message && (
-        <div className={`p-4 rounded-xl font-bold text-white ${message.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+        <div className={`p-4 rounded-xl font-bold text-white text-sm sm:text-base ${message.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
           {message.text}
         </div>
       )}
@@ -140,71 +140,71 @@ const DownloadsPage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="rounded-[28px] border border-blue-200 bg-blue-50/30 p-6 shadow-sm space-y-4"
+          className="rounded-[20px] sm:rounded-[28px] border border-blue-200 bg-blue-50/30 p-4 sm:p-6 shadow-sm space-y-4"
         >
           <div className="flex items-center gap-2">
-            <Plus size={22} className="text-blue-600" />
-            <h2 className="text-xl font-black text-slate-900">Adicionar Novo Material para Download</h2>
+            <Plus size={20} className="text-blue-600" />
+            <h2 className="text-lg sm:text-xl font-black text-slate-900">Adicionar Novo Material</h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-black uppercase text-slate-500">Título do Material</label>
+              <label className="text-[10px] sm:text-xs font-black uppercase text-slate-500">Título do Material</label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={e => updateField('title', e.target.value)}
                 placeholder="Ex: Template de Roteiro VSL"
-                className="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none focus:border-blue-500"
+                className="h-11 sm:h-12 rounded-xl border border-slate-200 bg-white px-3 sm:px-4 text-sm font-semibold outline-none focus:border-blue-500"
               />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-black uppercase text-slate-500">Tipo de Arquivo</label>
+              <label className="text-[10px] sm:text-xs font-black uppercase text-slate-500">Tipo de Arquivo</label>
               <select
                 value={formData.type}
                 onChange={e => updateField('type', e.target.value)}
-                className="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500"
+                className="h-11 sm:h-12 rounded-xl border border-slate-200 bg-white px-3 sm:px-4 text-sm font-bold text-slate-700 outline-none focus:border-blue-500"
               >
                 {itemTypes.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-black uppercase text-slate-500">Link do Arquivo (Drive / Dropbox)</label>
+              <label className="text-[10px] sm:text-xs font-black uppercase text-slate-500">Link do Arquivo</label>
               <input
                 type="text"
                 value={formData.external_link}
                 onChange={e => updateField('external_link', e.target.value)}
                 placeholder="https://..."
-                className="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none focus:border-blue-500"
+                className="h-11 sm:h-12 rounded-xl border border-slate-200 bg-white px-3 sm:px-4 text-sm font-semibold outline-none focus:border-blue-500"
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-black uppercase text-slate-500">Descrição Curta</label>
+            <label className="text-[10px] sm:text-xs font-black uppercase text-slate-500">Descrição Curta</label>
             <input
               type="text"
               value={formData.description}
               onChange={e => updateField('description', e.target.value)}
               placeholder="O passo a passo definitivo para não esquecer nada..."
-              className="h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold outline-none focus:border-blue-500"
+              className="h-11 sm:h-12 rounded-xl border border-slate-200 bg-white px-3 sm:px-4 text-sm font-semibold outline-none focus:border-blue-500"
             />
           </div>
 
           <button
             onClick={saveItem}
             disabled={saving}
-            className="flex w-full h-12 items-center justify-center gap-2 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 transition disabled:opacity-50 shadow-md shadow-blue-100"
+            className="flex w-full h-11 sm:h-12 items-center justify-center gap-2 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 transition disabled:opacity-50 shadow-md shadow-blue-100 text-sm"
           >
-            {saving ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
+            {saving ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
             {saving ? 'Publicando...' : 'Liberar Material na Biblioteca'}
           </button>
         </motion.div>
       )}
 
-      {/* LISTAGEM DOS CARDS */}
+      {/* GRID CORRIGIDO EM 3 COLUNAS PARA MOBILE */}
       {loading ? (
         <div className="flex items-center justify-center p-12">
           <div className="flex items-center gap-3 text-sm font-bold text-slate-500">
@@ -213,64 +213,75 @@ const DownloadsPage: React.FC = () => {
           </div>
         </div>
       ) : materials.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-slate-300 bg-white p-12 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-            <Download size={26} />
+        <div className="rounded-[20px] sm:rounded-[28px] border border-dashed border-slate-300 bg-white p-8 text-center">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+            <Download size={24} />
           </div>
-          <h3 className="text-xl font-black text-slate-900">Nenhum material de apoio cadastrado</h3>
-          <p className="mt-2 text-sm text-slate-500">
-            {isAdmin
-              ? 'Utilize o painel de administração acima para liberar os primeiros downloads para os seus alunos.'
-              : 'Novos materiais de apoio e checklists estarão disponíveis aqui em breve.'}
-          </p>
+          <h3 className="text-lg font-black text-slate-900">Nenhum material cadastrado</h3>
+          <p className="mt-1 text-xs text-slate-500">Novos materiais estarão disponíveis em breve.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {materials.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.03 }}
-              className="relative flex items-center gap-5 rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition"
-            >
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                {item.type === 'Planilha' ? <FileSpreadsheet size={26} /> : <FileText size={26} />}
-              </div>
+        /* O segredo: grid-cols-3 puro sem interferência de quebras erradas */
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          {materials.map((item, index) => {
+            return (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.03 }}
+                className="group relative flex flex-col overflow-hidden rounded-[12px] sm:rounded-[24px] border border-slate-200 bg-white shadow-sm hover:-translate-y-1 transition hover:shadow-lg"
+              >
+                {/* Lixeira Admin flutuante redonda idêntica aos agentes */}
+                {isAdmin && (
+                  <button
+                    onClick={() => deleteItem(item.id)}
+                    className="absolute right-1 top-1 sm:right-2 sm:top-2 z-20 flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-rose-500 text-white shadow-sm hover:bg-rose-600 transition"
+                  >
+                    <Trash2 size={10} className="sm:size-3.5" />
+                  </button>
+                )}
 
-              <div className="min-w-0 flex-1 pr-8">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-black text-slate-900 truncate">{item.title}</h3>
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-black uppercase text-slate-500 tracking-wider shrink-0">
+                {/* Ícone no topo igual à imagem dos cards de agentes */}
+                <div className="relative h-16 xs:h-20 sm:h-36 flex items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100 border-b border-slate-100">
+                  {item.type === 'Planilha' ? (
+                    <FileSpreadsheet size={24} className="text-blue-500 sm:size-12" />
+                  ) : (
+                    <FileText size={24} className="text-blue-500 sm:size-12" />
+                  )}
+
+                  {/* Tag Superior do Tipo */}
+                  <span className="absolute left-1 top-1 rounded bg-slate-100 px-1 py-0.5 text-[7px] sm:text-[10px] font-black uppercase text-slate-600 tracking-tight shadow-2xs max-w-[calc(100%-8px)] truncate">
                     {item.type}
                   </span>
                 </div>
-                <p className="mt-1 text-sm font-medium text-slate-500 line-clamp-2 leading-relaxed">
-                  {item.description}
-                </p>
 
-                <a
-                  href={item.external_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-black text-blue-600 hover:text-blue-700 hover:underline transition"
-                >
-                  <Download size={14} />
-                  Baixar Material
-                </a>
-              </div>
+                {/* Textos e Botão Base */}
+                <div className="flex flex-1 flex-col p-1.5 sm:p-4">
+                  <h3 className="text-[10px] sm:text-base font-black leading-tight text-slate-900 line-clamp-2 min-h-[24px] sm:min-h-[44px]">
+                    {item.title}
+                  </h3>
 
-              {isAdmin && (
-                <button
-                  onClick={() => deleteItem(item.id)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white transition"
-                  title="Remover material"
-                >
-                  <Trash2 size={16} />
-                </button>
-              )}
-            </motion.div>
-          ))}
+                  {/* Esconde a descrição no mobile para não esmagar as 3 colunas */}
+                  <p className="mt-1 hidden sm:line-clamp-2 text-xs font-medium text-slate-500 leading-relaxed">
+                    {item.description}
+                  </p>
+
+                  <div className="mt-auto pt-1.5">
+                    <a
+                      href={item.external_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-7 sm:h-10 items-center justify-center gap-1 rounded-md sm:rounded-xl bg-blue-600 text-[9px] sm:text-xs font-black text-white hover:bg-blue-700 transition shadow-xs"
+                    >
+                      <Download size={10} className="sm:size-3.5" />
+                      <span>Baixar</span>
+                    </a>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>

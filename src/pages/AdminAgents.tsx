@@ -338,11 +338,13 @@ const AdminAgents = () => {
 
         setIsSavingAgent(true);
 
+        const formattedCategory = formatCategoryLabel(formData.category);
+
         const payload = {
             title: formData.title.trim(),
             description: formData.description.trim(),
             image: formData.image.trim(),
-            category: formatCategoryLabel(formData.category),
+            category: formattedCategory,
             agent_link: formData.agent_link.trim(),
             prompt: formData.prompt.trim(),
             featured: formData.featured,
@@ -361,7 +363,7 @@ const AdminAgents = () => {
                 return;
             }
 
-            showSuccessMessage('Agente atualizado com sucesso.');
+            showSuccessMessage('Agente updated com sucesso.');
         } else {
             const { error } = await supabase
                 .from('agents')
@@ -374,7 +376,18 @@ const AdminAgents = () => {
                 return;
             }
 
-            showSuccessMessage('Agente criado com sucesso.');
+            // Envia a notificação para a tabela no banco
+            await supabase
+                .from('notifications')
+                .insert([
+                    {
+                        title: '🤖 Novo Agente IA Disponível!',
+                        message: `O agente "${payload.title}" foi adicionado na categoria ${payload.category}. Vá em Agentes IA para conferir!`,
+                        type: 'agent'
+                    }
+                ]);
+
+            showSuccessMessage('Agente criado e alunos notificados com sucesso.');
         }
 
         resetForm();
@@ -883,8 +896,8 @@ const AdminAgents = () => {
                         <button
                             onClick={() => setFeaturedFilter('all')}
                             className={`rounded-full px-4 py-2 text-sm font-semibold transition ${featuredFilter === 'all'
-                                    ? 'bg-slate-900 text-white shadow-sm'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                ? 'bg-slate-900 text-white shadow-sm'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                 }`}
                         >
                             Todos
@@ -893,8 +906,8 @@ const AdminAgents = () => {
                         <button
                             onClick={() => setFeaturedFilter('featured')}
                             className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${featuredFilter === 'featured'
-                                    ? 'bg-amber-500 text-white shadow-sm'
-                                    : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                                ? 'bg-amber-500 text-white shadow-sm'
+                                : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
                                 }`}
                         >
                             <Star className="h-4 w-4" />
@@ -904,8 +917,8 @@ const AdminAgents = () => {
                         <button
                             onClick={() => setFeaturedFilter('incomplete')}
                             className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${featuredFilter === 'incomplete'
-                                    ? 'bg-red-500 text-white shadow-sm'
-                                    : 'bg-red-50 text-red-600 hover:bg-red-100'
+                                ? 'bg-red-500 text-white shadow-sm'
+                                : 'bg-red-50 text-red-600 hover:bg-red-100'
                                 }`}
                         >
                             <CircleAlert className="h-4 w-4" />
@@ -986,8 +999,8 @@ const AdminAgents = () => {
 
                                     <span
                                         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${quality.isComplete
-                                                ? 'bg-emerald-100 text-emerald-700'
-                                                : 'bg-red-50 text-red-600'
+                                            ? 'bg-emerald-100 text-emerald-700'
+                                            : 'bg-red-50 text-red-600'
                                             }`}
                                     >
                                         {quality.isComplete ? (

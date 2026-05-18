@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Bell,
-  RefreshCw,
   Bot,
   Zap,
   ShoppingBag,
@@ -22,6 +21,7 @@ import {
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -37,6 +37,46 @@ const Sidebar: React.FC<SidebarProps> = ({
   const { profile, isAdmin, signOut } = useAuth();
 
   const [avatarFailed, setAvatarFailed] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Monitora notificações em tempo real no Supabase
+  useEffect(() => {
+    // 1. Busca a contagem inicial de notificações existentes
+    const fetchNotificationCount = async () => {
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true });
+
+      if (!error && count !== null) {
+        setUnreadCount(count);
+      }
+    };
+
+    fetchNotificationCount();
+
+    // 2. Escuta em tempo real quando você insere um novo agente ou aviso
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications' },
+        () => {
+          setUnreadCount((prev) => prev + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Limpa o contador vermelho quando o aluno clica na aba de Avisos
+  useEffect(() => {
+    if (location.pathname === '/notices') {
+      setUnreadCount(0);
+    }
+  }, [location.pathname]);
 
   const userInitial =
     profile?.full_name?.charAt(0)?.toUpperCase() || 'U';
@@ -57,8 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const mainMenu = [
     { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    { title: 'Avisos', icon: Bell, path: '/notices' },
-
+    { title: 'Avisos', icon: Bell, path: '/notices', badge: true },
   ];
 
   const strategyMenu = [
@@ -84,9 +123,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     title: string;
     icon: React.ElementType;
     path: string;
+    badge?: boolean;
   }) => {
     const Icon = item.icon;
-
     const active = location.pathname === item.path;
 
     return (
@@ -94,18 +133,26 @@ const Sidebar: React.FC<SidebarProps> = ({
         key={item.path}
         to={item.path}
         onClick={handleNavigate}
-        className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${active
-          ? 'bg-blue-50 text-blue-600 shadow-sm'
-          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+        className={`group flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${active
+            ? 'bg-blue-50 text-blue-600 shadow-sm'
+            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
           }`}
       >
-        <Icon
-          size={20}
-          className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-105'
-            }`}
-        />
+        <div className="flex items-center gap-3">
+          <Icon
+            size={20}
+            className={`transition-transform duration-200 ${active ? 'scale-110' : 'group-hover:scale-105'
+              }`}
+          />
+          <span>{item.title}</span>
+        </div>
 
-        <span>{item.title}</span>
+        {/* Bolinha vermelha com a contagem de notificações não lidas */}
+        {item.badge && unreadCount > 0 && (
+          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-black text-white animate-bounce shadow-sm">
+            {unreadCount}
+          </span>
+        )}
       </Link>
     );
   };
@@ -127,7 +174,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               <br />
               MONETIZAÇÃO
             </h1>
-
             <p className="mt-1 text-xs font-bold uppercase tracking-wider text-orange-500">
               Redes Sociais
             </p>
@@ -151,7 +197,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
             Estratégias
           </p>
-
           <div className="space-y-2">
             {strategyMenu.map(renderMenuItem)}
           </div>
@@ -162,7 +207,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
               Administração
             </p>
-
             <div className="space-y-2">
               {adminMenu.map(renderMenuItem)}
             </div>
@@ -189,7 +233,6 @@ const Sidebar: React.FC<SidebarProps> = ({
             <p className="truncate text-base font-black text-slate-900">
               {profile?.full_name || 'Usuário'}
             </p>
-
             <p className="truncate text-sm text-slate-500">
               {profile?.email}
             </p>

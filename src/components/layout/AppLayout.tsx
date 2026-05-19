@@ -20,6 +20,7 @@ const pageTitles: Record<string, string> = {
   '/settings': 'Configurações',
   '/admin': 'Painel Admin',
   '/admin/agents': 'Gerenciar Agentes',
+    '/shop-vip': 'Loja VIP',
   '/admin/notices': 'Gerenciar Avisos',
   '/admin/students': 'Gerenciar Alunos',
 };
@@ -218,7 +219,7 @@ const AppLayout: React.FC = () => {
             Status do Sistema: <span className="text-green-600">Online</span>
           </span>
 
-          <span>© 2024 Central Monetização</span>
+          <span>© 2025 Central Monetização</span>
         </footer>
       </div>
     </div>

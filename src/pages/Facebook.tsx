@@ -40,7 +40,7 @@ interface FacebookItem {
 }
 
 const itemTypes = [
-  'EstratÃ©gia',
+  'Estratégia',
   'Prompt',
   'Roteiro',
   'Checklist',
@@ -50,19 +50,19 @@ const itemTypes = [
 ];
 
 const itemIntents = [
-  'Criar ContingÃªncia',
+  'Criar Contingência',
   'Subir Campanha',
   'Escrever Copy',
-  'Ganha em DÃ³lar',
-  'Monetizar PÃ¡gina',
-  'Analisar MÃ©trica',
+  'Ganha em Dólar',
+  'Monetizar Página',
+  'Analisar Métrica',
 ];
 
 const draftKey = 'facebook_page_draft';
 
 const emptyForm = {
   title: '',
-  type: 'EstratÃ©gia',
+  type: 'Estratégia',
   intent: 'Subir Campanha',
   description: '',
   content: '',
@@ -144,7 +144,7 @@ const FacebookPage: React.FC = () => {
         console.error(error);
         setMessage({
           type: 'error',
-          text: 'Erro ao carregar conteÃºdos de Facebook Ads.',
+          text: 'Erro ao carregar conteúdos de Facebook Ads.',
         });
         return;
       }
@@ -154,7 +154,7 @@ const FacebookPage: React.FC = () => {
       console.error(err);
       setMessage({
         type: 'error',
-        text: 'Erro inesperado ao carregar conteÃºdos.',
+        text: 'Erro inesperado ao carregar conteúdos.',
       });
     } finally {
       setLoading(false);
@@ -214,7 +214,7 @@ const FacebookPage: React.FC = () => {
     if (!formData.title.trim()) {
       setMessage({
         type: 'error',
-        text: 'Digite um tÃ­tulo para o conteÃºdo.',
+        text: 'Digite um título para o conteúdo.',
       });
       return;
     }
@@ -222,7 +222,7 @@ const FacebookPage: React.FC = () => {
     if (!formData.description.trim()) {
       setMessage({
         type: 'error',
-        text: 'Digite uma descriÃ§Ã£o curta.',
+        text: 'Digite uma descrição curta.',
       });
       return;
     }
@@ -230,7 +230,7 @@ const FacebookPage: React.FC = () => {
     if (!formData.content.trim() && !formData.external_link.trim()) {
       setMessage({
         type: 'error',
-        text: 'Adicione um conteÃºdo ou um link.',
+        text: 'Adicione um conteúdo ou um link.',
       });
       return;
     }
@@ -260,7 +260,7 @@ const FacebookPage: React.FC = () => {
 
         setMessage({
           type: 'success',
-          text: 'ConteÃºdo atualizado com sucesso.',
+          text: 'Conteúdo atualizado com sucesso.',
         });
       } else {
         const { error } = await supabase
@@ -271,7 +271,7 @@ const FacebookPage: React.FC = () => {
 
         setMessage({
           type: 'success',
-          text: 'ConteÃºdo criado com sucesso.',
+          text: 'Conteúdo criado com sucesso.',
         });
       }
 
@@ -281,7 +281,7 @@ const FacebookPage: React.FC = () => {
       console.error(err);
       setMessage({
         type: 'error',
-        text: 'Erro ao salvar conteÃºdo. Verifique as permissÃµes no Supabase.',
+        text: 'Erro ao salvar conteúdo. Verifique as permissões no Supabase.',
       });
     } finally {
       setSaving(false);
@@ -293,7 +293,7 @@ const FacebookPage: React.FC = () => {
 
     setFormData({
       title: item.title || '',
-      type: item.type || 'EstratÃ©gia',
+      type: item.type || 'Estratégia',
       intent: item.intent || 'Subir Campanha',
       description: item.description || '',
       content: item.content || '',
@@ -328,7 +328,7 @@ const FacebookPage: React.FC = () => {
 
       setMessage({
         type: 'success',
-        text: 'ConteÃºdo excluÃ­do com sucesso.',
+        text: 'Conteúdo excluído com sucesso.',
       });
 
       await loadItems();
@@ -336,7 +336,7 @@ const FacebookPage: React.FC = () => {
       console.error(err);
       setMessage({
         type: 'error',
-        text: 'Erro ao excluir conteÃºdo.',
+        text: 'Erro ao excluir conteúdo.',
       });
     } finally {
       setDeletingId(null);
@@ -377,22 +377,22 @@ const FacebookPage: React.FC = () => {
             <Facebook size={28} />
           </div>
 
-          <h1 className="text-4xl font-black">Facebook Ads & MonetizaÃ§Ã£o</h1>
+          <h1 className="text-4xl font-black">Facebook Ads & Monetização</h1>
 
           <p className="mt-3 text-xl font-bold text-white/95">
-            Escalando ganhos com trÃ¡fego e conteÃºdo
+            Escalando ganhos com tráfego e conteúdo
           </p>
 
           <p className="mt-5 max-w-2xl text-base font-medium leading-relaxed text-white/80">
-            Aprenda a monetizar pÃ¡ginas, criar anÃºncios de alta conversÃ£o e utilizar IA
-            para automatizar sua produÃ§Ã£o de conteÃºdo no ecossistema Meta.
+            Aprenda a monetizar páginas, criar anúncios de alta conversão e utilizar IA
+            para automatizar sua produção de conteúdo no ecossistema Meta.
           </p>
         </div>
 
         <Facebook className="absolute -right-10 bottom-0 h-56 w-56 text-white/10" />
       </motion.div>
 
-      {/* Alertas e Mensagens do FormulÃ¡rio */}
+      {/* Alertas e Mensagens do Formulário */}
       {message && (
         <div
           className={`flex items-center gap-3 rounded-2xl border px-5 py-4 text-sm font-bold ${message.type === 'success'
@@ -415,10 +415,10 @@ const FacebookPage: React.FC = () => {
           <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-2xl font-black text-slate-900">
-                {editingId ? 'Editar ConteÃºdo Facebook' : 'Novo ConteÃºdo Facebook'}
+                {editingId ? 'Editar Conteúdo Facebook' : 'Novo Conteúdo Facebook'}
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Cadastre materiais que os alunos poderÃ£o acessar na biblioteca do Facebook.
+                Cadastre materiais que os alunos poderão acessar na biblioteca do Facebook.
               </p>
             </div>
 
@@ -428,7 +428,7 @@ const FacebookPage: React.FC = () => {
                 onClick={resetForm}
                 className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-200"
               >
-                Cancelar ediÃ§Ã£o
+                Cancelar edição
               </button>
             )}
           </div>
@@ -438,7 +438,7 @@ const FacebookPage: React.FC = () => {
               type="text"
               value={formData.title}
               onChange={(event) => updateField('title', event.target.value)}
-              placeholder="TÃ­tulo"
+              placeholder="Título"
               className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white"
             />
 
@@ -493,14 +493,14 @@ const FacebookPage: React.FC = () => {
             type="text"
             value={formData.description}
             onChange={(event) => updateField('description', event.target.value)}
-            placeholder="DescriÃ§Ã£o curta"
+            placeholder="Descrição curta"
             className="mt-4 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white"
           />
 
           <textarea
             value={formData.content}
             onChange={(event) => updateField('content', event.target.value)}
-            placeholder="ConteÃºdo completo, estratÃ©gia, checklist ou prompt do Facebook Ads..."
+            placeholder="Conteúdo completo, estratégia, checklist ou prompt do Facebook Ads..."
             className="mt-4 min-h-44 w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium leading-relaxed outline-none transition focus:border-blue-500 focus:bg-white"
           />
 
@@ -539,7 +539,7 @@ const FacebookPage: React.FC = () => {
               ) : (
                 <>
                   <Plus size={18} />
-                  {editingId ? 'Salvar AlteraÃ§Ãµes' : 'Adicionar ConteÃºdo'}
+                  {editingId ? 'Salvar Alterações' : 'Adicionar Conteúdo'}
                 </>
               )}
             </button>
@@ -547,7 +547,7 @@ const FacebookPage: React.FC = () => {
         </motion.div>
       )}
 
-      {/* EstatÃ­sticas do Dashboard */}
+      {/* Estatísticas do Dashboard */}
       {isAdmin && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -576,20 +576,20 @@ const FacebookPage: React.FC = () => {
       <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-2xl font-black text-slate-900">Biblioteca Facebook MonetizaÃ§Ã£o</h2>
+            <h2 className="text-2xl font-black text-slate-900">Biblioteca Facebook Monetização</h2>
             <p className="mt-1 text-sm text-slate-500">
               {isAdmin
-                ? 'Gerencie conteÃºdos, funis e estratÃ©gias para Facebook Ads.'
-                : 'Acesse conteÃºdos prontos para alavancar suas campanhas no Facebook.'}
+                ? 'Gerencie conteúdos, funis e estratégias para Facebook Ads.'
+                : 'Acesse conteúdos prontos para alavancar suas campanhas no Facebook.'}
             </p>
           </div>
 
           <div className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-black text-slate-700">
-            {filteredItems.length} disponÃ­veis
+            {filteredItems.length} disponíveis
           </div>
         </div>
 
-        {/* Barra de Filtros Inteligentes DinÃ¢micos */}
+        {/* Barra de Filtros Inteligentes Dinâmicos */}
         <div className="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-[1fr_220px_240px]">
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
@@ -597,7 +597,7 @@ const FacebookPage: React.FC = () => {
               type="text"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar por tÃ­tulo, descriÃ§Ã£o ou conteÃºdo do Facebook"
+              placeholder="Buscar por título, descrição ou conteúdo do Facebook"
               className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm font-semibold outline-none transition focus:border-blue-500 focus:bg-white"
             />
           </div>
@@ -626,12 +626,12 @@ const FacebookPage: React.FC = () => {
         </div>
       </div>
 
-      {/* RenderizaÃ§Ã£o Condicional da Listagem / Loading */}
+      {/* Renderização Condicional da Listagem / Loading */}
       {loading ? (
         <div className="flex items-center justify-center rounded-[28px] border border-slate-200 bg-white p-12 shadow-sm">
           <div className="flex items-center gap-3 text-sm font-bold text-slate-500">
             <Loader2 className="animate-spin text-blue-600" size={20} />
-            Carregando conteÃºdos de Facebook Ads...
+            Carregando conteúdos de Facebook Ads...
           </div>
         </div>
       ) : filteredItems.length === 0 ? (
@@ -639,11 +639,11 @@ const FacebookPage: React.FC = () => {
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100 text-slate-700">
             <Facebook size={30} />
           </div>
-          <h3 className="text-xl font-black text-slate-900">Nenhum conteÃºdo encontrado</h3>
+          <h3 className="text-xl font-black text-slate-900">Nenhum conteúdo encontrado</h3>
           <p className="mt-2 text-sm text-slate-500">
             {isAdmin
-              ? 'Cadastre o primeiro conteÃºdo de Facebook no formulÃ¡rio acima.'
-              : 'Novos conteÃºdos do ecossistema Meta aparecerÃ£o aqui em breve.'}
+              ? 'Cadastre o primeiro conteúdo de Facebook no formulário acima.'
+              : 'Novos conteúdos do ecossistema Meta aparecerão aqui em breve.'}
           </p>
         </div>
       ) : (

@@ -7,7 +7,7 @@ import AppLayout from './components/layout/AppLayout';
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Recovery = lazy(() => import('./pages/Recovery'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));h
 const Notices = lazy(() => import('./pages/Notices'));
 const Agents = lazy(() => import('./pages/Agents'));
 const ViralPrompts = lazy(() => import('./pages/ViralPrompts'));
@@ -55,7 +55,7 @@ const BlockedAccessScreen = () => (
       <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100 text-3xl">
         🚫
       </div>
-      <h1 className="text-3xl font-black text-slate-900">Acesso blocked</h1>
+      <h1 className="text-3xl font-black text-slate-900">Acesso bloqueado</h1>
       <p className="mt-4 leading-relaxed text-slate-500">
         Seu acesso foi bloqueado.
       </p>
@@ -134,8 +134,10 @@ export default function App() {
               <Route path="shop-vip" element={<ShopVIP />} /> {/* <-- Rota da loja registrada aqui! */}
               <Route path="profile" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
+                            <Route path="vip-store" element={<Navigate to="/shop-vip" replace />} />
 
               {/* Sub-rotas Administrativas */}
+                            
               <Route
                 path="admin"
                 element={

@@ -413,7 +413,7 @@ const Agents = () => {
                         aria-label={`Ver prompt de ${agent.title}`}
                         className="h-8 rounded-xl border border-slate-200 px-1 text-[9px] font-black text-slate-700 transition-all hover:bg-slate-100 sm:h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
                       >
-                        Prompt
+                        Ver prompt
                       </button>
                     </div>
                   )}

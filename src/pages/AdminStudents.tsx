@@ -250,7 +250,7 @@ const AdminStudents: React.FC = () => {
                     </h1>
 
                     <p className="mt-2 text-slate-500">
-                        Aprove, bloqueie e controle o acesso dos alunos da Central.
+                        Controle as contas criadas na Central e importe compras antigas da Kiwify.
                     </p>
                 </div>
 
@@ -278,16 +278,19 @@ const AdminStudents: React.FC = () => {
             <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <p className="text-sm font-bold uppercase text-slate-400">
-                        Total de alunos
+                        Contas na Central
                     </p>
                     <h2 className="mt-2 text-3xl font-black text-slate-900">
                         {students.length}
                     </h2>
+                    <p className="mt-2 text-xs font-semibold text-slate-400">
+                        Alunos que já criaram login na plataforma.
+                    </p>
                 </div>
 
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <p className="text-sm font-bold uppercase text-slate-400">
-                        Pendentes
+                        Pendentes na Central
                     </p>
                     <h2 className="mt-2 text-3xl font-black text-amber-600">
                         {
@@ -296,15 +299,21 @@ const AdminStudents: React.FC = () => {
                             ).length
                         }
                     </h2>
+                    <p className="mt-2 text-xs font-semibold text-slate-400">
+                        Contas aguardando prazo, compra ou revisão.
+                    </p>
                 </div>
 
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <p className="text-sm font-bold uppercase text-slate-400">
-                        Ativos
+                        Ativos na Central
                     </p>
                     <h2 className="mt-2 text-3xl font-black text-emerald-600">
                         {students.filter(student => student.access_status === 'active').length}
                     </h2>
+                    <p className="mt-2 text-xs font-semibold text-slate-400">
+                        Contas liberadas para acessar os agentes.
+                    </p>
                 </div>
             </div>
 
@@ -320,7 +329,7 @@ const AdminStudents: React.FC = () => {
                         </h2>
 
                         <p className="text-sm text-slate-500">
-                            Use para compras feitas antes do webhook. Um e-mail por linha; opcional: e-mail, data da compra.
+                            Use para compras feitas antes do webhook. O CSV da Kiwify registra compras; a lista abaixo mostra apenas quem já criou conta.
                         </p>
                     </div>
                 </div>
@@ -382,7 +391,7 @@ const AdminStudents: React.FC = () => {
                         </h2>
 
                         <p className="text-sm text-slate-500">
-                            Controle manual de acesso.
+                            Contas cadastradas na Central. Compras importadas aparecem aqui quando o aluno cria login com o mesmo e-mail.
                         </p>
                     </div>
                 </div>

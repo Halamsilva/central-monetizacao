@@ -131,6 +131,19 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Configurações', icon: Settings, path: '/settings' },
   ];
 
+  const primaryStrategyMenu = [strategyMenu[0], strategyMenu[1], strategyMenu[10]];
+  const agentToolsMenu = [
+    strategyMenu[2],
+    strategyMenu[4],
+    strategyMenu[9],
+    strategyMenu[8],
+    strategyMenu[3],
+    strategyMenu[5],
+    strategyMenu[6],
+    strategyMenu[7],
+  ];
+  const accountMenu = [strategyMenu[11], strategyMenu[12]];
+
   const adminMenu = [
     { title: 'Painel Admin', icon: Shield, path: '/admin' },
     { title: 'Gerenciar Agentes', icon: Boxes, path: '/admin/agents' },
@@ -218,7 +231,25 @@ const Sidebar: React.FC<SidebarProps> = ({
             Estratégias
           </p>
           <div className="space-y-2">
-            {strategyMenu.map(renderMenuItem)}
+            {primaryStrategyMenu.map(renderMenuItem)}
+          </div>
+        </div>
+
+        <div>
+          <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
+            Agentes
+          </p>
+          <div className="space-y-2">
+            {agentToolsMenu.map(renderMenuItem)}
+          </div>
+        </div>
+
+        <div>
+          <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
+            Conta
+          </p>
+          <div className="space-y-2">
+            {accountMenu.map(renderMenuItem)}
           </div>
         </div>
 

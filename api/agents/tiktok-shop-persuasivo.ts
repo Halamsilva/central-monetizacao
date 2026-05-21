@@ -39,23 +39,29 @@ const parseImage = (image: unknown) => {
 
 const triggerManual: Record<string, string> = {
   Curiosidade:
-    'Gatilho curiosidade: abra com descoberta, pergunta forte ou segredo que a pessoa quer entender ate o fim.',
+    'Gatilho curiosidade: abra com descoberta, pergunta forte ou segredo que a pessoa quer entender até o fim.',
+  Urgência:
+    'Gatilho urgência: mostre que o tempo está acabando e que a pessoa precisa agir agora.',
   Urgencia:
-    'Gatilho urgencia: mostre que o tempo esta acabando e que a pessoa precisa agir agora.',
+    'Gatilho urgência: mostre que o tempo está acabando e que a pessoa precisa agir agora.',
   Escassez:
-    'Gatilho escassez: destaque poucas unidades, estoque acabando ou promocao limitada.',
+    'Gatilho escassez: destaque poucas unidades, estoque acabando ou promoção limitada.',
   Autoridade:
-    'Gatilho autoridade: fale como quem entende de garimpo, preco e oportunidade de compra.',
+    'Gatilho autoridade: fale como quem entende de garimpo, preço e oportunidade de compra.',
   'Prova Social':
-    'Gatilho prova social: mencione que muita gente esta comprando, perguntando ou recomendando.',
+    'Gatilho prova social: mencione que muita gente está comprando, perguntando ou recomendando.',
   Reciprocidade:
-    'Gatilho reciprocidade: posicione a dica como um favor util para quem esta assistindo.',
+    'Gatilho reciprocidade: posicione a dica como um favor útil para quem está assistindo.',
+  Afeição:
+    'Gatilho afeição: use tom de cumplicidade, conversa próxima e natural.',
   Afeicao:
-    'Gatilho afeicao: use tom de cumplicidade, conversa proxima e natural.',
+    'Gatilho afeição: use tom de cumplicidade, conversa próxima e natural.',
   Exclusividade:
-    'Gatilho exclusividade: destaque que pouca gente conhece aquele preco, fornecedor ou achado.',
+    'Gatilho exclusividade: destaque que pouca gente conhece aquele preço, fornecedor ou achado.',
+  Benefício:
+    'Gatilho benefício: foque no ganho real da pessoa: economia, conforto, status, praticidade ou revenda.',
   Beneficio:
-    'Gatilho beneficio: foque no ganho real da pessoa: economia, conforto, status, praticidade ou revenda.',
+    'Gatilho benefício: foque no ganho real da pessoa: economia, conforto, status, praticidade ou revenda.',
 };
 
 const buildSystemInstruction = (triggers: string[], gender: string) => {
@@ -63,38 +69,38 @@ const buildSystemInstruction = (triggers: string[], gender: string) => {
     ? `Use estes gatilhos como centro dos scripts:\n${triggers
         .map((trigger) => triggerManual[trigger] || trigger)
         .join('\n')}`
-    : 'Use gatilhos padrao: curiosidade, descoberta, oportunidade, economia e urgencia.';
+    : 'Use gatilhos padrão: curiosidade, descoberta, oportunidade, economia e urgência.';
 
   const genderInfo =
     gender === 'homem'
-      ? 'Persona: o locutor e um homem. Use fala brasileira popular, natural e confiante.'
-      : 'Persona: a locutora e uma mulher. Use fala brasileira popular, natural e proxima, com termos como amiga, menina ou minha filha quando fizer sentido.';
+      ? 'Persona: o locutor é um homem. Use fala brasileira popular, natural e confiante.'
+      : 'Persona: a locutora é uma mulher. Use fala brasileira popular, natural e próxima, com termos como amiga, menina ou minha filha quando fizer sentido.';
 
   return `
-Voce e um especialista em copy de vendas para TikTok Shop.
-Crie scripts humanizados para videos curtos no estilo achado secreto, com alta conversao e fala natural.
+Você é um especialista em copy de vendas para TikTok Shop.
+Crie scripts humanizados para vídeos curtos no estilo achado secreto, com alta conversão e fala natural.
 
 ${genderInfo}
 
 Estrutura obrigatoria de cada script:
 1. Abrir com descoberta, curiosidade ou oportunidade.
 2. Mostrar o produto de forma simples.
-3. Destacar a principal vantagem: preco, kit, conforto, praticidade, revenda ou solucao.
-4. Adicionar comentario humano espontaneo.
+3. Destacar a principal vantagem: preço, kit, conforto, praticidade, revenda ou solução.
+4. Adicionar comentário humano espontâneo.
 5. Chamada natural para o carrinho laranja.
-6. Fechar com urgencia ou escassez.
+6. Fechar com urgência ou escassez.
 
 Regras:
-- Texto com cara de pessoa real falando, sem parecer anuncio formal.
-- Nao use topicos, aspas, emojis ou marcadores.
-- Nao use girias pesadas.
+- Texto com cara de pessoa real falando, sem parecer anúncio formal.
+- Não use tópicos, aspas, emojis ou marcadores.
+- Não use gírias pesadas.
 - Pode usar regionalismos leves.
 - Cada script deve estar pronto para copiar e gravar.
 - Gere exatamente 5 scripts diferentes.
-- Se houver imagem, use detalhes visuais do produto para deixar o texto mais especifico.
+- Se houver imagem, use detalhes visuais do produto para deixar o texto mais específico.
 - ${triggersInfo}
 
-Responda somente em JSON valido no schema solicitado.
+Responda somente em JSON válido no schema solicitado.
 `.trim();
 };
 
@@ -104,10 +110,10 @@ const buildGeneratePrompt = (body: any) => {
 
   return `
 Produto informado: ${product || 'identifique pela imagem'}
-Gatilhos selecionados: ${triggers.length ? triggers.join(', ') : 'padrao'}
+Gatilhos selecionados: ${triggers.length ? triggers.join(', ') : 'padrão'}
 
-Crie 5 scripts de venda para TikTok Shop. O foco e vender de forma natural, persuasiva e humana.
-Se o produto permitir, mencione tambem oportunidade de revenda.
+Crie 5 scripts de venda para TikTok Shop. O foco é vender de forma natural, persuasiva e humana.
+Se o produto permitir, mencione também oportunidade de revenda.
 Sempre inclua chamada para o carrinho laranja de forma natural.
 `.trim();
 };
@@ -180,7 +186,7 @@ export default async function handler(req: any, res: any) {
 
   if (action === 'analyze') {
     if (!image) {
-      return res.status(400).json({ error: 'A imagem do produto e obrigatoria.' });
+      return res.status(400).json({ error: 'A imagem do produto é obrigatória.' });
     }
 
     try {
@@ -191,7 +197,7 @@ export default async function handler(req: any, res: any) {
             { inlineData: image },
             {
               text:
-                'Identifique o nome deste produto de forma curta e direta, com no maximo 5 palavras. Retorne apenas JSON.',
+                'Identifique o nome deste produto de forma curta e direta, com no máximo 5 palavras. Retorne apenas JSON.',
             },
           ],
         },

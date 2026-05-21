@@ -26,14 +26,14 @@ type Gender = 'homem' | 'mulher';
 
 const triggers = [
   'Curiosidade',
-  'Urgencia',
+  'Urgência',
   'Escassez',
   'Autoridade',
   'Prova Social',
   'Reciprocidade',
-  'Afeicao',
+  'Afeição',
   'Exclusividade',
-  'Beneficio',
+  'Benefício',
 ];
 
 const suggestions = ['Escova Secadora', 'Fone Bluetooth', 'Mini Geladeira', 'Cinta Modeladora'];
@@ -65,7 +65,7 @@ const TikTokShopPersuasivo: React.FC = () => {
     const token = data.session?.access_token;
 
     if (!token) {
-      throw new Error('Faca login novamente para usar este agente.');
+      throw new Error('Faça login novamente para usar este agente.');
     }
 
     const response = await fetch('/api/agents/tiktok-shop-persuasivo', {
@@ -80,7 +80,7 @@ const TikTokShopPersuasivo: React.FC = () => {
     const payload = await response.json();
 
     if (!response.ok) {
-      throw new Error(payload.error || 'Nao foi possivel concluir a geracao.');
+      throw new Error(payload.error || 'Não foi possível concluir a geração.');
     }
 
     return payload;
@@ -91,12 +91,12 @@ const TikTokShopPersuasivo: React.FC = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setError('Envie uma imagem valida do produto.');
+      setError('Envie uma imagem válida do produto.');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      setError('A imagem precisa ter ate 10MB.');
+      setError('A imagem precisa ter até 10MB.');
       return;
     }
 
@@ -112,7 +112,7 @@ const TikTokShopPersuasivo: React.FC = () => {
         setProduct(payload.productName);
       }
     } catch (err: any) {
-      setError(err.message || 'Nao foi possivel analisar a imagem.');
+      setError(err.message || 'Não foi possível analisar a imagem.');
     } finally {
       setAnalyzing(false);
     }
@@ -170,7 +170,7 @@ const TikTokShopPersuasivo: React.FC = () => {
         : [];
 
       if (!mappedScripts.length) {
-        throw new Error('A IA nao retornou scripts. Tente novamente.');
+        throw new Error('A IA não retornou scripts. Tente novamente.');
       }
 
       setScripts(mappedScripts);
@@ -189,7 +189,7 @@ const TikTokShopPersuasivo: React.FC = () => {
 
   const copyAll = async () => {
     if (!scripts.length) return;
-    await navigator.clipboard.writeText(scripts.map((script, index) => `Versao ${index + 1}\n${script.text}`).join('\n\n---\n\n'));
+    await navigator.clipboard.writeText(scripts.map((script, index) => `Versão ${index + 1}\n${script.text}`).join('\n\n---\n\n'));
     setCopiedAll(true);
     setTimeout(() => setCopiedAll(false), 1800);
   };
@@ -212,7 +212,7 @@ const TikTokShopPersuasivo: React.FC = () => {
                 Scripts Persuasivos
               </h1>
               <p className="mt-3 max-w-2xl text-sm font-semibold leading-relaxed text-zinc-500 sm:text-base">
-                Gere copies humanizadas para videos curtos no estilo achado secreto,
+                Gere copies humanizadas para vídeos curtos no estilo achado secreto,
                 com gatilhos mentais e chamada para o carrinho laranja.
               </p>
             </div>
@@ -286,7 +286,7 @@ const TikTokShopPersuasivo: React.FC = () => {
           <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-2">
               <span className="mr-1 text-xs font-black uppercase tracking-widest text-zinc-400">
-                Sugestoes
+                Sugestões
               </span>
               {suggestions.map((suggestion) => (
                 <button
@@ -316,7 +316,7 @@ const TikTokShopPersuasivo: React.FC = () => {
           <div className="rounded-[2rem] border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
             <p className="mb-4 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-zinc-400">
               <Send size={14} className="text-orange-600" />
-              Quem esta falando?
+              Quem está falando?
             </p>
             <div className="grid grid-cols-2 gap-2">
               {(['mulher', 'homem'] as Gender[]).map((item) => (
@@ -339,10 +339,10 @@ const TikTokShopPersuasivo: React.FC = () => {
             <div className="mt-5 rounded-2xl border border-orange-100 bg-orange-50/70 p-4">
               <p className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-orange-700">
                 <TrendingUp size={14} />
-                Alta conversao
+                Alta conversão
               </p>
               <p className="mt-2 text-sm font-semibold leading-relaxed text-zinc-600">
-                Os scripts saem com fala natural, descoberta, beneficio, urgencia
+                Os scripts saem com fala natural, descoberta, benefício, urgência
                 e CTA para o carrinho laranja.
               </p>
             </div>
@@ -403,7 +403,7 @@ const TikTokShopPersuasivo: React.FC = () => {
                   <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-700">
                     Scripts gerados
                   </p>
-                  <h2 className="text-3xl font-black">5 versoes para gravar</h2>
+                  <h2 className="text-3xl font-black">5 versões para gravar</h2>
                 </div>
                 <button
                   type="button"

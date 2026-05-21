@@ -37,10 +37,10 @@ type GenerationResult = {
 const scenarios = [
   'Loja de varejo movimentada',
   'Boutique premium minimalista',
-  'Galpao logistico com pedidos',
-  'Estudio clean com foco no produto',
+  'Galpão logístico com pedidos',
+  'Estúdio clean com foco no produto',
   'Casa brasileira em uso real',
-  'Fabrica de producao',
+  'Fábrica de produção',
   'Personalizado',
 ];
 
@@ -56,7 +56,7 @@ const splitBase64 = (dataUrl: string) => dataUrl.split(',')[1] || '';
 
 const fullPromptText = (prompt: VideoPrompt) =>
   `
-Titulo: ${prompt.title}
+Título: ${prompt.title}
 Cena: ${prompt.scene}
 Gatilho: ${prompt.psychologicalTrigger}
 Voz: ${prompt.voiceGender}
@@ -100,12 +100,12 @@ const Pov: React.FC = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setError('Envie uma imagem valida do produto.');
+      setError('Envie uma imagem válida do produto.');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      setError('A imagem precisa ter ate 10MB.');
+      setError('A imagem precisa ter até 10MB.');
       return;
     }
 
@@ -120,7 +120,7 @@ const Pov: React.FC = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setError('Envie uma imagem valida do avatar.');
+      setError('Envie uma imagem válida do avatar.');
       return;
     }
 
@@ -177,7 +177,7 @@ const Pov: React.FC = () => {
       const token = data.session?.access_token;
 
       if (!token) {
-        throw new Error('Faca login novamente para usar este agente.');
+        throw new Error('Faça login novamente para usar este agente.');
       }
 
       const response = await fetch('/api/agents/pov', {
@@ -212,7 +212,7 @@ const Pov: React.FC = () => {
       const payload = await response.json();
 
       if (!response.ok) {
-        throw new Error(payload.error || 'Nao foi possivel gerar os prompts.');
+        throw new Error(payload.error || 'Não foi possível gerar os prompts.');
       }
 
       setResult(payload);
@@ -242,7 +242,7 @@ const Pov: React.FC = () => {
               </h1>
               <p className="mt-3 max-w-2xl text-sm font-semibold leading-relaxed text-zinc-500 sm:text-base">
                 Envie uma foto do produto e gere prompts ultra-realistas para
-                videos de venda, com cenas separadas e prontas para copiar.
+                vídeos de venda, com cenas separadas e prontas para copiar.
               </p>
             </div>
 
@@ -277,7 +277,7 @@ const Pov: React.FC = () => {
                     Enviar foto do produto
                   </span>
                   <span className="mt-1 text-xs font-semibold text-zinc-400">
-                    PNG ou JPG ate 10MB
+                    PNG ou JPG até 10MB
                   </span>
                 </>
               )}
@@ -301,13 +301,13 @@ const Pov: React.FC = () => {
               value={salesCopy}
               onChange={(event) => setSalesCopy(event.target.value)}
               rows={4}
-              placeholder="Copy de vendas, beneficios ou promessas do produto"
+              placeholder="Copy de vendas, benefícios ou promessas do produto"
               className="w-full resize-y rounded-2xl border border-zinc-200 bg-white p-4 text-sm font-semibold leading-relaxed outline-none transition placeholder:text-zinc-400 focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
             />
 
             <div className="space-y-2">
               <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                Cenario
+                Cenário
               </label>
               <div className="grid gap-2 sm:grid-cols-2">
                 {scenarios.map((item) => (
@@ -329,7 +329,7 @@ const Pov: React.FC = () => {
                 <input
                   value={customScenario}
                   onChange={(event) => setCustomScenario(event.target.value)}
-                  placeholder="Descreva o cenario"
+                  placeholder="Descreva o cenário"
                   className="h-11 w-full rounded-xl border border-zinc-200 px-4 text-sm font-semibold outline-none focus:border-orange-400"
                 />
               )}
@@ -353,7 +353,7 @@ const Pov: React.FC = () => {
                     {item === 'POV' ? 'Estilo POV' : 'Com atendente'}
                   </p>
                   <p className="mt-1 text-xs font-semibold opacity-70">
-                    {item === 'POV' ? 'Maos + narracao' : 'Avatar apresentando'}
+                    {item === 'POV' ? 'Mãos + narração' : 'Avatar apresentando'}
                   </p>
                 </button>
               ))}
@@ -362,7 +362,7 @@ const Pov: React.FC = () => {
             {videoStyle === 'POV' ? (
               <div className="space-y-2">
                 <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                  Voz da narracao
+                  Voz da narração
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {(['Feminina', 'Masculina'] as VoiceGender[]).map((item) => (
@@ -432,7 +432,7 @@ const Pov: React.FC = () => {
                   <input
                     value={avatarCharacteristics}
                     onChange={(event) => setAvatarCharacteristics(event.target.value)}
-                    placeholder="Caracteristicas"
+                    placeholder="Características"
                     className="h-11 rounded-xl border border-zinc-200 px-4 text-sm font-semibold outline-none focus:border-orange-400"
                   />
                 </div>
@@ -480,7 +480,7 @@ const Pov: React.FC = () => {
                   <input
                     value={hookAction}
                     onChange={(event) => setHookAction(event.target.value)}
-                    placeholder="Acao do gancho"
+                    placeholder="Ação do gancho"
                     className="h-11 rounded-xl border border-zinc-200 px-4 text-sm font-semibold outline-none focus:border-orange-400"
                   />
                   <input
@@ -573,7 +573,7 @@ const Pov: React.FC = () => {
                     <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
                       <p className="mb-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-zinc-400">
                         <Video size={13} />
-                        Instrucoes visuais
+                        Instruções visuais
                       </p>
                       <p className="mb-4 text-sm font-semibold leading-relaxed text-zinc-600">
                         {prompt.scene}

@@ -83,6 +83,11 @@ const parsePromptBlocks = (text: string): PromptBlock[] => {
     .filter((block) => block.content);
 };
 
+const visualOnlyText = (text: string) =>
+  cleanText(text)
+    .replace(/^\s*DIALOGO SUGERIDO:\s*["“]?[^\n"”]+["”]?\s*\n?/i, '')
+    .replace(/^\s*DIÁLOGO SUGERIDO:\s*["“]?[^\n"”]+["”]?\s*\n?/i, '');
+
 const Novelinhas: React.FC = () => {
   const [theme, setTheme] = useState('Dramas Emocionantes');
   const [country, setCountry] = useState('Brasil');
@@ -421,7 +426,7 @@ const Novelinhas: React.FC = () => {
                         Instruções visuais
                       </p>
                       <pre className="whitespace-pre-wrap font-mono text-[12px] leading-6 text-zinc-300 sm:text-[13px]">
-                        {block.content}
+                        {visualOnlyText(block.content)}
                       </pre>
                     </div>
                   </motion.article>

@@ -224,7 +224,7 @@ const Pov: React.FC = () => {
   };
 
   return (
-    <div className="-mx-2 -my-3 min-h-[calc(100vh-7rem)] bg-[#f7f4ef] px-4 py-8 text-zinc-950 sm:-mx-6 sm:-my-6 sm:px-8 lg:-mx-8 lg:-my-8">
+    <div className="pov-page -mx-2 -my-3 min-h-[calc(100vh-7rem)] bg-[#f7f4ef] px-4 py-8 text-zinc-950 sm:-mx-6 sm:-my-6 sm:px-8 lg:-mx-8 lg:-my-8">
       <div className="mx-auto max-w-6xl space-y-8">
         <motion.section
           initial={{ opacity: 0, y: 14 }}

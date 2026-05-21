@@ -193,6 +193,111 @@ body {
   background: #3f3f46;
 }
 
+.dark .pov-page {
+  background: #000 !important;
+  color: #f8fafc !important;
+}
+
+.dark .pov-page > div {
+  background: transparent;
+}
+
+.dark .pov-page section,
+.dark .pov-page section > div.rounded-\[2rem\],
+.dark .pov-page .rounded-\[2rem\] {
+  background: #070707 !important;
+  border-color: #27272a !important;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 0.45) !important;
+}
+
+.dark .pov-page h1,
+.dark .pov-page h2,
+.dark .pov-page h3,
+.dark .pov-page .text-zinc-950,
+.dark .pov-page .text-zinc-900,
+.dark .pov-page .text-zinc-800,
+.dark .pov-page .text-zinc-700 {
+  color: #f8fafc !important;
+}
+
+.dark .pov-page p,
+.dark .pov-page label,
+.dark .pov-page .text-zinc-500,
+.dark .pov-page .text-zinc-400 {
+  color: #a1a1aa !important;
+}
+
+.dark .pov-page input:not([type="range"]):not([type="checkbox"]),
+.dark .pov-page textarea,
+.dark .pov-page select {
+  background: #0d0d0d !important;
+  border-color: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+.dark .pov-page input::placeholder,
+.dark .pov-page textarea::placeholder {
+  color: #71717a !important;
+}
+
+.dark .pov-page button {
+  color: inherit;
+}
+
+.dark .pov-page button.bg-white,
+.dark .pov-page button.bg-zinc-50,
+.dark .pov-page button.border-zinc-200 {
+  background: #0d0d0d !important;
+  border-color: #3f3f46 !important;
+  color: #d4d4d8 !important;
+}
+
+.dark .pov-page button.border-orange-400,
+.dark .pov-page button.bg-orange-50,
+.dark .pov-page .bg-orange-50 {
+  background: rgb(249 115 22 / 0.14) !important;
+  border-color: rgb(249 115 22 / 0.75) !important;
+  color: #fb923c !important;
+}
+
+.dark .pov-page .border-dashed {
+  background: #101010 !important;
+  border-color: #52525b !important;
+}
+
+.dark .pov-page .border-dashed:hover {
+  border-color: #fb923c !important;
+}
+
+.dark .pov-page .bg-zinc-50,
+.dark .pov-page .bg-white {
+  background: #0d0d0d !important;
+}
+
+.dark .pov-page .bg-orange-50\/70,
+.dark .pov-page .bg-orange-50\/50 {
+  background: rgb(249 115 22 / 0.12) !important;
+  border-color: rgb(249 115 22 / 0.35) !important;
+}
+
+.dark .pov-page pre {
+  background: #030303 !important;
+  border: 1px solid #27272a;
+  color: #e4e4e7 !important;
+}
+
+.dark .pov-page .bg-zinc-950,
+.dark .pov-page .bg-zinc-900,
+.dark .pov-page .bg-zinc-800 {
+  background: #18181b !important;
+}
+
+.dark .pov-page button:disabled {
+  background: #27272a !important;
+  color: #71717a !important;
+  border-color: #27272a !important;
+}
+
 img,
 video,
 canvas,

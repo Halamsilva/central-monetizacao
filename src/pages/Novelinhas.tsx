@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { motion } from 'motion/react';
 import {
   AlertCircle,
   Check,
   Clipboard,
+  Copy,
   Film,
   Loader2,
   Palette,
+  RotateCcw,
   SlidersHorizontal,
   Sparkles,
   WandSparkles,
@@ -47,6 +48,41 @@ const tones = [
   'Cinematográfico sombrio',
 ];
 
+type PromptBlock = {
+  title: string;
+  content: string;
+  dialogue: string | null;
+};
+
+const cleanText = (text: string) => text.replace(/\*\*/g, '').trim();
+
+const parsePromptBlocks = (text: string): PromptBlock[] => {
+  const markerRegex =
+    /(?:^|\n)\s*(PROMPT\s+(?:GANCHO\s+CHAMATIVO\s+CENA\s+\d+|CENA\s+(?:EXTRA\s+DE\s+GANCHO|EXTRA\s+DE\s+CTA|\d+)|EXTRA\s+DE\s+CTA)|CENA\s+\d+):?\s*/gi;
+  const matches = Array.from(text.matchAll(markerRegex)) as RegExpMatchArray[];
+
+  if (!matches.length) return [];
+
+  return matches
+    .map((match, index) => {
+      const next = matches[index + 1];
+      const start = (match.index || 0) + match[0].length;
+      const end = next?.index ?? text.length;
+      const title = cleanText(match[1] || `PROMPT CENA ${index}`);
+      const content = cleanText(text.slice(start, end));
+      const dialogueMatch = content.match(
+        /(?:di[aá]logo sugerido|fala.*?:|FALA:)\s*["“]?([^\n"”]+)["”]?/i
+      );
+
+      return {
+        title,
+        content,
+        dialogue: dialogueMatch ? cleanText(dialogueMatch[1]) : null,
+      };
+    })
+    .filter((block) => block.content);
+};
+
 const Novelinhas: React.FC = () => {
   const [theme, setTheme] = useState('Dramas Emocionantes');
   const [country, setCountry] = useState('Brasil');
@@ -55,18 +91,37 @@ const Novelinhas: React.FC = () => {
   const [context, setContext] = useState('');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isPartTwo, setIsPartTwo] = useState(false);
   const [error, setError] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [copiedKey, setCopiedKey] = useState('');
 
   const canGenerate = useMemo(() => !loading && theme.trim(), [loading, theme]);
+  const [promptsPart, seoPart = ''] = result.split(/---SEO-START---/i);
+  const promptBlocks = useMemo(() => parsePromptBlocks(promptsPart || ''), [promptsPart]);
 
-  const generateScript = async () => {
+  const copyToClipboard = async (key: string, text: string) => {
+    if (!text) return;
+
+    await navigator.clipboard.writeText(cleanText(text));
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(''), 2200);
+  };
+
+  const resetGenerator = () => {
+    setResult('');
+    setError('');
+    setCopiedKey('');
+    setIsPartTwo(false);
+  };
+
+  const generateScript = async (previousResult?: string) => {
     if (!canGenerate) return;
 
     setLoading(true);
+    setIsPartTwo(Boolean(previousResult));
     setError('');
-    setResult('');
-    setCopied(false);
+    setCopiedKey('');
+    if (!previousResult) setResult('');
 
     try {
       const { data } = await supabase.auth.getSession();
@@ -82,29 +137,35 @@ const Novelinhas: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ theme, country, tone, scenes, context }),
+        body: JSON.stringify({
+          theme,
+          country,
+          tone,
+          scenes,
+          context,
+          previousStory: previousResult || '',
+        }),
       });
 
       const payload = await response.json();
 
       if (!response.ok) {
-        throw new Error(payload.error || 'Não foi possível gerar o roteiro.');
+        throw new Error(payload.error || 'Não foi possível gerar os prompts.');
       }
 
-      setResult(payload.text || '');
+      const nextText = payload.text || '';
+      setResult((current) => {
+        if (!previousResult) return nextText;
+
+        const [currentPrompts] = current.split(/---SEO-START---/i);
+        return `${currentPrompts.trim()}\n\n${nextText}`.trim();
+      });
     } catch (err: any) {
-      setError(err.message || 'Erro ao gerar roteiro.');
+      setError(err.message || 'Erro ao gerar prompts.');
     } finally {
       setLoading(false);
+      setIsPartTwo(false);
     }
-  };
-
-  const copyResult = async () => {
-    if (!result) return;
-
-    await navigator.clipboard.writeText(result);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2200);
   };
 
   return (
@@ -125,8 +186,7 @@ const Novelinhas: React.FC = () => {
           </h1>
 
           <p className="mx-auto mt-5 max-w-3xl text-base font-semibold leading-relaxed text-zinc-400 sm:text-xl">
-            Crie roteiros visuais ultra-realistas com foco em microtexturas de
-            pele, iluminação cinematográfica e diálogos impactantes.
+            Gere prompts cinematográficos separados por cena, prontos para copiar e usar em vídeo.
           </p>
         </motion.section>
 
@@ -250,89 +310,158 @@ const Novelinhas: React.FC = () => {
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={generateScript}
-            disabled={!canGenerate}
-            className="mx-auto flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl bg-orange-600 px-8 text-sm font-black uppercase tracking-wide text-white shadow-2xl shadow-orange-950/40 transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
-          >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-            {loading ? 'Gerando...' : 'Gerar Roteiro'}
-          </button>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => generateScript()}
+              disabled={!canGenerate}
+              className="flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl bg-white px-8 text-sm font-black uppercase tracking-wide text-black shadow-2xl shadow-black/40 transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500 sm:w-auto"
+            >
+              {loading && !isPartTwo ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
+              {loading && !isPartTwo ? 'Gerando...' : result ? 'Gerar novo roteiro' : 'Gerar roteiro'}
+            </button>
+
+            {result && (
+              <button
+                type="button"
+                onClick={() => generateScript(result)}
+                disabled={!canGenerate}
+                className="flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl border border-orange-500/40 bg-orange-500/10 px-8 text-sm font-black uppercase tracking-wide text-orange-300 transition hover:bg-orange-500/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+              >
+                {loading && isPartTwo ? <Loader2 className="animate-spin" size={20} /> : <Film size={20} />}
+                {loading && isPartTwo ? 'Criando parte 2...' : 'Continuar como parte 2'}
+              </button>
+            )}
+
+            {(result || context) && (
+              <button
+                type="button"
+                onClick={resetGenerator}
+                disabled={loading}
+                className="flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl border border-red-500/35 bg-red-500/10 px-8 text-sm font-black uppercase tracking-wide text-red-300 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+              >
+                <RotateCcw size={20} />
+                Limpar
+              </button>
+            )}
+          </div>
         </section>
 
         <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/40 sm:p-7">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-400">
-                Resultado
+                Prompts de Cena
               </p>
-              <h2 className="text-2xl font-black text-white">Roteiro gerado</h2>
+              <h2 className="text-2xl font-black text-white">
+                {promptBlocks.length ? `${promptBlocks.length} prompts separados` : 'Pronto para gerar'}
+              </h2>
             </div>
 
             <button
               type="button"
-              onClick={copyResult}
+              onClick={() => copyToClipboard('all', promptsPart)}
               disabled={!result}
               className="flex h-11 items-center gap-2 rounded-xl border border-zinc-700 px-4 text-xs font-black text-zinc-200 transition hover:bg-zinc-900 disabled:opacity-40"
             >
-              {copied ? <Check size={16} /> : <Clipboard size={16} />}
-              {copied ? 'Copiado' : 'Copiar'}
+              {copiedKey === 'all' ? <Check size={16} /> : <Copy size={16} />}
+              {copiedKey === 'all' ? 'Copiado' : 'Copiar Prompts'}
             </button>
           </div>
 
-          <div className="min-h-72 rounded-2xl border border-zinc-800 bg-black p-5 text-zinc-300 sm:p-7">
-            {result ? (
-              <ReactMarkdown
-                components={{
-                  h1: ({ children }) => (
-                    <h3 className="mb-4 text-3xl font-black text-white">{children}</h3>
-                  ),
-                  h2: ({ children }) => (
-                    <h3 className="mb-3 mt-7 text-2xl font-black text-white">{children}</h3>
-                  ),
-                  h3: ({ children }) => (
-                    <h4 className="mb-2 mt-6 text-lg font-black text-orange-300">
-                      {children}
-                    </h4>
-                  ),
-                  h4: ({ children }) => (
-                    <h5 className="mb-2 mt-5 text-base font-black text-white">
-                      {children}
-                    </h5>
-                  ),
-                  p: ({ children }) => (
-                    <p className="mb-4 text-sm font-medium leading-7 text-zinc-300 sm:text-base">
-                      {children}
-                    </p>
-                  ),
-                  strong: ({ children }) => (
-                    <strong className="font-black text-white">{children}</strong>
-                  ),
-                  ul: ({ children }) => (
-                    <ul className="mb-4 list-disc space-y-2 pl-5 text-sm leading-7 text-zinc-300 sm:text-base">
-                      {children}
-                    </ul>
-                  ),
-                  ol: ({ children }) => (
-                    <ol className="mb-4 list-decimal space-y-2 pl-5 text-sm leading-7 text-zinc-300 sm:text-base">
-                      {children}
-                    </ol>
-                  ),
-                  li: ({ children }) => <li>{children}</li>,
-                  hr: () => <div className="my-6 h-px bg-zinc-800" />,
-                }}
-              >
-                {result}
-              </ReactMarkdown>
-            ) : (
-              <div className="flex min-h-60 items-center justify-center text-center text-sm font-semibold leading-relaxed text-zinc-500">
-                O roteiro aparecerá aqui depois da geração. Escolha o tema,
-                ajuste as cenas e clique em Gerar Roteiro.
-              </div>
-            )}
-          </div>
+          {result && promptBlocks.length > 0 ? (
+            <div className="space-y-6">
+              {promptBlocks.map((block, index) => {
+                const blockText = `${block.title}\n${block.content}`;
+                const key = `prompt-${index}`;
+
+                return (
+                  <motion.article
+                    key={`${block.title}-${index}`}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.04 }}
+                    className="group relative rounded-2xl border border-zinc-700 bg-black/45 p-5 transition hover:border-orange-500/40 hover:bg-zinc-900/70 sm:p-6"
+                  >
+                    <div className="absolute -left-1 top-5 bottom-5 w-1 rounded-full bg-orange-500/50 transition group-hover:bg-orange-400" />
+
+                    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase tracking-[0.42em] text-orange-400">
+                          {block.title}
+                        </p>
+                        <h3 className="text-sm font-black text-zinc-500">
+                          Segmento Cinematográfico {index + 1}
+                        </h3>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(key, blockText)}
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-orange-500/35 px-4 text-[11px] font-black uppercase tracking-wider text-orange-300 transition hover:bg-orange-500/10"
+                      >
+                        {copiedKey === key ? <Check size={14} /> : <Clipboard size={14} />}
+                        {copiedKey === key ? 'Copiado' : 'Copiar Prompt'}
+                      </button>
+                    </div>
+
+                    {block.dialogue && (
+                      <div className="mb-4 rounded-xl border border-orange-500/20 bg-orange-500/10 p-4">
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.28em] text-orange-400">
+                          Diálogo sugerido
+                        </p>
+                        <p className="text-base font-black italic leading-relaxed text-white">
+                          “{block.dialogue}”
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
+                      <p className="mb-3 text-[10px] font-black uppercase tracking-[0.28em] text-zinc-500">
+                        Instruções visuais
+                      </p>
+                      <pre className="whitespace-pre-wrap font-mono text-[12px] leading-6 text-zinc-300 sm:text-[13px]">
+                        {block.content}
+                      </pre>
+                    </div>
+                  </motion.article>
+                );
+              })}
+            </div>
+          ) : result ? (
+            <div className="rounded-2xl border border-dashed border-zinc-700 bg-black p-6 text-center text-sm font-semibold text-zinc-500">
+              O formato dos prompts não foi reconhecido. Tente gerar novamente.
+            </div>
+          ) : (
+            <div className="flex min-h-60 items-center justify-center rounded-2xl border border-zinc-800 bg-black p-5 text-center text-sm font-semibold leading-relaxed text-zinc-500 sm:p-7">
+              Os prompts separados aparecerão aqui. Escolha o tema, ajuste as cenas e clique em Gerar roteiro.
+            </div>
+          )}
         </section>
+
+        {seoPart.trim() && (
+          <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/40 sm:p-7">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-400">
+                  SEO
+                </p>
+                <h2 className="text-2xl font-black text-white">Legenda e hashtags</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => copyToClipboard('seo', seoPart)}
+                className="flex h-11 items-center gap-2 rounded-xl border border-zinc-700 px-4 text-xs font-black text-zinc-200 transition hover:bg-zinc-900"
+              >
+                {copiedKey === 'seo' ? <Check size={16} /> : <Clipboard size={16} />}
+                {copiedKey === 'seo' ? 'Copiado' : 'Copiar SEO'}
+              </button>
+            </div>
+            <pre className="whitespace-pre-wrap rounded-2xl border border-zinc-800 bg-black p-5 font-mono text-[13px] leading-7 text-zinc-300">
+              {cleanText(seoPart)}
+            </pre>
+          </section>
+        )}
       </div>
     </div>
   );

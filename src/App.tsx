@@ -31,7 +31,7 @@ const routeTitles: Record<string, string> = {
   '/register': 'Cadastro',
   '/recovery': 'Recuperar acesso',
   '/dashboard': 'Dashboard',
-  '/notices': 'Avisos',
+  '/notices': 'Novidades',
   '/agents': 'Agentes IA',
   '/viral-prompts': 'Prompts Virais',
   '/tiktok-shop': 'TikTok Shop',
@@ -98,16 +98,12 @@ const BlockedAccessScreen = () => (
 
 // Protetor de Rotas Privadas (Alunos)
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, profile, loading, isAdmin } = useAuth();
+  const { user, profile, loading } = useAuth();
 
   if (loading) return <LoadingScreen />;
 
   if (!user && import.meta.env.VITE_SUPABASE_URL) {
     return <Navigate to="/login" replace />;
-  }
-
-  if (isAdmin) {
-    return <>{children}</>;
   }
 
   if (profile?.access_status === 'blocked') {
@@ -123,11 +119,11 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 // Protetor de Rotas Admin
 const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { loading, isAdmin } = useAuth();
+  const { loading, isAdmin, profile } = useAuth();
 
   if (loading) return <LoadingScreen />;
 
-  if (!isAdmin) {
+  if (!isAdmin || profile?.access_status !== 'active') {
     return <Navigate to="/dashboard" replace />;
   }
 

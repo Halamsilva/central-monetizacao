@@ -51,9 +51,9 @@ const AppLayout: React.FC = () => {
   const accessStatus = profile?.access_status || 'pending';
   const visibleUnreadCount = location.pathname === '/notices' ? 0 : unreadCount;
 
-  const hasPremiumAccess = isAdmin || accessStatus === 'active';
-  const isPending = !isAdmin && accessStatus === 'pending';
-  const isBlocked = !isAdmin && accessStatus === 'blocked';
+  const hasPremiumAccess = accessStatus === 'active';
+  const isPending = accessStatus === 'pending';
+  const isBlocked = accessStatus === 'blocked';
 
   useEffect(() => {
     const handleResize = () => {
@@ -121,7 +121,7 @@ const AppLayout: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   const statusBadge = (() => {
-    if (isAdmin) {
+    if (isAdmin && accessStatus === 'active') {
       return {
         label: 'Admin Premium',
         className: 'bg-blue-100 text-blue-700',

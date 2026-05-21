@@ -223,31 +223,31 @@ const Novelinhas: React.FC = () => {
   };
 
   return (
-    <div className="-mx-2 -my-3 min-h-[calc(100vh-7rem)] bg-black px-4 py-8 text-white sm:-mx-6 sm:-my-6 sm:px-8 sm:py-10 lg:-mx-8 lg:-my-8 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-10">
+    <div className="-mx-2 -my-3 min-h-[calc(100vh-7rem)] bg-black px-3 py-6 text-white sm:-mx-6 sm:-my-6 sm:px-8 sm:py-10 lg:-mx-8 lg:-my-8 lg:px-10">
+      <div className="mx-auto max-w-7xl space-y-7 sm:space-y-10">
         <motion.section
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.28em] text-orange-400">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-orange-400 sm:px-4 sm:text-[11px] sm:tracking-[0.28em]">
             <Film size={14} />
             Agente cinematográfico
           </div>
 
-          <h1 className="mx-auto max-w-5xl text-5xl font-black leading-none text-white sm:text-7xl lg:text-8xl">
+          <h1 className="mx-auto max-w-5xl text-4xl font-black leading-none text-white sm:text-7xl lg:text-8xl">
             Dramáticos Realistas
           </h1>
 
-          <p className="mx-auto mt-5 max-w-3xl text-base font-semibold leading-relaxed text-zinc-400 sm:text-xl">
+          <p className="mx-auto mt-4 max-w-3xl text-sm font-semibold leading-relaxed text-zinc-400 sm:mt-5 sm:text-xl">
             Gere prompts cinematográficos separados por cena, prontos para copiar e usar em vídeo.
           </p>
         </motion.section>
 
-        <section className="space-y-8">
+        <section className="space-y-6 sm:space-y-8">
           <div>
-            <div className="mb-5 flex items-center gap-3 text-lg font-black text-white">
-              <Palette size={22} className="text-orange-500" />
+            <div className="mb-4 flex items-center gap-3 text-base font-black text-white sm:mb-5 sm:text-lg">
+              <Palette size={20} className="text-orange-500 sm:size-[22px]" />
               Selecione o Tema
             </div>
 
@@ -257,17 +257,17 @@ const Novelinhas: React.FC = () => {
                   key={item.label}
                   type="button"
                   onClick={() => setTheme(item.label)}
-                  className={`group flex aspect-[1.15] min-h-28 flex-col items-center justify-center gap-3 rounded-2xl border p-3 text-center transition ${
+                  className={`group flex min-h-16 items-center justify-start gap-2 rounded-2xl border p-3 text-left transition sm:aspect-[1.15] sm:min-h-28 sm:flex-col sm:justify-center sm:gap-3 sm:text-center ${
                     theme === item.label
                       ? 'border-orange-500 bg-orange-500/10 shadow-[0_0_0_1px_rgba(249,115,22,0.35),0_18px_60px_rgba(249,115,22,0.18)]'
                       : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600 hover:bg-zinc-900'
                   }`}
                 >
-                  <span className="text-2xl transition group-hover:scale-110">
+                  <span className="shrink-0 text-xl transition group-hover:scale-110 sm:text-2xl">
                     {item.icon}
                   </span>
                   <span
-                    className={`text-xs font-black uppercase tracking-wider ${
+                    className={`text-[10px] font-black uppercase leading-tight tracking-wide sm:text-xs sm:tracking-wider ${
                       theme === item.label ? 'text-orange-300' : 'text-zinc-400'
                     }`}
                   >
@@ -278,12 +278,12 @@ const Novelinhas: React.FC = () => {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/40 sm:p-7">
-            <label className="mb-4 flex items-center gap-3 text-lg font-black text-white">
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-4 shadow-2xl shadow-black/40 sm:p-7">
+            <label className="mb-4 flex items-center gap-3 text-base font-black text-white sm:text-lg">
               <WandSparkles size={22} className="text-orange-500" />
               Contexto do Vídeo (Opcional)
             </label>
-            <p className="mb-3 text-xs font-black uppercase tracking-[0.24em] text-zinc-500">
+            <p className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 sm:text-xs sm:tracking-[0.24em]">
               Adicione detalhes específicos para a história
             </p>
             <textarea
@@ -292,12 +292,12 @@ const Novelinhas: React.FC = () => {
               rows={5}
               maxLength={900}
               placeholder="Ex: A cena deve acontecer em um hospital e um dos personagens deve ser um médico arrogante..."
-              className="w-full resize-y rounded-2xl border border-zinc-700 bg-zinc-900 p-5 text-base font-semibold leading-relaxed text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+              className="w-full resize-y rounded-2xl border border-zinc-700 bg-zinc-900 p-4 text-sm font-semibold leading-relaxed text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 sm:p-5 sm:text-base"
             />
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-[1fr_1fr_1.15fr]">
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5">
+          <div className="grid gap-3 sm:gap-5 lg:grid-cols-[1fr_1fr_1.15fr]">
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-4 sm:p-5">
               <label className="mb-4 block text-xs font-black uppercase tracking-[0.22em] text-zinc-500">
                 Estilo das falas
               </label>
@@ -319,7 +319,7 @@ const Novelinhas: React.FC = () => {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5">
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-4 sm:p-5">
               <label className="mb-4 block text-xs font-black uppercase tracking-[0.22em] text-zinc-500">
                 Tom do roteiro
               </label>
@@ -334,7 +334,7 @@ const Novelinhas: React.FC = () => {
               </select>
             </div>
 
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5">
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-4 sm:p-5">
               <div className="mb-4 flex items-center justify-between">
                 <label className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.22em] text-zinc-500">
                   <SlidersHorizontal size={15} className="text-orange-500" />
@@ -401,13 +401,13 @@ const Novelinhas: React.FC = () => {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/40 sm:p-7">
-          <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
+        <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-4 shadow-2xl shadow-black/40 sm:p-7">
+          <div className="mb-6 flex flex-col items-stretch justify-between gap-3 sm:mb-7 sm:flex-row sm:items-center">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-400">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400 sm:text-xs sm:tracking-[0.24em]">
                 Prompts de Cena
               </p>
-              <h2 className="text-2xl font-black text-white">
+              <h2 className="text-xl font-black text-white sm:text-2xl">
                 {promptBlocks.length ? `${promptBlocks.length} prompts separados` : 'Pronto para gerar'}
               </h2>
             </div>
@@ -416,7 +416,7 @@ const Novelinhas: React.FC = () => {
               type="button"
               onClick={() => copyToClipboard('all', promptsPart)}
               disabled={!result}
-              className="flex h-11 items-center gap-2 rounded-xl border border-zinc-600 bg-zinc-900 px-4 text-xs font-black text-white shadow-lg shadow-black/25 transition hover:border-orange-500/60 hover:bg-zinc-800 disabled:opacity-40"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-zinc-600 bg-zinc-900 px-4 text-xs font-black text-white shadow-lg shadow-black/25 transition hover:border-orange-500/60 hover:bg-zinc-800 disabled:opacity-40 sm:w-auto"
             >
               {copiedKey === 'all' ? <Check size={16} /> : <Copy size={16} />}
               {copiedKey === 'all' ? 'Copiado' : 'Copiar Prompts'}
@@ -435,13 +435,13 @@ const Novelinhas: React.FC = () => {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.04 }}
-                    className="group relative rounded-2xl border border-zinc-700 bg-black/45 p-5 transition hover:border-orange-500/40 hover:bg-zinc-900/70 sm:p-6"
+                    className="group relative rounded-2xl border border-zinc-700 bg-black/45 p-4 transition hover:border-orange-500/40 hover:bg-zinc-900/70 sm:p-6"
                   >
                     <div className="absolute -left-1 top-5 bottom-5 w-1 rounded-full bg-orange-500/50 transition group-hover:bg-orange-400" />
 
                     <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="space-y-1">
-                        <p className="text-[10px] font-black uppercase tracking-[0.42em] text-orange-400">
+                        <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-400 sm:tracking-[0.42em]">
                           {block.title}
                         </p>
                         <h3 className="text-sm font-black text-zinc-500">
@@ -452,7 +452,7 @@ const Novelinhas: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(key, blockText)}
-                        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-orange-400/60 bg-orange-500/15 px-4 text-[11px] font-black uppercase tracking-wider text-orange-100 shadow-lg shadow-black/25 transition hover:bg-orange-500/25"
+                        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-orange-400/60 bg-orange-500/15 px-4 text-[11px] font-black uppercase tracking-wider text-orange-100 shadow-lg shadow-black/25 transition hover:bg-orange-500/25 sm:w-auto"
                       >
                         {copiedKey === key ? <Check size={14} /> : <Clipboard size={14} />}
                         {copiedKey === key ? 'Copiado' : 'Copiar Prompt'}
@@ -461,20 +461,20 @@ const Novelinhas: React.FC = () => {
 
                     {block.dialogue && (
                       <div className="mb-4 rounded-xl border border-orange-500/20 bg-orange-500/10 p-4">
-                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.28em] text-orange-400">
+                        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-orange-400 sm:tracking-[0.28em]">
                           Diálogo sugerido
                         </p>
-                        <p className="text-base font-black italic leading-relaxed text-white">
+                        <p className="text-sm font-black italic leading-relaxed text-white sm:text-base">
                           “{block.dialogue}”
                         </p>
                       </div>
                     )}
 
-                    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-                      <p className="mb-3 text-[10px] font-black uppercase tracking-[0.28em] text-zinc-500">
+                    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-3 sm:p-4">
+                      <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 sm:tracking-[0.28em]">
                         Instruções visuais
                       </p>
-                      <pre className="whitespace-pre-wrap font-mono text-[12px] leading-6 text-zinc-300 sm:text-[13px]">
+                      <pre className="whitespace-pre-wrap break-words font-mono text-[11px] leading-6 text-zinc-300 sm:text-[13px]">
                         {visualOnlyText(block.content)}
                       </pre>
                     </div>
@@ -494,24 +494,24 @@ const Novelinhas: React.FC = () => {
         </section>
 
         {seoPart.trim() && (
-          <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/40 sm:p-7">
-            <div className="mb-4 flex items-center justify-between gap-3">
+          <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-4 shadow-2xl shadow-black/40 sm:p-7">
+            <div className="mb-4 flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-400">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400 sm:text-xs sm:tracking-[0.24em]">
                   SEO
                 </p>
-                <h2 className="text-2xl font-black text-white">Legenda e hashtags</h2>
+                <h2 className="text-xl font-black text-white sm:text-2xl">Legenda e hashtags</h2>
               </div>
               <button
                 type="button"
                 onClick={() => copyToClipboard('seo', seoPart)}
-                className="flex h-11 items-center gap-2 rounded-xl border border-zinc-600 bg-zinc-900 px-4 text-xs font-black text-white shadow-lg shadow-black/25 transition hover:border-orange-500/60 hover:bg-zinc-800"
+                className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-zinc-600 bg-zinc-900 px-4 text-xs font-black text-white shadow-lg shadow-black/25 transition hover:border-orange-500/60 hover:bg-zinc-800 sm:w-auto"
               >
                 {copiedKey === 'seo' ? <Check size={16} /> : <Clipboard size={16} />}
                 {copiedKey === 'seo' ? 'Copiado' : 'Copiar SEO'}
               </button>
             </div>
-            <pre className="whitespace-pre-wrap rounded-2xl border border-zinc-800 bg-black p-5 font-mono text-[13px] leading-7 text-zinc-300">
+            <pre className="whitespace-pre-wrap break-words rounded-2xl border border-zinc-800 bg-black p-4 font-mono text-[11px] leading-6 text-zinc-300 sm:p-5 sm:text-[13px] sm:leading-7">
               {cleanText(seoPart)}
             </pre>
           </section>

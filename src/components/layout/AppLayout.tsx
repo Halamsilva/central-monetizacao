@@ -166,7 +166,9 @@ const AppLayout: React.FC = () => {
             </h1>
 
             <p className="mx-auto mt-3 max-w-xl text-sm text-slate-500 sm:text-base">
-              Seu cadastro foi recebido e está aguardando aprovação do administrador.
+              Seu cadastro foi recebido. Use o mesmo e-mail da compra na Kiwify:
+              o acesso é liberado automaticamente após a confirmação da compra
+              e o prazo de 7 dias.
             </p>
 
             <button

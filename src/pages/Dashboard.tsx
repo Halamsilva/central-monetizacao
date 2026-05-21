@@ -48,6 +48,27 @@ const categories = [
   },
 ];
 
+const AgentImage = ({ src, alt }: { src?: string; alt: string }) => {
+  const [failed, setFailed] = useState(false);
+
+  if (!src || failed) {
+    return (
+      <div className="flex h-full items-center justify-center bg-slate-100">
+        <Bot className="text-slate-400" size={24} />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setFailed(true)}
+      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+    />
+  );
+};
+
 const Dashboard: React.FC = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -183,17 +204,7 @@ const Dashboard: React.FC = () => {
                 className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
               >
                 <div className="relative h-28 overflow-hidden bg-slate-100">
-                  {agent.image ? (
-                    <img
-                      src={agent.image}
-                      alt={agent.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <Bot className="text-slate-400" size={24} />
-                    </div>
-                  )}
+                  <AgentImage src={agent.image} alt={agent.title} />
 
                   <div className="absolute left-2 top-2">
                     <span className="rounded-full bg-white/95 px-2 py-1 text-[8px] font-black uppercase text-blue-700 shadow">
@@ -219,7 +230,7 @@ const Dashboard: React.FC = () => {
                     className="mt-2 flex h-9 w-full items-center justify-center gap-1 rounded-2xl bg-slate-950 text-[10px] font-black text-white transition hover:bg-blue-600"
                   >
                     <ExternalLink size={12} />
-                    Abrir
+                    Abrir ferramenta
                   </a>
                 </div>
               </motion.article>

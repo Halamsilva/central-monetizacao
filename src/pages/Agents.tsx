@@ -39,6 +39,27 @@ const formatCategoryLabel = (category?: string) => {
     .join(' ');
 };
 
+const AgentImage = ({ src, alt }: { src?: string; alt: string }) => {
+  const [failed, setFailed] = useState(false);
+
+  if (!src || failed) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-slate-950">
+        <Bot size={24} className="text-white sm:h-10 sm:w-10" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setFailed(true)}
+      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+    />
+  );
+};
+
 const Agents = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -300,6 +321,14 @@ const Agents = () => {
               {selectedCategory}
             </span>
           )}
+
+          <button
+            onClick={fetchAgents}
+            className="rounded-full bg-slate-100 px-3 py-1 transition hover:bg-slate-200"
+            type="button"
+          >
+            Atualizar biblioteca
+          </button>
         </div>
       </div>
 
@@ -326,17 +355,7 @@ const Agents = () => {
               className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl sm:rounded-3xl"
             >
               <div className="relative h-24 overflow-hidden bg-slate-100 sm:aspect-video sm:h-auto">
-                {agent.image ? (
-                  <img
-                    src={agent.image}
-                    alt={agent.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-slate-950">
-                    <Bot size={24} className="text-white sm:h-10 sm:w-10" />
-                  </div>
-                )}
+                <AgentImage src={agent.image} alt={agent.title} />
 
                 <div className="absolute left-1.5 top-1.5 sm:left-4 sm:top-4">
                   <span className="line-clamp-1 max-w-[72px] rounded-full bg-white/90 px-1.5 py-0.5 text-[7px] font-black uppercase text-slate-800 shadow-sm backdrop-blur sm:max-w-none sm:px-3 sm:py-1 sm:text-xs">
@@ -373,7 +392,8 @@ const Agents = () => {
                       className="flex h-8 items-center justify-center gap-1 rounded-xl bg-blue-600 text-[9px] font-black text-white transition-all hover:bg-blue-700 sm:h-12 sm:gap-2 sm:rounded-2xl sm:text-base"
                     >
                       <ExternalLink size={11} className="sm:h-[18px] sm:w-[18px]" />
-                      Abrir
+                      <span className="sm:hidden">Abrir</span>
+                      <span className="hidden sm:inline">Abrir ferramenta</span>
                     </a>
                   )}
 

@@ -335,7 +335,7 @@ const Novelinhas: React.FC = () => {
               type="button"
               onClick={() => generateScript()}
               disabled={!canGenerate}
-              className="flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl bg-white px-8 text-sm font-black uppercase tracking-wide text-black shadow-2xl shadow-black/40 transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500 sm:w-auto"
+              className="flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl border border-orange-300/70 bg-orange-500 px-8 text-sm font-black uppercase tracking-wide text-black shadow-[0_18px_60px_rgba(249,115,22,0.28)] transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500 sm:w-auto"
             >
               {loading && !isPartTwo ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
               {loading && !isPartTwo ? 'Gerando...' : result ? 'Gerar novo roteiro' : 'Gerar roteiro'}
@@ -346,7 +346,7 @@ const Novelinhas: React.FC = () => {
                 type="button"
                 onClick={() => generateScript(result)}
                 disabled={!canGenerate}
-                className="flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl border border-orange-500/40 bg-orange-500/10 px-8 text-sm font-black uppercase tracking-wide text-orange-300 transition hover:bg-orange-500/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                className="flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl border border-orange-400/70 bg-orange-500/20 px-8 text-sm font-black uppercase tracking-wide text-orange-100 shadow-[0_14px_45px_rgba(249,115,22,0.14)] transition hover:bg-orange-500/30 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 {loading && isPartTwo ? <Loader2 className="animate-spin" size={20} /> : <Film size={20} />}
                 {loading && isPartTwo ? 'Criando parte 2...' : 'Continuar como parte 2'}
@@ -358,7 +358,7 @@ const Novelinhas: React.FC = () => {
                 type="button"
                 onClick={resetGenerator}
                 disabled={loading}
-                className="flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl border border-red-500/35 bg-red-500/10 px-8 text-sm font-black uppercase tracking-wide text-red-300 transition hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                className="flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl border border-red-400/60 bg-red-500/20 px-8 text-sm font-black uppercase tracking-wide text-red-100 shadow-[0_14px_45px_rgba(239,68,68,0.12)] transition hover:bg-red-500/30 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 <RotateCcw size={20} />
                 Limpar
@@ -382,7 +382,7 @@ const Novelinhas: React.FC = () => {
               type="button"
               onClick={() => copyToClipboard('all', promptsPart)}
               disabled={!result}
-              className="flex h-11 items-center gap-2 rounded-xl border border-zinc-700 px-4 text-xs font-black text-zinc-200 transition hover:bg-zinc-900 disabled:opacity-40"
+              className="flex h-11 items-center gap-2 rounded-xl border border-zinc-600 bg-zinc-900 px-4 text-xs font-black text-white shadow-lg shadow-black/25 transition hover:border-orange-500/60 hover:bg-zinc-800 disabled:opacity-40"
             >
               {copiedKey === 'all' ? <Check size={16} /> : <Copy size={16} />}
               {copiedKey === 'all' ? 'Copiado' : 'Copiar Prompts'}
@@ -418,7 +418,7 @@ const Novelinhas: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(key, blockText)}
-                        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-orange-500/35 px-4 text-[11px] font-black uppercase tracking-wider text-orange-300 transition hover:bg-orange-500/10"
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-orange-400/60 bg-orange-500/15 px-4 text-[11px] font-black uppercase tracking-wider text-orange-100 shadow-lg shadow-black/25 transition hover:bg-orange-500/25"
                       >
                         {copiedKey === key ? <Check size={14} /> : <Clipboard size={14} />}
                         {copiedKey === key ? 'Copiado' : 'Copiar Prompt'}
@@ -471,7 +471,7 @@ const Novelinhas: React.FC = () => {
               <button
                 type="button"
                 onClick={() => copyToClipboard('seo', seoPart)}
-                className="flex h-11 items-center gap-2 rounded-xl border border-zinc-700 px-4 text-xs font-black text-zinc-200 transition hover:bg-zinc-900"
+                className="flex h-11 items-center gap-2 rounded-xl border border-zinc-600 bg-zinc-900 px-4 text-xs font-black text-white shadow-lg shadow-black/25 transition hover:border-orange-500/60 hover:bg-zinc-800"
               >
                 {copiedKey === 'seo' ? <Check size={16} /> : <Clipboard size={16} />}
                 {copiedKey === 'seo' ? 'Copiado' : 'Copiar SEO'}

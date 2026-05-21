@@ -16,6 +16,7 @@ const pageTitles: Record<string, string> = {
   '/facebook': 'Facebook',
   '/youtube-shorts': 'YouTube Shorts',
   '/tools-ia': 'Ferramentas IA',
+  '/novelinhas': 'Novelinhas',
   '/downloads': 'Downloads',
   '/profile': 'Perfil',
   '/settings': 'Configurações',

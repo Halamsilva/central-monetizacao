@@ -1,31 +1,40 @@
 import React, { useMemo, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { motion } from 'motion/react';
 import {
   AlertCircle,
-  BookOpen,
   Check,
   Clipboard,
   Film,
   Loader2,
+  Palette,
+  SlidersHorizontal,
   Sparkles,
+  WandSparkles,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const themes = [
-  'Racismo',
-  'Preconceito',
-  'Humilhação',
-  'Injustiça',
-  'Abuso de Poder',
-  'Desigualdade Social',
-  'Superação',
-  'Drama',
-  'Infantil',
-  'Traição',
-  'Roça',
-  'Comédia Br',
-  'Viagem no Tempo',
-  'Outro',
+  { label: 'Racismo', icon: '✊' },
+  { label: 'Preconceito', icon: '🚫' },
+  { label: 'Humilhação', icon: '🧍' },
+  { label: 'Injustiça', icon: '⚖️' },
+  { label: 'Abuso de Poder', icon: '👑' },
+  { label: 'Desigualdade Social', icon: '🏚️' },
+  { label: 'Superação', icon: '✨' },
+  { label: 'Deuses Gregos', icon: '⚡' },
+  { label: 'Dorama', icon: '💗' },
+  { label: 'Infantil', icon: '🎈' },
+  { label: 'Vida de Jesus', icon: '🙏' },
+  { label: 'Roça', icon: '🤠' },
+  { label: 'Comédia Br', icon: '😂' },
+  { label: 'Frutas', icon: '🍎' },
+  { label: 'Soldado voltando da guerra', icon: '🪖' },
+  { label: 'Viagem no Tempo', icon: '⌛' },
+  { label: 'Dramas Emocionantes', icon: '✨' },
+  { label: 'Jesus: Milagres e Ressurreição', icon: '🙏' },
+  { label: 'Traição', icon: '💔' },
+  { label: 'Outro', icon: '✍️' },
 ];
 
 const countries = ['Brasil', 'EUA', 'Espanha', 'México'];
@@ -35,10 +44,11 @@ const tones = [
   'Emocionante e familiar',
   'Suspense com virada',
   'Comédia popular',
+  'Cinematográfico sombrio',
 ];
 
 const Novelinhas: React.FC = () => {
-  const [theme, setTheme] = useState('Drama');
+  const [theme, setTheme] = useState('Dramas Emocionantes');
   const [country, setCountry] = useState('Brasil');
   const [tone, setTone] = useState(tones[0]);
   const [scenes, setScenes] = useState(6);
@@ -98,81 +108,96 @@ const Novelinhas: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 pb-20">
-      <motion.section
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-8"
-      >
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-orange-50 px-3 py-1 text-xs font-black uppercase tracking-widest text-orange-600">
-          <Film size={14} />
-          Agente cinematográfico
-        </div>
+    <div className="-mx-2 -my-3 min-h-[calc(100vh-7rem)] bg-black px-4 py-8 text-white sm:-mx-6 sm:-my-6 sm:px-8 sm:py-10 lg:-mx-8 lg:-my-8 lg:px-10">
+      <div className="mx-auto max-w-7xl space-y-10">
+        <motion.section
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.28em] text-orange-400">
+            <Film size={14} />
+            Agente cinematográfico
+          </div>
 
-        <h1 className="text-3xl font-black leading-tight text-slate-950 sm:text-5xl">
-          Fábrica de <span className="text-orange-600">Novelinhas</span>
-        </h1>
+          <h1 className="mx-auto max-w-5xl text-5xl font-black leading-none text-white sm:text-7xl lg:text-8xl">
+            Dramáticos Realistas
+          </h1>
 
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-500 sm:text-base">
-          Gere roteiros dramáticos cena por cena para vídeos verticais, com
-          falas, ganchos e viradas prontas para TikTok, Reels e Shorts.
-        </p>
-      </motion.section>
+          <p className="mx-auto mt-5 max-w-3xl text-base font-semibold leading-relaxed text-zinc-400 sm:text-xl">
+            Crie roteiros visuais ultra-realistas com foco em microtexturas de
+            pele, iluminação cinematográfica e diálogos impactantes.
+          </p>
+        </motion.section>
 
-      <section className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
-        <div className="space-y-5">
-          <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500">
-              <BookOpen size={15} className="text-orange-600" />
-              Tema da história
+        <section className="space-y-8">
+          <div>
+            <div className="mb-5 flex items-center gap-3 text-lg font-black text-white">
+              <Palette size={22} className="text-orange-500" />
+              Selecione o Tema
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {themes.map((item) => (
                 <button
-                  key={item}
+                  key={item.label}
                   type="button"
-                  onClick={() => setTheme(item)}
-                  className={`min-h-16 rounded-2xl border px-3 text-sm font-black transition ${theme === item
-                      ? 'border-orange-400 bg-orange-50 text-orange-700 shadow-sm'
-                      : 'border-slate-200 bg-white text-slate-700 hover:border-orange-200 hover:bg-orange-50/50'
-                    }`}
+                  onClick={() => setTheme(item.label)}
+                  className={`group flex aspect-[1.15] min-h-28 flex-col items-center justify-center gap-3 rounded-2xl border p-3 text-center transition ${
+                    theme === item.label
+                      ? 'border-orange-500 bg-orange-500/10 shadow-[0_0_0_1px_rgba(249,115,22,0.35),0_18px_60px_rgba(249,115,22,0.18)]'
+                      : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600 hover:bg-zinc-900'
+                  }`}
                 >
-                  {item}
+                  <span className="text-2xl transition group-hover:scale-110">
+                    {item.icon}
+                  </span>
+                  <span
+                    className={`text-xs font-black uppercase tracking-wider ${
+                      theme === item.label ? 'text-orange-300' : 'text-zinc-400'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-            <label className="mb-3 block text-xs font-black uppercase tracking-widest text-slate-500">
-              Contexto adicional
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/40 sm:p-7">
+            <label className="mb-4 flex items-center gap-3 text-lg font-black text-white">
+              <WandSparkles size={22} className="text-orange-500" />
+              Contexto do Vídeo (Opcional)
             </label>
+            <p className="mb-3 text-xs font-black uppercase tracking-[0.24em] text-zinc-500">
+              Adicione detalhes específicos para a história
+            </p>
             <textarea
               value={context}
               onChange={(event) => setContext(event.target.value)}
               rows={5}
               maxLength={900}
-              placeholder="Ex: A cena acontece em um hospital e um dos personagens é um médico arrogante..."
-              className="w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium leading-relaxed text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+              placeholder="Ex: A cena deve acontecer em um hospital e um dos personagens deve ser um médico arrogante..."
+              className="w-full resize-y rounded-2xl border border-zinc-700 bg-zinc-900 p-5 text-base font-semibold leading-relaxed text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
             />
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-              <label className="mb-3 block text-xs font-black uppercase tracking-widest text-slate-500">
+          <div className="grid gap-5 lg:grid-cols-[1fr_1fr_1.15fr]">
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5">
+              <label className="mb-4 block text-xs font-black uppercase tracking-[0.22em] text-zinc-500">
                 Estilo das falas
               </label>
-              <div className="grid gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {countries.map((item) => (
                   <button
                     key={item}
                     type="button"
                     onClick={() => setCountry(item)}
-                    className={`h-12 rounded-2xl border px-4 text-left text-sm font-black transition ${country === item
-                        ? 'border-orange-400 bg-orange-50 text-orange-700'
-                        : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
+                    className={`h-12 rounded-xl border px-4 text-sm font-black transition ${
+                      country === item
+                        ? 'border-orange-500 bg-orange-500/10 text-orange-300'
+                        : 'border-zinc-800 bg-black text-zinc-300 hover:border-zinc-600'
+                    }`}
                   >
                     {item}
                   </button>
@@ -180,41 +205,46 @@ const Novelinhas: React.FC = () => {
               </div>
             </div>
 
-            <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-              <label className="mb-3 block text-xs font-black uppercase tracking-widest text-slate-500">
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5">
+              <label className="mb-4 block text-xs font-black uppercase tracking-[0.22em] text-zinc-500">
                 Tom do roteiro
               </label>
               <select
                 value={tone}
                 onChange={(event) => setTone(event.target.value)}
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 outline-none focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                className="h-12 w-full rounded-xl border border-zinc-800 bg-black px-4 text-sm font-black text-zinc-100 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
               >
                 {tones.map((item) => (
                   <option key={item}>{item}</option>
                 ))}
               </select>
+            </div>
 
-              <label className="mt-5 block text-xs font-black uppercase tracking-widest text-slate-500">
-                Quantidade de cenas
-              </label>
-              <div className="mt-3 flex items-center gap-4">
-                <input
-                  type="range"
-                  min={4}
-                  max={60}
-                  value={scenes}
-                  onChange={(event) => setScenes(Number(event.target.value))}
-                  className="w-full accent-orange-600"
-                />
-                <span className="w-10 text-right text-2xl font-black text-orange-600">
-                  {scenes}
-                </span>
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <label className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.22em] text-zinc-500">
+                  <SlidersHorizontal size={15} className="text-orange-500" />
+                  Quantidade de cenas
+                </label>
+                <span className="text-2xl font-black text-orange-400">{scenes}</span>
+              </div>
+              <input
+                type="range"
+                min={4}
+                max={60}
+                value={scenes}
+                onChange={(event) => setScenes(Number(event.target.value))}
+                className="w-full accent-orange-500"
+              />
+              <div className="mt-2 flex justify-between text-[11px] font-bold text-zinc-600">
+                <span>4 cenas</span>
+                <span>60 cenas</span>
               </div>
             </div>
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-bold text-red-600">
+            <div className="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm font-bold text-red-300">
               <AlertCircle size={18} />
               {error}
             </div>
@@ -224,41 +254,86 @@ const Novelinhas: React.FC = () => {
             type="button"
             onClick={generateScript}
             disabled={!canGenerate}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-orange-600 px-6 text-sm font-black text-white shadow-lg shadow-orange-100 transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="mx-auto flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl bg-orange-600 px-8 text-sm font-black uppercase tracking-wide text-white shadow-2xl shadow-orange-950/40 transition hover:bg-orange-500 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
           >
             {loading ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-            {loading ? 'Gerando roteiro...' : 'Gerar Roteiro'}
+            {loading ? 'Gerando...' : 'Gerar Roteiro'}
           </button>
-        </div>
+        </section>
 
-        <aside className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-6 lg:self-start">
-          <div className="mb-4 flex items-center justify-between gap-3">
+        <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-5 shadow-2xl shadow-black/40 sm:p-7">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase tracking-widest text-slate-500">
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-orange-400">
                 Resultado
               </p>
-              <h2 className="text-xl font-black text-slate-950">
-                Roteiro gerado
-              </h2>
+              <h2 className="text-2xl font-black text-white">Roteiro gerado</h2>
             </div>
 
             <button
               type="button"
               onClick={copyResult}
               disabled={!result}
-              className="flex h-11 items-center gap-2 rounded-2xl border border-slate-200 px-4 text-xs font-black text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+              className="flex h-11 items-center gap-2 rounded-xl border border-zinc-700 px-4 text-xs font-black text-zinc-200 transition hover:bg-zinc-900 disabled:opacity-40"
             >
               {copied ? <Check size={16} /> : <Clipboard size={16} />}
               {copied ? 'Copiado' : 'Copiar'}
             </button>
           </div>
 
-          <div className="min-h-[520px] whitespace-pre-wrap rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
-            {result ||
-              'O roteiro aparecerá aqui depois da geração. Escolha o tema, ajuste as cenas e clique em Gerar Roteiro.'}
+          <div className="min-h-72 rounded-2xl border border-zinc-800 bg-black p-5 text-zinc-300 sm:p-7">
+            {result ? (
+              <ReactMarkdown
+                components={{
+                  h1: ({ children }) => (
+                    <h3 className="mb-4 text-3xl font-black text-white">{children}</h3>
+                  ),
+                  h2: ({ children }) => (
+                    <h3 className="mb-3 mt-7 text-2xl font-black text-white">{children}</h3>
+                  ),
+                  h3: ({ children }) => (
+                    <h4 className="mb-2 mt-6 text-lg font-black text-orange-300">
+                      {children}
+                    </h4>
+                  ),
+                  h4: ({ children }) => (
+                    <h5 className="mb-2 mt-5 text-base font-black text-white">
+                      {children}
+                    </h5>
+                  ),
+                  p: ({ children }) => (
+                    <p className="mb-4 text-sm font-medium leading-7 text-zinc-300 sm:text-base">
+                      {children}
+                    </p>
+                  ),
+                  strong: ({ children }) => (
+                    <strong className="font-black text-white">{children}</strong>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className="mb-4 list-disc space-y-2 pl-5 text-sm leading-7 text-zinc-300 sm:text-base">
+                      {children}
+                    </ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className="mb-4 list-decimal space-y-2 pl-5 text-sm leading-7 text-zinc-300 sm:text-base">
+                      {children}
+                    </ol>
+                  ),
+                  li: ({ children }) => <li>{children}</li>,
+                  hr: () => <div className="my-6 h-px bg-zinc-800" />,
+                }}
+              >
+                {result}
+              </ReactMarkdown>
+            ) : (
+              <div className="flex min-h-60 items-center justify-center text-center text-sm font-semibold leading-relaxed text-zinc-500">
+                O roteiro aparecerá aqui depois da geração. Escolha o tema,
+                ajuste as cenas e clique em Gerar Roteiro.
+              </div>
+            )}
           </div>
-        </aside>
-      </section>
+        </section>
+      </div>
     </div>
   );
 };

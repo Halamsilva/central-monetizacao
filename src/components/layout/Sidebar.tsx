@@ -110,7 +110,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const mainMenu = [
     { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    { title: 'Avisos', icon: Bell, path: '/notices', badge: true },
+    { title: 'Novidades', icon: Bell, path: '/notices', badge: true },
   ];
 
   const strategyMenu = [

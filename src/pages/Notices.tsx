@@ -13,19 +13,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-
-interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  link: string | null;
-  is_pinned: boolean;
-  is_highlighted: boolean;
-  thumbnail_url: string | null;
-  banner_url: string | null;
-  created_at: string;
-  is_automated?: boolean; // Identifica se veio da tabela automática de agentes
-}
+import { fetchNoticeFeed, type NoticeFeedItem } from '../lib/notices';
 
 const emptyNoticeForm = {
   title: '',
@@ -61,7 +49,7 @@ const loadSavedDraft = () => {
 const Notices: React.FC = () => {
   const { isAdmin } = useAuth();
 
-  const [notices, setNotices] = useState<Announcement[]>([]);
+  const [notices, setNotices] = useState<NoticeFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState(loadSavedDraft);
@@ -95,46 +83,7 @@ const Notices: React.FC = () => {
   const fetchNotices = async () => {
     try {
       setLoading(true);
-
-      // 1. Puxa os comunicados tradicionais do mural
-      const { data: manualAnnouncements, error: manualError } = await supabase
-        .from('announcements')
-        .select('*');
-
-      if (manualError) throw manualError;
-
-      // 2. Puxa as notificações geradas automaticamente (como novos Agentes IA)
-      const { data: autoNotifications, error: autoError } = await supabase
-        .from('notifications')
-        .select('*');
-
-      // Se der erro porque a tabela está vazia ou algo assim, criamos um array vazio seguro
-      const safeAutoNotifications = autoError ? [] : (autoNotifications || []);
-
-      // 3. Formata as notificações automáticas para caberem no layout de cards
-      const formattedAuto = safeAutoNotifications.map((noti: any) => ({
-        id: noti.id,
-        title: noti.title,
-        content: noti.message,
-        link: '/agents', // Redireciona o aluno direto para a aba de Agentes se ele clicar
-        is_pinned: false,
-        is_highlighted: true, // Dá o destaque PRO azul para chamar atenção
-        thumbnail_url: null,
-        banner_url: null,
-        created_at: noti.created_at,
-        is_automated: true
-      }));
-
-      // 4. Junta tudo no mesmo mural
-      const allNotices = [...(manualAnnouncements || []), ...formattedAuto];
-
-      // 5. Ordena por fixados primeiro, e depois pelos mais recentes da fila
-      allNotices.sort((a, b) => {
-        if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
-
-      setNotices(allNotices);
+      setNotices(await fetchNoticeFeed());
     } catch (err) {
       console.error('Erro ao unificar mural de avisos:', err);
     } finally {
@@ -208,7 +157,7 @@ const Notices: React.FC = () => {
     }
   };
 
-  const deleteNotice = async (notice: Announcement) => {
+  const deleteNotice = async (notice: NoticeFeedItem) => {
     if (!window.confirm('Deseja mesmo remover este aviso permanentemente?')) return;
 
     try {
@@ -256,9 +205,9 @@ const Notices: React.FC = () => {
         <span className="inline-flex items-center rounded-full bg-blue-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-blue-700">
           Central Monetização
         </span>
-        <h1 className="text-3xl font-black text-slate-900 sm:text-4xl">Quadro de Avisos</h1>
+        <h1 className="text-3xl font-black text-slate-900 sm:text-4xl">Novidades</h1>
         <p className="text-xs text-slate-500 sm:text-base">
-          Mantenha-se informado sobre atualizações, novidades e comunicados importantes.
+          Um histórico simples com lançamentos, avisos fixados e comunicados importantes.
         </p>
       </div>
 
@@ -399,10 +348,10 @@ const Notices: React.FC = () => {
       <div className="flex flex-col gap-2 px-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-xl font-black text-slate-900 sm:text-2xl">
-            Mural de avisos
+            Histórico de novidades
           </h2>
           <p className="text-xs font-medium text-slate-500 sm:text-sm">
-            Comunicados fixados, novidades e atualizações recentes.
+            Tudo que também aparece resumido na Dashboard fica salvo aqui.
           </p>
         </div>
 

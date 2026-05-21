@@ -10,9 +10,12 @@ import {
   Zap,
   Sparkles,
   Flame,
+  Bell,
+  ArrowRight,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
+import { fetchNoticeFeed, type NoticeFeedItem } from '../lib/notices';
 
 interface Agent {
   id: string;
@@ -71,27 +74,35 @@ const AgentImage = ({ src, alt }: { src?: string; alt: string }) => {
 
 const Dashboard: React.FC = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [latestNotices, setLatestNotices] = useState<NoticeFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAgents();
+    fetchDashboardData();
   }, []);
 
-  const fetchAgents = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const { data, error } = await supabase
-        .from('agents')
-        .select('*')
-        .order('featured', { ascending: false })
-        .order('created_at', { ascending: false })
-        .limit(9);
+      const [agentsResult, noticesResult] = await Promise.all([
+        supabase
+          .from('agents')
+          .select('*')
+          .order('featured', { ascending: false })
+          .order('created_at', { ascending: false })
+          .limit(9),
+        fetchNoticeFeed(3).catch((noticeError) => {
+          console.error(noticeError);
+          return [];
+        }),
+      ]);
 
-      if (error) {
-        console.error(error);
+      if (agentsResult.error) {
+        console.error(agentsResult.error);
         return;
       }
 
-      setAgents(data || []);
+      setAgents(agentsResult.data || []);
+      setLatestNotices(noticesResult);
     } catch (err) {
       console.error(err);
     } finally {
@@ -131,6 +142,60 @@ const Dashboard: React.FC = () => {
           </Link>
         </div>
       </motion.section>
+
+      {latestNotices.length > 0 && (
+        <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-slate-900">
+                <Bell size={16} className="text-blue-600" />
+                Novidades
+              </h3>
+              <p className="mt-0.5 text-xs font-medium text-slate-500">
+                O essencial da plataforma em um resumo rápido.
+              </p>
+            </div>
+
+            <Link
+              to="/notices"
+              className="inline-flex h-9 shrink-0 items-center justify-center gap-1 rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-700 transition hover:bg-blue-600 hover:text-white"
+            >
+              Ver tudo
+              <ArrowRight size={13} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+            {latestNotices.map((notice) => (
+              <Link
+                key={`${notice.is_automated ? 'auto' : 'manual'}-${notice.id}`}
+                to={notice.is_automated ? '/agents' : '/notices'}
+                className="group rounded-2xl border border-slate-100 bg-slate-50 p-3 transition hover:border-blue-200 hover:bg-blue-50"
+              >
+                <div className="mb-2 flex items-center gap-1.5">
+                  {notice.is_pinned && (
+                    <span className="rounded bg-amber-500 px-1.5 py-0.5 text-[8px] font-black uppercase text-white">
+                      Fixado
+                    </span>
+                  )}
+                  {notice.is_highlighted && (
+                    <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[8px] font-black uppercase text-white">
+                      {notice.is_automated ? 'Novo' : 'Pro'}
+                    </span>
+                  )}
+                </div>
+
+                <h4 className="line-clamp-2 text-xs font-black leading-tight text-slate-900 group-hover:text-blue-700">
+                  {notice.title}
+                </h4>
+                <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500">
+                  {notice.content}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <div className="mb-3 flex items-center justify-between">

@@ -8,7 +8,7 @@ import { supabase } from '../../lib/supabase';
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
-  '/notices': 'Avisos',
+  '/notices': 'Novidades',
   '/updates': 'Atualizações',
   '/agents': 'Agentes IA',
   '/viral-prompts': 'Prompts Virais',

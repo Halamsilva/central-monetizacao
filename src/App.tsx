@@ -16,6 +16,7 @@ const Facebook = lazy(() => import('./pages/Facebook'));
 const YouTubeShorts = lazy(() => import('./pages/YouTubeShorts'));
 const ToolsIA = lazy(() => import('./pages/ToolsIA'));
 const Novelinhas = lazy(() => import('./pages/Novelinhas'));
+const Pov = lazy(() => import('./pages/Pov'));
 const Downloads = lazy(() => import('./pages/Downloads'));
 const ShopVIP = lazy(() => import('./pages/ShopVIP')); // <-- Importado com calma aqui!
 const Profile = lazy(() => import('./pages/Profile'));
@@ -40,6 +41,7 @@ const routeTitles: Record<string, string> = {
   '/youtube-shorts': 'YouTube e Shorts',
   '/tools-ia': 'Ferramentas IA',
   '/novelinhas': 'Fábrica de Novelinhas',
+  '/pov': 'POV Vendas',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',
   '/profile': 'Perfil',
@@ -169,6 +171,7 @@ export default function App() {
               <Route path="youtube-shorts" element={<YouTubeShorts />} />
               <Route path="tools-ia" element={<ToolsIA />} />
               <Route path="novelinhas" element={<Novelinhas />} />
+              <Route path="pov" element={<Pov />} />
               <Route path="downloads" element={<Downloads />} />
               <Route path="shop-vip" element={<ShopVIP />} /> {/* <-- Rota da loja registrada aqui! */}
               <Route path="profile" element={<Profile />} />

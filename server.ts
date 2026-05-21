@@ -5,6 +5,7 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { handleRegistrationEmail, sendAccessEmail } from "./api/_emails";
+import povAgentHandler from "./api/agents/pov";
 
 dotenv.config();
 
@@ -153,7 +154,7 @@ async function startServer() {
   const PORT = 3000;
   const isProd = process.env.NODE_ENV === "production";
 
-  app.use(express.json());
+  app.use(express.json({ limit: "15mb" }));
 
   // Gemini Proxy Endpoint (Server-Side)
   // This keeps the API key safe from the browser
@@ -194,6 +195,8 @@ async function startServer() {
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
   });
+
+  app.post("/api/agents/pov", povAgentHandler);
 
   app.post("/api/webhooks/kiwify", async (req, res) => {
     const webhookToken = process.env.KIWIFY_WEBHOOK_TOKEN;

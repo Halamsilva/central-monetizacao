@@ -61,6 +61,23 @@ const parsePaidAt = (value: string | undefined, releaseDelayDays: number) => {
     return oldPurchase;
   }
 
+  const brazilianDate = value.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/
+  );
+
+  if (brazilianDate) {
+    return new Date(
+      Date.UTC(
+        Number(brazilianDate[3]),
+        Number(brazilianDate[2]) - 1,
+        Number(brazilianDate[1]),
+        Number(brazilianDate[4] || 0),
+        Number(brazilianDate[5] || 0),
+        Number(brazilianDate[6] || 0)
+      )
+    );
+  }
+
   const normalized = value.includes('/') ? value.split('/').reverse().join('-') : value;
   const date = new Date(normalized);
 

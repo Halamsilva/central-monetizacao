@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import {
     Users,
@@ -14,6 +14,7 @@ import {
 import { supabase, UserProfile } from '../lib/supabase';
 
 const AdminStudents: React.FC = () => {
+    const csvInputRef = useRef<HTMLInputElement>(null);
     const [students, setStudents] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -71,6 +72,76 @@ const AdminStudents: React.FC = () => {
         setMessage({ type: 'success', text: 'Acesso do aluno atualizado.' });
     };
 
+    const sendLegacyImport = async (payload: { text?: string; entries?: Array<{ email: string; paidAt?: string }> }) => {
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+
+        if (!token) {
+            throw new Error('Faça login novamente para importar alunos antigos.');
+        }
+
+        const response = await fetch('/api/admin/legacy-students', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Erro ao importar alunos antigos.');
+        }
+
+        return result;
+    };
+
+    const parseCsvRows = (text: string) => {
+        const rows: string[][] = [];
+        let row: string[] = [];
+        let cell = '';
+        let inQuotes = false;
+
+        for (let index = 0; index < text.length; index += 1) {
+            const char = text[index];
+            const next = text[index + 1];
+
+            if (char === '"') {
+                if (inQuotes && next === '"') {
+                    cell += '"';
+                    index += 1;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                row.push(cell);
+                cell = '';
+            } else if ((char === '\n' || char === '\r') && !inQuotes) {
+                if (char === '\r' && next === '\n') index += 1;
+                row.push(cell);
+
+                if (row.some(value => value.trim())) {
+                    rows.push(row);
+                }
+
+                row = [];
+                cell = '';
+            } else {
+                cell += char;
+            }
+        }
+
+        row.push(cell);
+
+        if (row.some(value => value.trim())) {
+            rows.push(row);
+        }
+
+        return rows;
+    };
+
     const importLegacyStudents = async () => {
         const text = legacyStudents.trim();
 
@@ -82,27 +153,7 @@ const AdminStudents: React.FC = () => {
         setImportingLegacy(true);
 
         try {
-            const { data } = await supabase.auth.getSession();
-            const token = data.session?.access_token;
-
-            if (!token) {
-                throw new Error('Faça login novamente para importar alunos antigos.');
-            }
-
-            const response = await fetch('/api/admin/legacy-students', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ text }),
-            });
-
-            const payload = await response.json();
-
-            if (!response.ok) {
-                throw new Error(payload.error || 'Erro ao importar alunos antigos.');
-            }
+            const payload = await sendLegacyImport({ text });
 
             setLegacyStudents('');
             await loadStudents();
@@ -114,6 +165,52 @@ const AdminStudents: React.FC = () => {
             setMessage({ type: 'error', text: err.message || 'Erro ao importar alunos antigos.' });
         } finally {
             setImportingLegacy(false);
+        }
+    };
+
+    const importLegacyCsv = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setImportingLegacy(true);
+
+        try {
+            const csvText = await file.text();
+            const rows = parseCsvRows(csvText);
+            const header = rows[0]?.map(column => column.trim()) || [];
+            const emailIndex = header.indexOf('Email');
+            const addedOnIndex = header.indexOf('Added On');
+
+            if (emailIndex < 0) {
+                throw new Error('CSV sem coluna Email.');
+            }
+
+            const entries = rows
+                .slice(1)
+                .map(row => ({
+                    email: String(row[emailIndex] || '').trim().toLowerCase(),
+                    paidAt: addedOnIndex >= 0 ? String(row[addedOnIndex] || '').trim() : undefined,
+                }))
+                .filter(entry => entry.email.includes('@'));
+
+            if (!entries.length) {
+                throw new Error('Nenhum e-mail válido encontrado no CSV.');
+            }
+
+            const payload = await sendLegacyImport({ entries });
+
+            await loadStudents();
+            setMessage({
+                type: 'success',
+                text: `${payload.imported} aluno(s) do CSV importado(s). ${payload.active} ativo(s), ${payload.pending} pendente(s).`,
+            });
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message || 'Erro ao importar CSV.' });
+        } finally {
+            setImportingLegacy(false);
+            if (csvInputRef.current) {
+                csvInputRef.current.value = '';
+            }
         }
     };
 
@@ -236,6 +333,14 @@ const AdminStudents: React.FC = () => {
                     className="w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
                 />
 
+                <input
+                    ref={csvInputRef}
+                    type="file"
+                    accept=".csv,text/csv"
+                    className="hidden"
+                    onChange={importLegacyCsv}
+                />
+
                 <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <p className="text-xs font-semibold text-slate-500">
                         Sem data, o sistema considera compra antiga e libera como ativo. Com data, mantém a regra dos 7 dias.
@@ -252,6 +357,15 @@ const AdminStudents: React.FC = () => {
                             <UploadCloud size={18} />
                         )}
                         {importingLegacy ? 'Importando...' : 'Importar e liberar'}
+                    </button>
+
+                    <button
+                        onClick={() => csvInputRef.current?.click()}
+                        disabled={importingLegacy}
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:opacity-60"
+                    >
+                        <UploadCloud size={18} />
+                        Importar CSV
                     </button>
                 </div>
             </div>

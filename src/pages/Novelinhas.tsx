@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
   AlertCircle,
@@ -53,6 +53,8 @@ type PromptBlock = {
   content: string;
   dialogue: string | null;
 };
+
+const draftKey = 'novelinhas-generator-draft';
 
 const ensureFinalPunctuation = (text: string) => {
   const trimmed = text.trim();
@@ -119,6 +121,37 @@ const Novelinhas: React.FC = () => {
   const [promptsPart, seoPart = ''] = result.split(/---SEO-START---/i);
   const promptBlocks = useMemo(() => parsePromptBlocks(promptsPart || ''), [promptsPart]);
 
+  useEffect(() => {
+    try {
+      const savedDraft = localStorage.getItem(draftKey);
+      if (!savedDraft) return;
+
+      const draft = JSON.parse(savedDraft);
+
+      if (typeof draft.theme === 'string') setTheme(draft.theme);
+      if (typeof draft.country === 'string') setCountry(draft.country);
+      if (typeof draft.tone === 'string') setTone(draft.tone);
+      if (typeof draft.context === 'string') setContext(draft.context);
+      if (typeof draft.result === 'string') setResult(draft.result);
+      if (typeof draft.scenes === 'number') setScenes(Math.min(60, Math.max(4, draft.scenes)));
+    } catch {
+      localStorage.removeItem(draftKey);
+    }
+  }, []);
+
+  useEffect(() => {
+    const draft = {
+      theme,
+      country,
+      tone,
+      scenes,
+      context,
+      result,
+    };
+
+    localStorage.setItem(draftKey, JSON.stringify(draft));
+  }, [theme, country, tone, scenes, context, result]);
+
   const copyToClipboard = async (key: string, text: string) => {
     if (!text) return;
 
@@ -132,6 +165,7 @@ const Novelinhas: React.FC = () => {
     setError('');
     setCopiedKey('');
     setIsPartTwo(false);
+    localStorage.removeItem(draftKey);
   };
 
   const generateScript = async (previousResult?: string) => {

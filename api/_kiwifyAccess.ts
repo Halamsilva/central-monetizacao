@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { sendAccessEmail } from './_emails';
 
 type KiwifyAccessStatus = 'pending' | 'active' | 'blocked';
 
@@ -262,6 +263,22 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
     return { status: 500, body: { error: 'Failed to update profile' } };
   }
 
+  if (accessStatus === 'pending') {
+    await sendAccessEmail('purchase_pending', {
+      to: email,
+      releaseAt: releaseAt.toISOString(),
+      idempotencyKey: `kiwify-pending-${purchaseId}`,
+    });
+  }
+
+  if (accessStatus === 'active') {
+    await sendAccessEmail('access_released', {
+      to: email,
+      releaseAt: releaseAt.toISOString(),
+      idempotencyKey: `kiwify-active-${purchaseId}`,
+    });
+  }
+
   return {
     status: 200,
     body: {
@@ -323,6 +340,12 @@ export const handleAccessSync = async (authorization?: string) => {
       .from('kiwify_purchases')
       .update({ purchase_status: 'active', updated_at: new Date().toISOString() })
       .eq('email', email);
+
+    await sendAccessEmail('access_released', {
+      to: email,
+      releaseAt: purchase.release_at,
+      idempotencyKey: `access-released-${email}-${purchase.release_at}`,
+    });
   }
 
   const profileUpdate: Record<string, string | null> = {

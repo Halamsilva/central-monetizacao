@@ -21,10 +21,22 @@ SUPABASE_SERVICE_ROLE_KEY=...
 KIWIFY_WEBHOOK_TOKEN=...
 KIWIFY_RELEASE_DELAY_DAYS=7
 KIWIFY_ALLOWED_PRODUCTS=Monetizar pagina do facebook, tiktok e no Youtube
+RESEND_API_KEY=...
+RESEND_FROM_EMAIL=Central Monetizacao <onboarding@resend.dev>
+APP_URL=https://app.halamsilva.com.br
 ```
 
 `KIWIFY_ALLOWED_PRODUCTS` trava a liberaÃ§Ã£o no produto correto. Se a Kiwify enviar
 evento de outro produto, o webhook responde `ok`, mas ignora a liberaÃ§Ã£o.
+
+`RESEND_API_KEY` ativa os e-mails automÃ¡ticos. Sem essa variÃ¡vel, cadastro e
+webhook continuam funcionando normalmente, mas os e-mails nÃ£o sÃ£o enviados.
+
+E-mails enviados:
+
+- Cadastro recebido
+- Compra confirmada, aguardando 7 dias
+- Acesso liberado
 
 ## Kiwify
 

@@ -4,6 +4,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
+import { handleRegistrationEmail, sendAccessEmail } from "./api/_emails";
 
 dotenv.config();
 
@@ -330,6 +331,22 @@ async function startServer() {
       return res.status(500).json({ error: "Failed to update profile" });
     }
 
+    if (accessStatus === "pending") {
+      await sendAccessEmail("purchase_pending", {
+        to: email,
+        releaseAt: releaseAt.toISOString(),
+        idempotencyKey: `kiwify-pending-${purchaseId}`,
+      });
+    }
+
+    if (accessStatus === "active") {
+      await sendAccessEmail("access_released", {
+        to: email,
+        releaseAt: releaseAt.toISOString(),
+        idempotencyKey: `kiwify-active-${purchaseId}`,
+      });
+    }
+
     return res.json({
       ok: true,
       event,
@@ -388,6 +405,12 @@ async function startServer() {
         .from("kiwify_purchases")
         .update({ purchase_status: "active", updated_at: new Date().toISOString() })
         .eq("email", email);
+
+      await sendAccessEmail("access_released", {
+        to: email,
+        releaseAt: purchase.release_at,
+        idempotencyKey: `access-released-${email}-${purchase.release_at}`,
+      });
     }
 
     const profileUpdate: Record<string, string | null> = {
@@ -414,6 +437,11 @@ async function startServer() {
       access_status: nextStatus,
       release_at: purchase.release_at,
     });
+  });
+
+  app.post("/api/emails/registration", async (req, res) => {
+    const result = await handleRegistrationEmail(req.header("authorization"), req.body);
+    return res.status(result.status).json(result.body);
   });
 
   if (!isProd) {

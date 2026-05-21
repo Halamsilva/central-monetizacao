@@ -44,6 +44,23 @@ const Register: React.FC = () => {
           full_name: name,
           is_admin: false
         });
+
+        const sessionToken =
+          data.session?.access_token ||
+          (await supabase.auth.getSession()).data.session?.access_token;
+
+        if (sessionToken) {
+          fetch('/api/emails/registration', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${sessionToken}`,
+            },
+            body: JSON.stringify({ email, name }),
+          }).catch((emailError) => {
+            console.error('Erro ao enviar e-mail de cadastro:', emailError);
+          });
+        }
       }
       
       navigate('/dashboard');

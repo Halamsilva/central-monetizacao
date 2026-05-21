@@ -8,6 +8,7 @@ import {
     Check,
     ShieldAlert,
     RefreshCw,
+    UploadCloud,
 } from 'lucide-react';
 
 import { supabase, UserProfile } from '../lib/supabase';
@@ -16,6 +17,8 @@ const AdminStudents: React.FC = () => {
     const [students, setStudents] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [legacyStudents, setLegacyStudents] = useState('');
+    const [importingLegacy, setImportingLegacy] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     useEffect(() => {
@@ -66,6 +69,52 @@ const AdminStudents: React.FC = () => {
 
         await loadStudents();
         setMessage({ type: 'success', text: 'Acesso do aluno atualizado.' });
+    };
+
+    const importLegacyStudents = async () => {
+        const text = legacyStudents.trim();
+
+        if (!text) {
+            setMessage({ type: 'error', text: 'Cole pelo menos um e-mail antigo da Kiwify.' });
+            return;
+        }
+
+        setImportingLegacy(true);
+
+        try {
+            const { data } = await supabase.auth.getSession();
+            const token = data.session?.access_token;
+
+            if (!token) {
+                throw new Error('Faça login novamente para importar alunos antigos.');
+            }
+
+            const response = await fetch('/api/admin/legacy-students', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ text }),
+            });
+
+            const payload = await response.json();
+
+            if (!response.ok) {
+                throw new Error(payload.error || 'Erro ao importar alunos antigos.');
+            }
+
+            setLegacyStudents('');
+            await loadStudents();
+            setMessage({
+                type: 'success',
+                text: `${payload.imported} compra(s) antiga(s) importada(s). ${payload.active} ativo(s), ${payload.pending} pendente(s).`,
+            });
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message || 'Erro ao importar alunos antigos.' });
+        } finally {
+            setImportingLegacy(false);
+        }
     };
 
     const getStatusBadge = (status?: string) => {
@@ -159,6 +208,51 @@ const AdminStudents: React.FC = () => {
                     <h2 className="mt-2 text-3xl font-black text-emerald-600">
                         {students.filter(student => student.access_status === 'active').length}
                     </h2>
+                </div>
+            </div>
+
+            <div className="rounded-3xl border border-orange-200 bg-white p-6 shadow-sm">
+                <div className="mb-4 flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-100">
+                        <UploadCloud className="text-orange-600" size={22} />
+                    </div>
+
+                    <div>
+                        <h2 className="text-xl font-black text-slate-900">
+                            Importar alunos antigos da Kiwify
+                        </h2>
+
+                        <p className="text-sm text-slate-500">
+                            Use para compras feitas antes do webhook. Um e-mail por linha; opcional: e-mail, data da compra.
+                        </p>
+                    </div>
+                </div>
+
+                <textarea
+                    value={legacyStudents}
+                    onChange={(event) => setLegacyStudents(event.target.value)}
+                    rows={4}
+                    placeholder={'gog750090@gmail.com\naluno@email.com, 14/05/2026'}
+                    className="w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+                />
+
+                <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <p className="text-xs font-semibold text-slate-500">
+                        Sem data, o sistema considera compra antiga e libera como ativo. Com data, mantém a regra dos 7 dias.
+                    </p>
+
+                    <button
+                        onClick={importLegacyStudents}
+                        disabled={importingLegacy}
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-orange-500 px-5 text-sm font-bold text-white transition hover:bg-orange-600 disabled:opacity-60"
+                    >
+                        {importingLegacy ? (
+                            <RefreshCw className="animate-spin" size={18} />
+                        ) : (
+                            <UploadCloud size={18} />
+                        )}
+                        {importingLegacy ? 'Importando...' : 'Importar e liberar'}
+                    </button>
                 </div>
             </div>
 

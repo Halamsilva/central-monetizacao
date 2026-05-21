@@ -1,4 +1,4 @@
-import { handleRegistrationEmail } from '../_emails';
+import { handleRegistrationEmail } from '../_emails.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

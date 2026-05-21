@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { sendAccessEmail } from './_emails';
+import { sendAccessEmail } from './_emails.js';
 
 type KiwifyAccessStatus = 'pending' | 'active' | 'blocked';
 

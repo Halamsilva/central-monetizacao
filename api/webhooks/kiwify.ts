@@ -1,4 +1,4 @@
-import { handleKiwifyWebhook } from '../_kiwifyAccess';
+import { handleKiwifyWebhook } from '../_kiwifyAccess.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

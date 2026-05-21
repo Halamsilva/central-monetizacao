@@ -1,4 +1,4 @@
-import { handleAccessSync } from '../_kiwifyAccess';
+import { handleAccessSync } from '../_kiwifyAccess.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {

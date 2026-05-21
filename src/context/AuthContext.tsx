@@ -19,8 +19,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const syncKiwifyAccess = async () => {
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+
+      if (!token) return null;
+
+      const response = await fetch('/api/access/sync', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) return null;
+
+      return response.json();
+    } catch (err) {
+      console.error('Erro ao sincronizar acesso Kiwify:', err);
+      return null;
+    }
+  };
+
   const loadProfile = async (currentUser: User) => {
     try {
+      await syncKiwifyAccess();
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -53,6 +78,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (insertError) {
         console.error('Erro ao criar perfil:', insertError);
+      }
+
+      await syncKiwifyAccess();
+
+      const { data: refreshedProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .maybeSingle();
+
+      if (refreshedProfile) {
+        setProfile(refreshedProfile);
+        return;
       }
 
       setProfile(newProfile);

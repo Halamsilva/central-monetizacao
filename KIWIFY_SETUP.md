@@ -20,7 +20,11 @@ Configure no deploy:
 SUPABASE_SERVICE_ROLE_KEY=...
 KIWIFY_WEBHOOK_TOKEN=...
 KIWIFY_RELEASE_DELAY_DAYS=7
+KIWIFY_ALLOWED_PRODUCTS=Monetizar pagina do facebook, tiktok e no Youtube
 ```
+
+`KIWIFY_ALLOWED_PRODUCTS` trava a liberaÃ§Ã£o no produto correto. Se a Kiwify enviar
+evento de outro produto, o webhook responde `ok`, mas ignora a liberaÃ§Ã£o.
 
 ## Kiwify
 

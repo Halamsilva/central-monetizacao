@@ -60,6 +60,14 @@ const normalizeEventName = (event: unknown) =>
     .toLowerCase()
     .replace(/[\s-]+/g, '_');
 
+const normalizeProductKey = (value: unknown) =>
+  String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+
 const getKiwifyEvent = (payload: any) =>
   normalizeEventName(
     getNestedValue(payload, [
@@ -74,6 +82,50 @@ const getKiwifyEvent = (payload: any) =>
       'order.status',
     ]) || ''
   );
+
+const getKiwifyProduct = (payload: any) => {
+  const id = String(
+    getNestedValue(payload, [
+      'Product.id',
+      'product.id',
+      'product_id',
+      'data.product.id',
+      'order.product.id',
+      'subscription.product.id',
+    ]) || ''
+  );
+  const name = String(
+    getNestedValue(payload, [
+      'Product.name',
+      'product.name',
+      'product_name',
+      'data.product.name',
+      'order.product.name',
+      'subscription.product.name',
+      'course.name',
+      'data.course.name',
+    ]) || ''
+  );
+
+  return { id, name };
+};
+
+const isAllowedKiwifyProduct = (product: { id: string; name: string }) => {
+  const allowedProducts = process.env.KIWIFY_ALLOWED_PRODUCTS;
+
+  if (!allowedProducts) return true;
+
+  const allowed = allowedProducts
+    .split(',')
+    .map((item) => normalizeProductKey(item))
+    .filter(Boolean);
+
+  if (!allowed.length) return true;
+
+  const candidates = [product.id, product.name].map((item) => normalizeProductKey(item)).filter(Boolean);
+
+  return candidates.some((candidate) => allowed.includes(candidate));
+};
 
 const getServiceSupabase = () => {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -114,7 +166,20 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   const purchaseId = String(
     getNestedValue(payload, ['order_id', 'sale_id', 'id', 'data.id', 'order.id', 'transaction.id']) || email
   );
-  const productId = String(getNestedValue(payload, ['product.id', 'product_id', 'data.product.id']) || '');
+  const product = getKiwifyProduct(payload);
+
+  if (!isAllowedKiwifyProduct(product)) {
+    return {
+      status: 200,
+      body: {
+        ok: true,
+        ignored: true,
+        reason: 'product_not_allowed',
+        event,
+      },
+    };
+  }
+
   const paidAtValue = getNestedValue(payload, [
     'paid_at',
     'approved_at',
@@ -164,7 +229,7 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
       {
         email,
         kiwify_order_id: purchaseId,
-        product_id: productId || null,
+        product_id: product.id || product.name || null,
         purchase_status: accessStatus,
         paid_at: paidAt.toISOString(),
         release_at: releaseAt.toISOString(),

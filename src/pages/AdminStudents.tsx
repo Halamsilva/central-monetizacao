@@ -16,6 +16,7 @@ const AdminStudents: React.FC = () => {
     const [students, setStudents] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     useEffect(() => {
         loadStudents();
@@ -34,10 +35,11 @@ const AdminStudents: React.FC = () => {
 
         if (error) {
             console.error(error);
-            alert('Erro ao carregar alunos.');
+            setMessage({ type: 'error', text: 'Erro ao carregar alunos.' });
             return;
         }
 
+        setMessage(null);
         setStudents(data || []);
     };
 
@@ -58,11 +60,12 @@ const AdminStudents: React.FC = () => {
 
         if (error) {
             console.error(error);
-            alert('Erro ao atualizar acesso do aluno.');
+            setMessage({ type: 'error', text: 'Erro ao atualizar acesso do aluno.' });
             return;
         }
 
         await loadStudents();
+        setMessage({ type: 'success', text: 'Acesso do aluno atualizado.' });
     };
 
     const getStatusBadge = (status?: string) => {
@@ -113,6 +116,18 @@ const AdminStudents: React.FC = () => {
                     Atualizar lista
                 </button>
             </div>
+
+            {message && (
+                <div
+                    className={`rounded-2xl border p-4 text-sm font-bold ${
+                        message.type === 'success'
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                            : 'border-red-200 bg-red-50 text-red-700'
+                    }`}
+                >
+                    {message.text}
+                </div>
+            )}
 
             <div className="grid gap-4 md:grid-cols-3">
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

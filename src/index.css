@@ -37,6 +37,7 @@ body {
   background-color: #050505 !important;
 }
 
+.dark .bg-white\/80,
 .dark .bg-white\/90,
 .dark .bg-white\/95 {
   background-color: rgb(5 5 5 / 0.9) !important;
@@ -59,6 +60,15 @@ body {
 .dark .border-gray-100,
 .dark .border-gray-200 {
   border-color: #27272a !important;
+}
+
+.dark .border-blue-100,
+.dark .border-blue-200 {
+  border-color: rgb(37 99 235 / 0.35) !important;
+}
+
+.dark .ring-blue-50 {
+  --tw-ring-color: rgb(37 99 235 / 0.25) !important;
 }
 
 .dark .text-slate-900,

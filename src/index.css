@@ -298,6 +298,101 @@ body {
   border-color: #27272a !important;
 }
 
+.dark .tiktok-persuasive-page {
+  background: #000 !important;
+  color: #f8fafc !important;
+}
+
+.dark .tiktok-persuasive-page > div {
+  background: transparent;
+}
+
+.dark .tiktok-persuasive-page section,
+.dark .tiktok-persuasive-page .rounded-\[2rem\],
+.dark .tiktok-persuasive-page .rounded-\[1\.5rem\] {
+  background: #070707 !important;
+  border-color: #27272a !important;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 0.45) !important;
+}
+
+.dark .tiktok-persuasive-page h1,
+.dark .tiktok-persuasive-page h2,
+.dark .tiktok-persuasive-page h3,
+.dark .tiktok-persuasive-page .text-zinc-950,
+.dark .tiktok-persuasive-page .text-zinc-900,
+.dark .tiktok-persuasive-page .text-zinc-800,
+.dark .tiktok-persuasive-page .text-zinc-700 {
+  color: #f8fafc !important;
+}
+
+.dark .tiktok-persuasive-page p,
+.dark .tiktok-persuasive-page label,
+.dark .tiktok-persuasive-page .text-zinc-600,
+.dark .tiktok-persuasive-page .text-zinc-500,
+.dark .tiktok-persuasive-page .text-zinc-400 {
+  color: #a1a1aa !important;
+}
+
+.dark .tiktok-persuasive-page input:not([type="range"]):not([type="checkbox"]),
+.dark .tiktok-persuasive-page textarea,
+.dark .tiktok-persuasive-page select {
+  background: #0d0d0d !important;
+  border-color: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+.dark .tiktok-persuasive-page input::placeholder,
+.dark .tiktok-persuasive-page textarea::placeholder {
+  color: #71717a !important;
+}
+
+.dark .tiktok-persuasive-page button {
+  color: inherit;
+}
+
+.dark .tiktok-persuasive-page button.bg-white,
+.dark .tiktok-persuasive-page button.bg-zinc-50,
+.dark .tiktok-persuasive-page button.border-zinc-200 {
+  background: #0d0d0d !important;
+  border-color: #3f3f46 !important;
+  color: #d4d4d8 !important;
+}
+
+.dark .tiktok-persuasive-page button.border-orange-400,
+.dark .tiktok-persuasive-page button.bg-orange-50,
+.dark .tiktok-persuasive-page .bg-orange-50,
+.dark .tiktok-persuasive-page .bg-orange-50\/70 {
+  background: rgb(249 115 22 / 0.14) !important;
+  border-color: rgb(249 115 22 / 0.75) !important;
+  color: #fb923c !important;
+}
+
+.dark .tiktok-persuasive-page .border-dashed {
+  background: #101010 !important;
+  border-color: #52525b !important;
+}
+
+.dark .tiktok-persuasive-page .border-dashed:hover {
+  border-color: #fb923c !important;
+}
+
+.dark .tiktok-persuasive-page .bg-zinc-50,
+.dark .tiktok-persuasive-page .bg-white {
+  background: #0d0d0d !important;
+}
+
+.dark .tiktok-persuasive-page .bg-zinc-950,
+.dark .tiktok-persuasive-page .bg-zinc-900,
+.dark .tiktok-persuasive-page .bg-zinc-800 {
+  background: #18181b !important;
+}
+
+.dark .tiktok-persuasive-page button:disabled {
+  background: #27272a !important;
+  color: #71717a !important;
+  border-color: #27272a !important;
+}
+
 img,
 video,
 canvas,

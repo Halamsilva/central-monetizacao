@@ -120,6 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Loja VIP', icon: ShoppingBag, path: '/shop-vip' }, // <-- Movida para o topo com o máximo de destaque!
     { title: 'Prompts Virais', icon: Zap, path: '/viral-prompts' },
     { title: 'TikTok Shop', icon: ShoppingBag, path: '/tiktok-shop' },
+    { title: 'TikTok Persuasivo', icon: ShoppingBag, path: '/tiktok-shop-persuasivo' },
     { title: 'Facebook', icon: Facebook, path: '/facebook' },
     { title: 'YouTube e Shorts', icon: Youtube, path: '/youtube-shorts' },
     { title: 'Ferramentas IA', icon: Wrench, path: '/tools-ia' },

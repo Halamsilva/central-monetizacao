@@ -12,6 +12,7 @@ const Notices = lazy(() => import('./pages/Notices'));
 const Agents = lazy(() => import('./pages/Agents'));
 const ViralPrompts = lazy(() => import('./pages/ViralPrompts'));
 const TikTokShop = lazy(() => import('./pages/TikTokShop'));
+const TikTokShopPersuasivo = lazy(() => import('./pages/TikTokShopPersuasivo'));
 const Facebook = lazy(() => import('./pages/Facebook'));
 const YouTubeShorts = lazy(() => import('./pages/YouTubeShorts'));
 const ToolsIA = lazy(() => import('./pages/ToolsIA'));
@@ -37,6 +38,7 @@ const routeTitles: Record<string, string> = {
   '/agents': 'Agentes IA',
   '/viral-prompts': 'Prompts Virais',
   '/tiktok-shop': 'TikTok Shop',
+  '/tiktok-shop-persuasivo': 'TikTok Shop Persuasivo',
   '/facebook': 'Facebook',
   '/youtube-shorts': 'YouTube e Shorts',
   '/tools-ia': 'Ferramentas IA',
@@ -167,6 +169,7 @@ export default function App() {
               <Route path="agents" element={<Agents />} />
               <Route path="viral-prompts" element={<ViralPrompts />} />
               <Route path="tiktok-shop" element={<TikTokShop />} />
+              <Route path="tiktok-shop-persuasivo" element={<TikTokShopPersuasivo />} />
               <Route path="facebook" element={<Facebook />} />
               <Route path="youtube-shorts" element={<YouTubeShorts />} />
               <Route path="tools-ia" element={<ToolsIA />} />

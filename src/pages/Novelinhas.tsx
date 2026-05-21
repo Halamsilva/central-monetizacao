@@ -54,7 +54,22 @@ type PromptBlock = {
   dialogue: string | null;
 };
 
-const cleanText = (text: string) => text.replace(/\*\*/g, '').trim();
+const ensureFinalPunctuation = (text: string) => {
+  const trimmed = text.trim();
+  return /[.!?…]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+};
+
+const normalizeFalaLines = (text: string) =>
+  text.replace(/^(\s*FALA:\s*)(["“]?)(.+?)(["”]?)\s*$/gim, (_match, prefix, _openQuote, rawText) => {
+    const fala = String(rawText || '')
+      .replace(/^["“]|["”]$/g, '')
+      .trim();
+
+    if (!fala) return `${prefix}""`;
+    return `${prefix}"${ensureFinalPunctuation(fala)}"`;
+  });
+
+const cleanText = (text: string) => normalizeFalaLines(text.replace(/\*\*/g, '').trim());
 
 const parsePromptBlocks = (text: string): PromptBlock[] => {
   const markerRegex =

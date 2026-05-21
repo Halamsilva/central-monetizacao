@@ -52,9 +52,10 @@ REGRAS CRITICAS:
 4. A CENA 00 deve ser o gancho mais forte, feito para parar o scroll nos primeiros segundos.
 5. Use conflito, curiosidade e viradas rapidas, mas evite discurso de odio real contra grupos protegidos. Em temas sensiveis, mostre o conflito como drama e consequencia, sem incentivar preconceito.
 6. As falas devem refletir o idioma e estilo de ${country}. Se for EUA, falas em ingles. Se for Espanha ou Mexico, falas em espanhol. Se for Brasil, falas em portugues do Brasil.
-7. Nao use markdown, nao use negrito, nao use tabela.
-8. Nao cite que voce e uma IA.
-9. Nao inclua texto, legenda, marca d'agua ou overlays no video.
+7. Toda linha de fala deve ter aspas duplas e pontuacao final dentro das aspas. Use sempre FALA: "texto." ou FALA: "texto!" ou FALA: "texto?". Nunca escreva FALA: texto sem aspas.
+8. Nao use markdown, nao use negrito, nao use tabela.
+9. Nao cite que voce e uma IA.
+10. Nao inclua texto, legenda, marca d'agua ou overlays no video.
 
 PADRAO VISUAL OBRIGATORIO EM TODOS OS PROMPTS:
 raw photo quality, 8k uhd, cinematic lighting, ultra-detailed skin texture, subsurface scattering, visible skin pores, fine facial hair, vellus hair, natural skin oils, subtle sweat, realistic eye reflection, microscopic fabric detail, depth of field f/1.8, natural imperfections, gritty realistic atmosphere, no text, no subtitles, no overlays, no watermark.
@@ -71,7 +72,7 @@ POSTURA: postura corporal e ocupacao do espaco.
 PERFIL PSICOLOGICO: estado mental e emocao profunda.
 MOTIVACAO: o que o personagem quer agora.
 MEDO: o que o personagem tenta evitar.
-FALA: repita a fala no idioma de ${country}.
+FALA: "[repita a fala no idioma de ${country}, com pontuacao final dentro das aspas]"
 
 PROMPT CENA 1:
 DIALOGO SUGERIDO: "[fala principal de aproximadamente 8 segundos]"
@@ -84,7 +85,7 @@ POSTURA:
 PERFIL PSICOLOGICO:
 MOTIVACAO:
 MEDO:
-FALA:
+FALA: "[fala principal com pontuacao final dentro das aspas]"
 
 Continue nesse mesmo formato ate PROMPT CENA ${Math.max(1, scenes - 1)}.
 

@@ -9,6 +9,7 @@ import {
   Plus,
   Trash2,
   Loader2,
+  X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -32,6 +33,10 @@ const Notices: React.FC = () => {
   const [notices, setNotices] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showComposer, setShowComposer] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return Boolean(localStorage.getItem('notices_form_draft'));
+  });
 
   const [formData, setFormData] = useState(() => {
     const savedDraft = localStorage.getItem('notices_form_draft');
@@ -155,6 +160,7 @@ const Notices: React.FC = () => {
 
       setFormData({ title: '', content: '', link: '', banner_url: '', is_pinned: false, is_highlighted: false });
       localStorage.removeItem('notices_form_draft');
+      setShowComposer(false);
 
       await fetchNotices();
     } catch (err) {
@@ -231,13 +237,33 @@ const Notices: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="rounded-[20px] sm:rounded-[28px] border border-blue-200 bg-blue-50/20 p-4 sm:p-6 shadow-sm space-y-4"
+          className="rounded-[20px] border border-blue-200 bg-blue-50/20 p-4 shadow-sm sm:rounded-[28px] sm:p-5"
         >
-          <div className="flex items-center gap-2">
-            <Plus size={20} className="text-blue-600" />
-            <h2 className="text-lg font-black text-slate-900">Criar Novo Comunicado para os Alunos</h2>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Plus size={20} className="text-blue-600" />
+                <h2 className="text-lg font-black text-slate-900">
+                  Comunicação com alunos
+                </h2>
+              </div>
+              <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
+                O mural fica em destaque. Abra o editor somente quando quiser publicar algo novo.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowComposer((current) => !current)}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 text-sm font-black text-white shadow-sm transition hover:bg-blue-700"
+              type="button"
+            >
+              {showComposer ? <X size={16} /> : <Plus size={16} />}
+              {showComposer ? 'Fechar editor' : 'Novo aviso'}
+            </button>
           </div>
 
+          {showComposer && (
+            <div className="mt-5 space-y-4 rounded-[18px] border border-blue-100 bg-white/80 p-4 shadow-sm sm:rounded-[24px] sm:p-5">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-black uppercase text-slate-500">Título do Aviso</label>
@@ -303,10 +329,27 @@ const Notices: React.FC = () => {
             {saving ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
             {saving ? 'Publicando...' : 'Liberar Comunicado no Mural'}
           </button>
+            </div>
+          )}
         </motion.div>
       )}
 
-      {/* SEÇÃO DOS AVISOS: CARDS EM 3 COLUNAS PURAS NO MOBILE (grid-cols-3) */}
+      <div className="flex flex-col gap-2 px-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 className="text-xl font-black text-slate-900 sm:text-2xl">
+            Mural de avisos
+          </h2>
+          <p className="text-xs font-medium text-slate-500 sm:text-sm">
+            Comunicados fixados, novidades e atualizações recentes.
+          </p>
+        </div>
+
+        <span className="w-fit rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+          {notices.length} aviso{notices.length === 1 ? '' : 's'}
+        </span>
+      </div>
+
+      {/* SEÇÃO DOS AVISOS */}
       {notices.length === 0 ? (
         <div className="rounded-[20px] sm:rounded-[28px] border border-slate-200 bg-white p-10 text-center">
           <Bell size={48} className="mx-auto mb-4 text-slate-300" />

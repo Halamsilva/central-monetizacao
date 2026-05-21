@@ -27,21 +27,46 @@ interface Announcement {
   is_automated?: boolean; // Identifica se veio da tabela automática de agentes
 }
 
+const emptyNoticeForm = {
+  title: '',
+  content: '',
+  link: '',
+  banner_url: '',
+  is_pinned: false,
+  is_highlighted: false,
+};
+
+const hasNoticeDraft = (draft: typeof emptyNoticeForm) =>
+  draft.title.trim() !== '' ||
+  draft.content.trim() !== '' ||
+  draft.link.trim() !== '' ||
+  draft.banner_url.trim() !== '' ||
+  draft.is_pinned ||
+  draft.is_highlighted;
+
+const loadSavedDraft = () => {
+  if (typeof window === 'undefined') return emptyNoticeForm;
+
+  const savedDraft = localStorage.getItem('notices_form_draft');
+  if (!savedDraft) return emptyNoticeForm;
+
+  try {
+    return { ...emptyNoticeForm, ...JSON.parse(savedDraft) };
+  } catch {
+    localStorage.removeItem('notices_form_draft');
+    return emptyNoticeForm;
+  }
+};
+
 const Notices: React.FC = () => {
   const { isAdmin } = useAuth();
 
   const [notices, setNotices] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showComposer, setShowComposer] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return Boolean(localStorage.getItem('notices_form_draft'));
-  });
-
-  const [formData, setFormData] = useState(() => {
-    const savedDraft = localStorage.getItem('notices_form_draft');
-    return savedDraft ? JSON.parse(savedDraft) : { title: '', content: '', link: '', banner_url: '', is_pinned: false, is_highlighted: false };
-  });
+  const [formData, setFormData] = useState(loadSavedDraft);
+  const [showComposer, setShowComposer] = useState(() => hasNoticeDraft(loadSavedDraft()));
+  const hasDraft = hasNoticeDraft(formData);
 
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
@@ -53,7 +78,12 @@ const Notices: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('notices_form_draft', JSON.stringify(formData));
+    if (hasNoticeDraft(formData)) {
+      localStorage.setItem('notices_form_draft', JSON.stringify(formData));
+      return;
+    }
+
+    localStorage.removeItem('notices_form_draft');
   }, [formData]);
 
   useEffect(() => {
@@ -120,6 +150,13 @@ const Notices: React.FC = () => {
     setFormData((current) => ({ ...current, [field]: value }));
   };
 
+  const discardDraft = () => {
+    setFormData(emptyNoticeForm);
+    localStorage.removeItem('notices_form_draft');
+    setShowComposer(false);
+    setMessage({ type: 'success', text: 'Rascunho descartado.' });
+  };
+
   const saveNotice = async () => {
     if (!formData.title.trim() || !formData.content.trim()) {
       setMessage({ type: 'error', text: 'Título e Conteúdo são obrigatórios.' });
@@ -158,7 +195,7 @@ const Notices: React.FC = () => {
 
       setMessage({ type: 'success', text: 'Aviso publicado e alunos notificados com sucesso!' });
 
-      setFormData({ title: '', content: '', link: '', banner_url: '', is_pinned: false, is_highlighted: false });
+      setFormData(emptyNoticeForm);
       localStorage.removeItem('notices_form_draft');
       setShowComposer(false);
 
@@ -241,11 +278,16 @@ const Notices: React.FC = () => {
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Plus size={20} className="text-blue-600" />
                 <h2 className="text-lg font-black text-slate-900">
                   Comunicação com alunos
                 </h2>
+                {hasDraft && !showComposer && (
+                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-black uppercase text-amber-700">
+                    Rascunho salvo
+                  </span>
+                )}
               </div>
               <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
                 O mural fica em destaque. Abra o editor somente quando quiser publicar algo novo.
@@ -264,7 +306,26 @@ const Notices: React.FC = () => {
 
           {showComposer && (
             <div className="mt-5 space-y-4 rounded-[18px] border border-blue-100 bg-white/80 p-4 shadow-sm sm:rounded-[24px] sm:p-5">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-black text-slate-900">Editor de comunicado</h3>
+                  <p className="text-xs font-medium text-slate-500">
+                    O rascunho fica salvo até você publicar ou descartar.
+                  </p>
+                </div>
+
+                {hasDraft && (
+                  <button
+                    onClick={discardDraft}
+                    className="inline-flex h-9 w-fit items-center justify-center gap-2 rounded-xl border border-rose-100 bg-rose-50 px-3 text-xs font-black text-rose-600 transition hover:bg-rose-100"
+                    type="button"
+                  >
+                    <Trash2 size={14} />
+                    Descartar rascunho
+                  </button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-black uppercase text-slate-500">Título do Aviso</label>
               <input
@@ -325,6 +386,7 @@ const Notices: React.FC = () => {
             onClick={saveNotice}
             disabled={saving}
             className="flex w-full h-11 sm:h-12 items-center justify-center gap-2 bg-blue-600 text-white font-black rounded-xl hover:bg-blue-700 transition disabled:opacity-50 text-sm shadow-sm"
+            type="button"
           >
             {saving ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
             {saving ? 'Publicando...' : 'Liberar Comunicado no Mural'}

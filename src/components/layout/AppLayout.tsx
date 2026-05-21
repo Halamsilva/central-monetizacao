@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import { Menu, Bell, Clock, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
@@ -33,6 +34,7 @@ const AppLayout: React.FC = () => {
 
   const location = useLocation();
   const { profile, isAdmin, signOut } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const currentTitle = pageTitles[location.pathname] || 'Central Monetização';
   const accessStatus = profile?.access_status || 'pending';
@@ -54,6 +56,39 @@ const AppLayout: React.FC = () => {
   useEffect(() => {
     if (window.innerWidth < 1024) {
       setSidebarOpen(false);
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true });
+
+      if (!error && count !== null) {
+        setUnreadCount(count);
+      }
+    };
+
+    fetchNotificationCount();
+
+    const channel = supabase
+      .channel('topbar-notifications')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications' },
+        () => setUnreadCount((current) => current + 1)
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (location.pathname === '/notices') {
+      setUnreadCount(0);
     }
   }, [location.pathname]);
 
@@ -206,10 +241,18 @@ const AppLayout: React.FC = () => {
             <Link
               to="/notices"
               className="relative flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-              aria-label="Abrir notificações"
+              aria-label={
+                unreadCount > 0
+                  ? `Abrir notificações, ${unreadCount} não lidas`
+                  : 'Abrir notificações'
+              }
             >
               <Bell size={19} />
-              <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Link>
           </div>
         </header>

@@ -125,7 +125,7 @@ const Dashboard: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {categories.map((category) => {
             const Icon = category.icon;
 
@@ -164,7 +164,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((item) => (
               <div
                 key={item}
@@ -173,7 +173,7 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {agents.map((agent, idx) => (
               <motion.article
                 key={agent.id}
@@ -215,6 +215,7 @@ const Dashboard: React.FC = () => {
                     href={agent.agent_link}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={`Abrir ferramenta externa ${agent.title}`}
                     className="mt-2 flex h-9 w-full items-center justify-center gap-1 rounded-2xl bg-slate-950 text-[10px] font-black text-white transition hover:bg-blue-600"
                   >
                     <ExternalLink size={12} />

@@ -175,13 +175,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       className={`fixed left-0 top-0 z-40 flex h-screen w-[88%] max-w-[320px] flex-col border-r border-slate-200 bg-white shadow-2xl transition-transform duration-300 lg:static lg:w-72 lg:max-w-none lg:translate-x-0 lg:shadow-none ${isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
     >
-      <div className="flex items-center justify-between border-b border-slate-100 p-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-lg font-black text-white shadow-lg shadow-blue-500/20">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-4 sm:p-5">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-base font-black text-white shadow-lg shadow-blue-500/20 sm:h-14 sm:w-14 sm:text-lg">
             CM
           </div>
 
-          <div>
+          <div className="min-w-0">
             <h1 className="text-xl font-black leading-none text-slate-900">
               CENTRAL
               <br />
@@ -196,6 +196,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={toggle}
           className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 lg:hidden"
+          aria-label="Fechar menu"
         >
           <X size={22} />
         </button>
@@ -255,6 +256,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={handleLogout}
           className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-red-50 text-sm font-bold text-red-600 transition hover:bg-red-100"
+          aria-label="Sair da conta"
         >
           <LogOut size={18} />
           Sair da Conta

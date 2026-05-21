@@ -11,7 +11,7 @@ import {
   Star,
   Filter,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
 
 interface Agent {
@@ -43,6 +43,7 @@ const formatCategoryLabel = (category?: string) => {
 const Agents = () => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
@@ -67,6 +68,7 @@ const Agents = () => {
   const fetchAgents = async () => {
     try {
       setLoading(true);
+      setLoadError('');
 
       const { data, error } = await supabase
         .from('agents')
@@ -75,12 +77,14 @@ const Agents = () => {
 
       if (error) {
         console.error(error);
+        setLoadError('Não foi possível carregar os agentes agora.');
         return;
       }
 
       setAgents(data || []);
     } catch (err) {
       console.error(err);
+      setLoadError('Não foi possível carregar os agentes agora.');
     } finally {
       setLoading(false);
     }
@@ -178,6 +182,31 @@ const Agents = () => {
     );
   }
 
+  if (loadError) {
+    return (
+      <div className="flex min-h-[55vh] items-center justify-center p-3">
+        <div className="w-full max-w-md rounded-3xl border border-red-100 bg-white p-8 text-center shadow-sm">
+          <Bot className="mx-auto mb-4 h-10 w-10 text-red-500" />
+
+          <h2 className="text-lg font-black text-slate-900">
+            Biblioteca indisponível
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-500">
+            {loadError}
+          </p>
+
+          <button
+            onClick={fetchAgents}
+            className="mt-5 inline-flex h-11 items-center justify-center rounded-2xl bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-blue-600"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pb-20">
       {successMessage && (
@@ -214,6 +243,7 @@ const Agents = () => {
               type="text"
               placeholder="Buscar agentes..."
               value={search}
+              aria-label="Buscar agentes"
               onChange={(e) => setSearch(e.target.value)}
               className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 sm:h-14 sm:pl-12"
             />
@@ -221,6 +251,7 @@ const Agents = () => {
 
           <select
             value={selectedCategory}
+            aria-label="Filtrar por categoria"
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="h-11 rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100 sm:h-14 sm:px-5"
           >
@@ -232,6 +263,7 @@ const Agents = () => {
           <div className="grid grid-cols-2 gap-2 xl:flex">
             <button
               onClick={() => setFeaturedOnly((current) => !current)}
+              aria-pressed={featuredOnly}
               className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-2xl px-3 text-xs font-black transition sm:h-14 sm:px-5 sm:text-sm ${featuredOnly
                   ? 'bg-amber-500 text-white shadow-sm'
                   : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
@@ -286,7 +318,7 @@ const Agents = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3 2xl:grid-cols-4">
           {filteredAgents.map((agent, index) => (
             <motion.div
               key={agent.id}
@@ -339,6 +371,7 @@ const Agents = () => {
                       href={agent.agent_link}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label={`Abrir ferramenta externa ${agent.title}`}
                       className="flex h-8 items-center justify-center gap-1 rounded-xl bg-blue-600 text-[9px] font-black text-white transition-all hover:bg-blue-700 sm:h-12 sm:gap-2 sm:rounded-2xl sm:text-base"
                     >
                       <ExternalLink size={11} className="sm:h-[18px] sm:w-[18px]" />
@@ -352,12 +385,14 @@ const Agents = () => {
                         onClick={() => copyPrompt(agent.prompt)}
                         className="flex h-8 w-7 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition-all hover:bg-slate-100 sm:h-12 sm:w-12 sm:rounded-2xl"
                         title="Copiar prompt"
+                        aria-label={`Copiar prompt de ${agent.title}`}
                       >
                         <Copy size={12} className="sm:h-[18px] sm:w-[18px]" />
                       </button>
 
                       <button
                         onClick={() => openPrompt(agent)}
+                        aria-label={`Ver prompt de ${agent.title}`}
                         className="h-8 rounded-xl border border-slate-200 px-1 text-[9px] font-black text-slate-700 transition-all hover:bg-slate-100 sm:h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
                       >
                         Prompt
@@ -388,6 +423,7 @@ const Agents = () => {
               <button
                 onClick={() => setSelectedPrompt(null)}
                 className="flex h-10 w-10 items-center justify-center rounded-xl transition hover:bg-slate-100"
+                aria-label="Fechar prompt"
               >
                 <X size={20} />
               </button>

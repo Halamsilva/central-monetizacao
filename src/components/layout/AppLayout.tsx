@@ -66,6 +66,8 @@ const AppLayout: React.FC = () => {
     };
   }, [sidebarOpen]);
 
+  const currentYear = new Date().getFullYear();
+
   const statusBadge = (() => {
     if (isAdmin) {
       return {
@@ -201,7 +203,10 @@ const AppLayout: React.FC = () => {
               </span>
             </div>
 
-            <button className="relative flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-600">
+            <button
+              className="relative flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+              aria-label="Abrir notificações"
+            >
               <Bell size={19} />
               <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
             </button>
@@ -219,7 +224,7 @@ const AppLayout: React.FC = () => {
             Status do Sistema: <span className="text-green-600">Online</span>
           </span>
 
-          <span>© 2025 Central Monetização</span>
+          <span>© {currentYear} Central Monetização</span>
         </footer>
       </div>
     </div>

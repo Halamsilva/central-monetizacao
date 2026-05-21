@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
 
@@ -7,7 +7,7 @@ import AppLayout from './components/layout/AppLayout';
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Recovery = lazy(() => import('./pages/Recovery'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));h
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Notices = lazy(() => import('./pages/Notices'));
 const Agents = lazy(() => import('./pages/Agents'));
 const ViralPrompts = lazy(() => import('./pages/ViralPrompts'));
@@ -25,6 +25,39 @@ const Admin = lazy(() => import('./pages/Admin'));
 const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AdminNotices = lazy(() => import('./pages/AdminNotices'));
 const AdminStudents = lazy(() => import('./pages/AdminStudents'));
+
+const routeTitles: Record<string, string> = {
+  '/login': 'Entrar',
+  '/register': 'Cadastro',
+  '/recovery': 'Recuperar acesso',
+  '/dashboard': 'Dashboard',
+  '/notices': 'Avisos',
+  '/agents': 'Agentes IA',
+  '/viral-prompts': 'Prompts Virais',
+  '/tiktok-shop': 'TikTok Shop',
+  '/facebook': 'Facebook',
+  '/youtube-shorts': 'YouTube e Shorts',
+  '/tools-ia': 'Ferramentas IA',
+  '/downloads': 'Downloads',
+  '/shop-vip': 'Loja VIP',
+  '/profile': 'Perfil',
+  '/settings': 'Configurações',
+  '/admin': 'Painel Admin',
+  '/admin/agents': 'Gerenciar Agentes',
+  '/admin/notices': 'Gerenciar Avisos',
+  '/admin/students': 'Gerenciar Alunos',
+};
+
+const TitleManager = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const pageTitle = routeTitles[location.pathname] || 'Central Monetização';
+    document.title = `${pageTitle} | Central Monetização`;
+  }, [location.pathname]);
+
+  return null;
+};
 
 // Tela de Carregamento Global
 const LoadingScreen = () => (
@@ -105,6 +138,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <TitleManager />
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
             {/* Rotas Públicas */}

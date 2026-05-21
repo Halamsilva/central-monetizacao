@@ -15,6 +15,7 @@ const TikTokShop = lazy(() => import('./pages/TikTokShop'));
 const Facebook = lazy(() => import('./pages/Facebook'));
 const YouTubeShorts = lazy(() => import('./pages/YouTubeShorts'));
 const ToolsIA = lazy(() => import('./pages/ToolsIA'));
+const Novelinhas = lazy(() => import('./pages/Novelinhas'));
 const Downloads = lazy(() => import('./pages/Downloads'));
 const ShopVIP = lazy(() => import('./pages/ShopVIP')); // <-- Importado com calma aqui!
 const Profile = lazy(() => import('./pages/Profile'));
@@ -38,6 +39,7 @@ const routeTitles: Record<string, string> = {
   '/facebook': 'Facebook',
   '/youtube-shorts': 'YouTube e Shorts',
   '/tools-ia': 'Ferramentas IA',
+  '/novelinhas': 'Fábrica de Novelinhas',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',
   '/profile': 'Perfil',
@@ -166,6 +168,7 @@ export default function App() {
               <Route path="facebook" element={<Facebook />} />
               <Route path="youtube-shorts" element={<YouTubeShorts />} />
               <Route path="tools-ia" element={<ToolsIA />} />
+              <Route path="novelinhas" element={<Novelinhas />} />
               <Route path="downloads" element={<Downloads />} />
               <Route path="shop-vip" element={<ShopVIP />} /> {/* <-- Rota da loja registrada aqui! */}
               <Route path="profile" element={<Profile />} />

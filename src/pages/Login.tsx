@@ -9,6 +9,7 @@ import {
   ArrowRight,
   Loader2,
   AlertCircle,
+  ShieldCheck,
 } from 'lucide-react';
 
 const Login: React.FC = () => {
@@ -95,6 +96,14 @@ const Login: React.FC = () => {
 
           <p className="mt-2 text-sm font-bold uppercase tracking-[0.2em] text-gray-400">
             Redes Sociais
+          </p>
+        </div>
+
+        <div className="flex gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-left">
+          <ShieldCheck className="mt-0.5 shrink-0 text-blue-600" size={18} />
+          <p className="text-sm font-semibold leading-relaxed text-blue-900">
+            Use o mesmo e-mail da compra na Kiwify. E-mails diferentes ficam
+            em análise até a confirmação do acesso.
           </p>
         </div>
 

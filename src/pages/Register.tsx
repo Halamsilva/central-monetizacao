@@ -87,6 +87,14 @@ const Register: React.FC = () => {
           </p>
         </div>
 
+        <div className="flex gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4">
+          <ShieldCheck className="mt-0.5 shrink-0 text-blue-600" size={18} />
+          <p className="text-sm font-semibold leading-relaxed text-blue-900">
+            Cadastre-se com o mesmo e-mail usado na compra da Kiwify para a
+            liberação acontecer automaticamente.
+          </p>
+        </div>
+
         <form className="mt-8 space-y-5" onSubmit={handleRegister}>
           {error && (
             <div className="flex items-center gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-600 border border-red-100">

@@ -30,35 +30,35 @@ body {
 }
 
 .dark body {
-  @apply bg-slate-950 text-slate-100;
+  @apply bg-black text-zinc-100;
 }
 
 .dark .bg-white {
-  background-color: #0f172a !important;
+  background-color: #050505 !important;
 }
 
 .dark .bg-white\/90,
 .dark .bg-white\/95 {
-  background-color: rgb(15 23 42 / 0.9) !important;
+  background-color: rgb(5 5 5 / 0.9) !important;
 }
 
 .dark .bg-slate-50 {
-  background-color: #111827 !important;
+  background-color: #0a0a0a !important;
 }
 
 .dark .bg-slate-100 {
-  background-color: #1e293b !important;
+  background-color: #111111 !important;
 }
 
 .dark .bg-slate-200 {
-  background-color: #334155 !important;
+  background-color: #1f1f1f !important;
 }
 
 .dark .border-slate-100,
 .dark .border-slate-200,
 .dark .border-gray-100,
 .dark .border-gray-200 {
-  border-color: #334155 !important;
+  border-color: #27272a !important;
 }
 
 .dark .text-slate-900,
@@ -94,9 +94,9 @@ body {
 .dark input,
 .dark select,
 .dark textarea {
-  background-color: #111827 !important;
-  border-color: #334155 !important;
-  color: #e2e8f0 !important;
+  background-color: #0a0a0a !important;
+  border-color: #27272a !important;
+  color: #e5e7eb !important;
 }
 
 .dark input::placeholder,
@@ -112,11 +112,11 @@ body {
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #27272a;
 }
 
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #3f3f46;
 }
 
 img,

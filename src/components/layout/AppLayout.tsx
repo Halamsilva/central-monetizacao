@@ -210,7 +210,7 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <div className="relative flex h-screen w-screen overflow-hidden bg-[#F8FAFC] transition-colors dark:bg-slate-950">
+    <div className="relative flex h-screen w-screen overflow-hidden bg-[#F8FAFC] transition-colors dark:bg-black">
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
@@ -229,7 +229,7 @@ const AppLayout: React.FC = () => {
       />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-3 transition-colors sm:h-16 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-3 transition-colors sm:h-16 sm:px-6 lg:px-8 dark:border-zinc-800 dark:bg-black">
           <div className="flex min-w-0 items-center gap-2">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -289,7 +289,7 @@ const AppLayout: React.FC = () => {
           </div>
         </main>
 
-        <footer className="hidden h-8 shrink-0 items-center justify-between border-t border-slate-200 bg-slate-100 px-6 text-[9px] font-medium text-slate-500 sm:flex dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+        <footer className="hidden h-8 shrink-0 items-center justify-between border-t border-slate-200 bg-slate-100 px-6 text-[9px] font-medium text-slate-500 sm:flex dark:border-zinc-800 dark:bg-black dark:text-zinc-400">
           <span>
             Status do Sistema: <span className="text-green-600">Online</span>
           </span>

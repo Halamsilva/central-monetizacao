@@ -110,6 +110,10 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     return <BlockedAccessScreen />;
   }
 
+  if (profile?.role === 'admin') {
+    return <>{children}</>;
+  }
+
   if (profile?.access_status !== 'active') {
     return <PendingAccessScreen />;
   }
@@ -123,7 +127,7 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   if (loading) return <LoadingScreen />;
 
-  if (!isAdmin || profile?.access_status !== 'active') {
+  if (!isAdmin || profile?.access_status === 'blocked') {
     return <Navigate to="/dashboard" replace />;
   }
 

@@ -38,6 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const visibleUnreadCount = location.pathname === '/notices' ? 0 : unreadCount;
 
   // Link do som de notificação (estilo push/ping moderno e limpo)
   const audioUrl = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav';
@@ -161,9 +162,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Bolinha vermelha com a contagem de notificações não lidas */}
-        {item.badge && unreadCount > 0 && (
+        {item.badge && visibleUnreadCount > 0 && (
           <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-black text-white animate-bounce shadow-sm">
-            {unreadCount}
+            {visibleUnreadCount}
           </span>
         )}
       </Link>

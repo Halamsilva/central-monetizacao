@@ -49,6 +49,7 @@ const AppLayout: React.FC = () => {
 
   const currentTitle = pageTitles[location.pathname] || 'Central Monetização';
   const accessStatus = profile?.access_status || 'pending';
+  const visibleUnreadCount = location.pathname === '/notices' ? 0 : unreadCount;
 
   const hasPremiumAccess = isAdmin || accessStatus === 'active';
   const isPending = !isAdmin && accessStatus === 'pending';
@@ -258,15 +259,15 @@ const AppLayout: React.FC = () => {
               to="/notices"
               className="relative flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
               aria-label={
-                unreadCount > 0
-                  ? `Abrir notificações, ${unreadCount} não lidas`
+                visibleUnreadCount > 0
+                  ? `Abrir notificações, ${visibleUnreadCount} não lidas`
                   : 'Abrir notificações'
               }
             >
               <Bell size={19} />
-              {unreadCount > 0 && (
+              {visibleUnreadCount > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white">
-                  {unreadCount > 9 ? '9+' : unreadCount}
+                  {visibleUnreadCount > 9 ? '9+' : visibleUnreadCount}
                 </span>
               )}
             </Link>

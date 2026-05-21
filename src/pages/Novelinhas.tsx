@@ -70,9 +70,9 @@ const parsePromptBlocks = (text: string): PromptBlock[] => {
       const end = next?.index ?? text.length;
       const title = cleanText(match[1] || `PROMPT CENA ${index}`);
       const content = cleanText(text.slice(start, end));
-      const dialogueMatch = content.match(
-        /(?:di[aá]logo sugerido|fala.*?:|FALA:)\s*["“]?([^\n"”]+)["”]?/i
-      );
+      const dialogueMatch =
+        content.match(/(?:di[aá]logo sugerido|fala)\s*:\s*["“]?([^\n"”]+)["”]?/i) ||
+        content.match(/[A-Za-zÀ-ÿ\s]+fala[^:]*:\s*["“]?([^\n"”]+)["”]?/i);
 
       return {
         title,

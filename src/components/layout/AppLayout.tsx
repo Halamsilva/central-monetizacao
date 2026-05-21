@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { Menu, Bell, Clock, ShieldAlert } from 'lucide-react';
+import { Menu, Bell, Clock, Moon, ShieldAlert, Sun } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -30,6 +30,17 @@ const AppLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window === 'undefined') return true;
     return window.innerWidth >= 1024;
+  });
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window === 'undefined') return 'light';
+
+    const savedTheme = localStorage.getItem('central-theme');
+
+    if (savedTheme === 'dark' || savedTheme === 'light') {
+      return savedTheme;
+    }
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
 
   const location = useLocation();
@@ -100,6 +111,11 @@ const AppLayout: React.FC = () => {
       document.body.style.overflow = '';
     };
   }, [sidebarOpen]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('central-theme', theme);
+  }, [theme]);
 
   const currentYear = new Date().getFullYear();
 
@@ -194,7 +210,7 @@ const AppLayout: React.FC = () => {
   };
 
   return (
-    <div className="relative flex h-screen w-screen overflow-hidden bg-[#F8FAFC]">
+    <div className="relative flex h-screen w-screen overflow-hidden bg-[#F8FAFC] transition-colors dark:bg-slate-950">
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
@@ -213,7 +229,7 @@ const AppLayout: React.FC = () => {
       />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-3 sm:h-16 sm:px-6 lg:px-8">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-3 transition-colors sm:h-16 sm:px-6 lg:px-8 dark:border-slate-800 dark:bg-slate-950">
           <div className="flex min-w-0 items-center gap-2">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -254,6 +270,16 @@ const AppLayout: React.FC = () => {
                 </span>
               )}
             </Link>
+
+            <button
+              onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+              className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+              aria-label={theme === 'dark' ? 'Ativar tema claro' : 'Ativar tema escuro'}
+              title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+              type="button"
+            >
+              {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
+            </button>
           </div>
         </header>
 
@@ -263,7 +289,7 @@ const AppLayout: React.FC = () => {
           </div>
         </main>
 
-        <footer className="hidden h-8 shrink-0 items-center justify-between border-t border-slate-200 bg-slate-100 px-6 text-[9px] font-medium text-slate-500 sm:flex">
+        <footer className="hidden h-8 shrink-0 items-center justify-between border-t border-slate-200 bg-slate-100 px-6 text-[9px] font-medium text-slate-500 sm:flex dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
           <span>
             Status do Sistema: <span className="text-green-600">Online</span>
           </span>

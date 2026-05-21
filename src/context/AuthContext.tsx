@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase, UserProfile, isSupabaseConfigured } from '../lib/supabase';
 
@@ -18,6 +18,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const userIdRef = useRef<string | null>(null);
+  const profileRef = useRef<UserProfile | null>(null);
+
+  const setCurrentUser = (currentUser: User | null) => {
+    userIdRef.current = currentUser?.id ?? null;
+    setUser(currentUser);
+  };
+
+  const setCurrentProfile = (currentProfile: UserProfile | null) => {
+    profileRef.current = currentProfile;
+    setProfile(currentProfile);
+  };
 
   const syncKiwifyAccess = async () => {
     try {
@@ -57,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       if (data) {
-        setProfile(data);
+        setCurrentProfile(data);
         return;
       }
 
@@ -89,15 +101,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         .maybeSingle();
 
       if (refreshedProfile) {
-        setProfile(refreshedProfile);
+        setCurrentProfile(refreshedProfile);
         return;
       }
 
-      setProfile(newProfile);
+      setCurrentProfile(newProfile);
     } catch (err) {
       console.error('Falha geral ao carregar perfil:', err);
 
-      setProfile({
+      setCurrentProfile({
         id: currentUser.id,
         email: currentUser.email || '',
         full_name: currentUser.email?.split('@')[0] || 'Usuário',
@@ -113,25 +125,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const initAuth = async () => {
     try {
       if (!isSupabaseConfigured) {
-        setUser(null);
-        setProfile(null);
+        setCurrentUser(null);
+        setCurrentProfile(null);
         return;
       }
 
       const { data } = await supabase.auth.getSession();
       const currentUser = data.session?.user ?? null;
 
-      setUser(currentUser);
+      setCurrentUser(currentUser);
 
       if (currentUser) {
         await loadProfile(currentUser);
       } else {
-        setProfile(null);
+        setCurrentProfile(null);
       }
     } catch (err) {
       console.error('Erro ao iniciar autenticação:', err);
-      setUser(null);
-      setProfile(null);
+      setCurrentUser(null);
+      setCurrentProfile(null);
     } finally {
       setLoading(false);
     }
@@ -144,12 +156,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       const currentUser = session?.user ?? null;
+      const isSameUser = Boolean(currentUser?.id && currentUser.id === userIdRef.current);
+      const hasProfileLoaded = Boolean(profileRef.current);
 
-      setUser(currentUser);
+      setCurrentUser(currentUser);
 
       if (!currentUser) {
-        setProfile(null);
+        setCurrentProfile(null);
         setLoading(false);
+        return;
+      }
+
+      if (isSameUser && hasProfileLoaded) {
+        loadProfile(currentUser);
         return;
       }
 
@@ -168,8 +187,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
+    setCurrentUser(null);
+    setCurrentProfile(null);
     setLoading(false);
   };
 

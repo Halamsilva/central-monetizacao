@@ -7,7 +7,6 @@ import {
   Sparkles,
   X,
   Check,
-  Loader2,
   Star,
   Filter,
 } from 'lucide-react';
@@ -166,17 +165,16 @@ const Agents = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[55vh] items-center justify-center p-3">
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <Loader2 className="mx-auto mb-4 h-9 w-9 animate-spin text-blue-600" />
-
-          <h2 className="text-lg font-black text-slate-900">
-            Carregando agentes...
-          </h2>
-
-          <p className="mt-2 text-sm text-slate-500">
-            Preparando a biblioteca premium.
-          </p>
+      <div className="space-y-4 pb-20">
+        <div className="h-40 animate-pulse rounded-[24px] bg-white shadow-sm ring-1 ring-slate-200" />
+        <div className="h-28 animate-pulse rounded-[24px] border border-slate-200 bg-white shadow-sm" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3 2xl:grid-cols-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+            <div
+              key={item}
+              className="h-72 animate-pulse rounded-[18px] border border-slate-200 bg-white sm:rounded-3xl"
+            />
+          ))}
         </div>
       </div>
     );

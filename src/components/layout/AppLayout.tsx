@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { Menu, Bell, Clock, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -203,13 +203,14 @@ const AppLayout: React.FC = () => {
               </span>
             </div>
 
-            <button
+            <Link
+              to="/notices"
               className="relative flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
               aria-label="Abrir notificações"
             >
               <Bell size={19} />
               <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full border-2 border-white bg-red-500" />
-            </button>
+            </Link>
           </div>
         </header>
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import {
   Bell,
   Star,
@@ -192,9 +192,16 @@ const Notices: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center py-20">
-        <Loader2 className="animate-spin text-blue-600 mr-2" size={20} />
-        <p className="text-slate-500 font-bold">Carregando quadro de avisos...</p>
+      <div className="mx-auto max-w-7xl space-y-4 p-2 sm:p-4">
+        <div className="h-28 animate-pulse rounded-[24px] bg-white shadow-sm" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((item) => (
+            <div
+              key={item}
+              className="h-44 animate-pulse rounded-[24px] border border-slate-200 bg-white"
+            />
+          ))}
+        </div>
       </div>
     );
   }
@@ -307,7 +314,7 @@ const Notices: React.FC = () => {
           <p className="mt-1 text-xs text-slate-500">Novas notificações aparecerão quando necessário.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {notices.map((notice, idx) => {
             const hasBg = !!notice.banner_url;
 
@@ -365,6 +372,7 @@ const Notices: React.FC = () => {
                         rel="noopener noreferrer"
                         className="flex h-5 w-5 sm:h-7 sm:w-7 items-center justify-center rounded-md bg-blue-600 text-white hover:bg-blue-700 transition shrink-0 shadow-xs"
                         title={notice.is_automated ? 'Ver Agentes' : 'Acessar link'}
+                        aria-label={notice.is_automated ? 'Ver agentes' : `Acessar link do aviso ${notice.title}`}
                       >
                         <ExternalLink size={10} className="sm:size-3.5" />
                       </a>
@@ -377,6 +385,7 @@ const Notices: React.FC = () => {
                   <button
                     onClick={() => deleteNotice(notice)}
                     className="absolute right-1 top-1 sm:right-2 sm:top-2 z-20 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-rose-500 text-white shadow-xs hover:bg-rose-600 transition"
+                    aria-label={`Excluir aviso ${notice.title}`}
                   >
                     <Trash2 size={10} className="sm:size-3.5" />
                   </button>

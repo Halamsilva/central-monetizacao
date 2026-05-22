@@ -1,10 +1,10 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { createClient } from '@supabase/supabase-js';
 
-type ScenarioKey = 'natural' | 'sensual' | 'urban' | 'beach' | 'custom';
+type ScenarioKey = 'natural' | 'sensual' | 'provocative' | 'urban' | 'beach' | 'custom';
 
 const technicalPrefix =
-  'realistic natural human skin captured by a regular smartphone camera, vertical 9:16, handheld homemade recording, natural auto exposure, slight focus breathing, minor hand shake, normal mobile video compression, realistic smartphone sharpness, no studio lighting, no HDR look, no commercial polish, no beauty filter, no retouching, no CGI face, no doll-like face, no text overlay, no subtitles, no emojis, ';
+  'realistic natural human skin captured by a regular smartphone camera, sun-exposed uneven skin tone, subtle natural facial oil, slight sweat on forehead and around nose, mild under-eye darkness, natural asymmetry, soft irregular skin texture, slightly rough cheeks from sun and dust, darker tanned neck, realistic calloused dry hands, visible skin variation without exaggeration, pores only subtly visible at close distance, no skin smoothing, no beauty filter, no retouching, no waxy skin, no plastic skin, no CGI face, no doll-like face, no perfect symmetry, no glamorous skin, no over-sharpening, shot on a regular mid-range Android smartphone, vertical 9:16, handheld homemade recording, natural auto exposure, slight focus breathing, minor hand shake, normal mobile video compression, realistic smartphone sharpness, no cinematic lens, no studio lighting, no HDR look, no commercial polish, no beauty filter, no studio face, no polished skin, no fashion model face, no wax texture, no plastic face, no over-detailed pores, no CGI realism, no airbrushed skin, no artificial symmetry, ';
 
 const technicalSuffix =
   ', 1 segundo final em silencio, mantendo contato visual, sem musica, sem texto na tela, sem legendas, sem emojis';
@@ -13,36 +13,43 @@ const scenarios: Record<ScenarioKey, { label: string; prompt: string; instructio
   natural: {
     label: 'Tradicional',
     prompt:
-      'mulher brasileira adulta 21+, beleza natural, carisma rural, roupa simples e decente, quintal, campo, roca, rio ou cozinha humilde, luz natural, camera fixa ou levemente tremida, olhar direto para a camera, tom baixo, intimo e emocional',
+      'Mulher brasileira adulta de beleza deslumbrante, rosto angelical e harmonico, natural, corpo curvilineo perfeito e saudavel, aparencia real porem extremamente atraente, roupa simples: biquini, short jeans e top justo, sem luxo, sem marcas, cenario simples/rural: quintal, campo, roca, rio ou cozinha humilde, luz natural, sol bate em parte do seu corpo realcando sua pele radiante, camera fixa ou levemente tremida, enquadramento do peito para cima, direcao emocional: olhar direto para a camera, tom baixo, intimo, pausas naturais',
     instruction:
-      'tom emocional, rural, proximo e simples, com foco em autenticidade, carisma e conexao com o publico',
+      'O tom deve ser emocional, intimo e rural, mantendo a simplicidade e a beleza estonteante da modelo adulta.',
   },
   sensual: {
     label: 'Sensual Brasileira',
     prompt:
-      'mulher brasileira adulta 21+, visual confiante e elegante, roupa de verao ou look casual que valoriza presenca sem nudez, beira de rio ou cercado de madeira na roca ao entardecer, luz dourada, sorriso cativante, movimentos naturais',
+      'Modelo brasileira adulta deslumbrante de beleza internacional, pele muito bronzeada com marcas de sol impecaveis, corpo curvilineo escultural, rosto simetrico com tracos marcantes, cabelos naturais sedosos levemente baguncados pelo vento, roupa: biquini reduzido de croche ou top de amarrar que valoriza o busto, cenario: beira de rio ou cercado de madeira na roca ao entardecer, luz dourada realcando as curvas perfeitas e o brilho da pele, olhar magnetico e profundo, sorriso cativante, presenca brasileira autentica, quente e belissima',
     instruction:
-      'tom envolvente e caloroso, sensualidade leve e adulta, sem nudez, sem ato sexual e sem foco explicito no corpo',
+      'O tom deve ser envolvente, caloroso e levemente sensual, com foco maximo na beleza das curvas e no charme brasileiro da modelo adulta.',
+  },
+  provocative: {
+    label: 'Sexy Mode',
+    prompt:
+      'Mulher brasileira adulta de beleza hipnotizante, rosto perfeito com olhar fatal, sensualidade intensa, presenca magnetica e provocativa, corpo curvilineo em destaque absoluto, silhueta escultural, roupa sexy e ousada: mini biquini revelador ou shorts curtissimos desabotoados e top decotado, sem marcas, cenario: interior de um celeiro rustico ou cachoeira isolada, luz dramatica de baixo contraste realcando a textura da pele perfeita e gotas de agua/suor, olhar sedutor e intenso fixo na lente, labios entreabertos e umidos, movimentos lentos e provocativos, respiracao levemente ofegante',
+    instruction:
+      'O tom deve ser significativamente mais sexy, provocativo e ousado. Foque em olhares intensos, clima intimo e beleza avassaladora da modelo adulta.',
   },
   urban: {
     label: 'Urbano/Paredao',
     prompt:
-      'mulher brasileira adulta 21+, estilo urbano confiante, cabelo bem cuidado, acessorios discretos, roupa casual moderna, rua de comunidade com grafite ou paredao ao fundo, por do sol urbano, olhar confiante e atitude elegante',
+      "Modelo brasileira urbana adulta de beleza impactante, estilo 'mandraka' chique, tracos faciais definidos e belos, cabelos com luzes ou naturais bem cuidados e brilhantes, argolas grandes, roupa: short biker e top curto de marca esportiva ou biquini com jaqueta aberta, cenario: rua de comunidade com grafite colorido ao fundo ou perto de um paredao de som automotivo, luzes de neon ou por do sol urbano realcando sua beleza magnetica, olhar confiante e desafiador, batom marcante, atitude de quem manda na area com elegancia e beleza",
     instruction:
-      'tom direto, confiante e urbano, com presenca forte e linguagem de video curto',
+      'O tom deve ser confiante, direto e urbano, focando na beleza poderosa da modelo adulta e na atitude das ruas.',
   },
   beach: {
     label: 'Praia Tropical',
     prompt:
-      'mulher brasileira adulta 21+, pele iluminada pelo sol, cabelo com efeito praia, roupa de praia adequada sem nudez, areia clara, coqueiros e mar ao fundo, luz solar natural, sorriso leve e movimentos fluidos',
+      "Mulher brasileira adulta de beleza radiante e solar, pele iluminada pelo sol e salitre, rosto fresco e encantador, cabelos molhados ou com efeito 'beach waves' natural, corpo bronzeado e tonificado, roupa: biquini de fita ou saida de praia transparente, cenario: areia branca, coqueiros ao fundo e mar azul cristalino, luz solar intensa realcando a beleza natural e a textura da pele impecavel, olhar relaxado e convidativo, sorriso leve e belo, movimentos fluidos e naturais",
     instruction:
-      'tom alegre, relaxado e solar, transmitindo liberdade, leveza e beleza natural',
+      'O tom deve ser alegre, relaxado e solar, transmitindo a liberdade e a beleza estonteante da mulher adulta em um dia de praia.',
   },
   custom: {
     label: 'Personalizado',
     prompt: '',
     instruction:
-      'siga o estilo definido pelo usuario, mantendo pessoa adulta 21+, conteudo seguro, sem nudez e sem ato sexual',
+      'Siga o estilo definido pelo usuario no cenario personalizado.',
   },
 };
 
@@ -79,10 +86,10 @@ const normalizeModes = (value: unknown): ScenarioKey[] => {
   if (!Array.isArray(value)) return ['natural'];
 
   const modes = value.filter((item): item is ScenarioKey =>
-    ['natural', 'sensual', 'urban', 'beach', 'custom'].includes(String(item))
+    ['natural', 'sensual', 'provocative', 'urban', 'beach', 'custom'].includes(String(item))
   );
 
-  return modes.length ? modes.slice(0, 5) : ['natural'];
+  return modes.length ? modes.slice(0, 6) : ['natural'];
 };
 
 const checkAccess = async (req: any, res: any) => {
@@ -136,12 +143,12 @@ const buildSystemInstruction = (modes: ScenarioKey[], intenseMode: boolean, cust
 
   return `
 Voce e um gerador profissional de prompts para videos curtos virais em VEO3 e SORA.
-Crie conteudo com pessoas adultas 21+, linguagem brasileira natural e foco em retencao emocional.
+Crie conteudo para publico adulto, linguagem brasileira natural e foco em engajamento e retencao emocional.
 
 Regras obrigatorias:
 - Todas as personagens devem ser adultas 21+.
 - Nao gere nudez, ato sexual, menores de idade, erotizacao de menores ou linguagem explicita.
-- Pode haver charme, confianca e sensualidade leve adulta quando solicitado, sempre sem nudez e sem ato sexual.
+- Pode haver charme, confianca, sensualidade adulta intensa, provocacao e estetica +18 quando solicitado.
 - Falas com 15 a 20 palavras, no maximo 8 segundos.
 - Toda fala deve terminar com convite natural para seguir o perfil.
 - Responda somente JSON valido no schema pedido.
@@ -149,7 +156,7 @@ Regras obrigatorias:
 Estilos selecionados:
 ${modeInstructions}
 
-${intenseMode ? 'Modo intenso: aumente confianca, presenca, olhar magnetico e provocacao leve adulta, sem conteudo explicito.' : ''}
+${intenseMode ? 'Modo Sexy: o tom deve ser extremamente mais sexy, provocativo e ousado. Foque em olhares intensos, clima intimo, roupas reduzidas e frases que desafiem o espectador em um tom baixo e sedutor.' : ''}
 ${customScenario ? `Detalhes personalizados do usuario: ${customScenario}` : ''}
 `.trim();
 };
@@ -228,7 +235,7 @@ Retorne tambem uma descricao curta da referencia quando houver imagem.
             : scenario.prompt;
       const reference = modelDescription ? `referencia da pessoa: ${modelDescription}. ` : '';
       const intensity = intenseMode
-        ? 'presenca mais confiante, olhar magnetico, movimentos lentos, charme adulto sem nudez, '
+        ? 'adicione: sensualidade extrema, olhar sedutor, roupa muito curta ou biquini revelador, labios umidos, movimentos lentos e provocativos, '
         : '';
 
       return {

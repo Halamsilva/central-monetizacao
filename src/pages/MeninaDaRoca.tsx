@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-type ScenarioKey = 'natural' | 'sensual' | 'urban' | 'beach' | 'custom';
+type ScenarioKey = 'natural' | 'sensual' | 'provocative' | 'urban' | 'beach' | 'custom';
 
 type GeneratedPrompt = {
   id: number;
@@ -28,23 +28,27 @@ type GeneratedPrompt = {
 const scenarios: Record<ScenarioKey, { label: string; description: string }> = {
   natural: {
     label: 'Tradicional',
-    description: 'Conexao rural, fala proxima e video com cara de gravacao real.',
+    description: 'Conexao emocional rural com beleza natural e deslumbrante.',
   },
   sensual: {
     label: 'Sensual Brasileira',
-    description: 'Charme adulto leve, confianca e presenca sem nudez.',
+    description: 'Modelo brasileira, beleza extraordinaria, curvas e bronzeado vibrante.',
+  },
+  provocative: {
+    label: 'Sexy Mode',
+    description: 'Beleza hipnotizante com maxima carga de seducao e intensidade.',
   },
   urban: {
     label: 'Urbano/Paredao',
-    description: 'Atitude, rua, paredao e linguagem de video curto.',
+    description: 'Atitude, beleza marcante e estilo mandraka sofisticado.',
   },
   beach: {
     label: 'Praia Tropical',
-    description: 'Visual solar, leve, tropical e natural.',
+    description: 'Beleza radiante em cenario paradisiaco, pele iluminada.',
   },
   custom: {
     label: 'Personalizado',
-    description: 'Use seu proprio contexto e direcao criativa.',
+    description: 'Crie seu proprio cenario e estilo de modelo.',
   },
 };
 
@@ -172,8 +176,8 @@ const MeninaDaRoca: React.FC = () => {
                 Menina da Roca
               </h1>
               <p className="mt-3 max-w-2xl text-sm font-semibold leading-relaxed text-zinc-400 sm:text-base">
-                Gere prompts verticais para videos virais com estetica brasileira,
-                rural, urbana ou tropical, prontos para copiar.
+                Gere prompts de alta performance focados em modelos brasileiras.
+                Curvas, atitude e conexao emocional para videos curtos.
               </p>
             </div>
 
@@ -198,7 +202,7 @@ const MeninaDaRoca: React.FC = () => {
                 type="button"
                 onClick={() => setIntenseMode(!intenseMode)}
                 className={`relative h-8 w-14 rounded-full transition ${intenseMode ? 'bg-purple-600' : 'bg-zinc-700'}`}
-                aria-label="Alternar modo intenso"
+                aria-label="Alternar Modo Sexy"
               >
                 <span
                   className={`absolute left-1 top-1 h-6 w-6 rounded-full bg-white shadow transition ${
@@ -207,12 +211,12 @@ const MeninaDaRoca: React.FC = () => {
                 />
               </button>
               <span className={`text-sm font-bold ${intenseMode ? 'text-purple-300' : 'text-zinc-500'}`}>
-                Modo intenso
+                Modo Sexy
               </span>
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {(Object.keys(scenarios) as ScenarioKey[]).map((key) => {
               const active = selectedModes.includes(key);
 
@@ -291,7 +295,7 @@ const MeninaDaRoca: React.FC = () => {
               value={customScenario}
               onChange={(event) => setCustomScenario(event.target.value)}
               rows={8}
-              placeholder="Ex: gravacao no quintal ao fim da tarde, fala olhando para camera, clima de segredo que prende a atencao..."
+              placeholder="Ex: modelo com trancas, vestindo um biquini neon, caminhando em uma plantacao de girassois ao amanhecer..."
               className="custom-scrollbar w-full resize-y rounded-2xl border border-zinc-800 bg-black p-4 text-sm font-semibold leading-relaxed text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10"
             />
 
@@ -360,7 +364,7 @@ const MeninaDaRoca: React.FC = () => {
             <section className="rounded-[2rem] border-2 border-dashed border-zinc-800 bg-[#070707] p-10 text-center text-zinc-500">
               <Video className="mx-auto mb-3" size={34} />
               <p className="text-sm font-black uppercase tracking-widest">
-                Escolha estilos e gere seus prompts virais
+                Escolha um estilo e gere seus prompts virais
               </p>
             </section>
           )}

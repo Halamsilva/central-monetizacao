@@ -179,7 +179,6 @@ const AdminStudents: React.FC = () => {
             const rows = parseCsvRows(csvText);
             const header = rows[0]?.map(column => column.trim()) || [];
             const emailIndex = header.indexOf('Email');
-            const addedOnIndex = header.indexOf('Added On');
 
             if (emailIndex < 0) {
                 throw new Error('CSV sem coluna Email.');
@@ -189,7 +188,6 @@ const AdminStudents: React.FC = () => {
                 .slice(1)
                 .map(row => ({
                     email: String(row[emailIndex] || '').trim().toLowerCase(),
-                    paidAt: addedOnIndex >= 0 ? String(row[addedOnIndex] || '').trim() : undefined,
                 }))
                 .filter(entry => entry.email.includes('@'));
 
@@ -329,7 +327,7 @@ const AdminStudents: React.FC = () => {
                         </h2>
 
                         <p className="text-sm text-slate-500">
-                            Use para compras feitas antes do webhook. O CSV da Kiwify registra compras; a lista abaixo mostra apenas quem já criou conta.
+                            Use para compras feitas antes do webhook. O CSV antigo libera os e-mails como alunos antigos.
                         </p>
                     </div>
                 </div>
@@ -352,7 +350,7 @@ const AdminStudents: React.FC = () => {
 
                 <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <p className="text-xs font-semibold text-slate-500">
-                        Sem data, o sistema considera compra antiga e libera como ativo. Com data, mantém a regra dos 7 dias.
+                        Para lista manual: sem data libera como antigo. Com data, mantém a regra dos 7 dias. No CSV, todos entram como antigos.
                     </p>
 
                     <button

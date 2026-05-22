@@ -7,6 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 import { handleRegistrationEmail, sendAccessEmail } from "./api/_emails";
 import povAgentHandler from "./api/agents/pov";
 import tiktokShopPersuasivoHandler from "./api/agents/tiktok-shop-persuasivo";
+import revisorVeo3Handler from "./api/agents/revisor-veo-3";
 import legacyStudentsHandler from "./api/admin/legacy-students";
 
 dotenv.config();
@@ -200,6 +201,7 @@ async function startServer() {
 
   app.post("/api/agents/pov", povAgentHandler);
   app.post("/api/agents/tiktok-shop-persuasivo", tiktokShopPersuasivoHandler);
+  app.post("/api/agents/revisor-veo-3", revisorVeo3Handler);
   app.post("/api/admin/legacy-students", legacyStudentsHandler);
 
   app.post("/api/webhooks/kiwify", async (req, res) => {

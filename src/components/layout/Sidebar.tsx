@@ -129,12 +129,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'POV Vendas', icon: Camera, path: '/pov' },
     { title: 'Revisor Veo 3', icon: Film, path: '/revisor-veo-3' },
     { title: 'Menina da Roca', icon: Camera, path: '/menina-da-roca' },
+    { title: 'Remix Video', icon: Film, path: '/remix-video' },
     { title: 'Downloads', icon: Download, path: '/downloads' },
     { title: 'Perfil', icon: User, path: '/profile' },
     { title: 'Configurações', icon: Settings, path: '/settings' },
   ];
 
-  const primaryStrategyMenu = [strategyMenu[0], strategyMenu[1], strategyMenu[12]];
+  const primaryStrategyMenu = [strategyMenu[0], strategyMenu[1], strategyMenu[13]];
   const agentToolsMenu = [
     strategyMenu[2],
     strategyMenu[4],
@@ -142,12 +143,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     strategyMenu[8],
     strategyMenu[10],
     strategyMenu[11],
+    strategyMenu[12],
     strategyMenu[3],
     strategyMenu[5],
     strategyMenu[6],
     strategyMenu[7],
   ];
-  const accountMenu = [strategyMenu[13], strategyMenu[14]];
+  const accountMenu = [strategyMenu[14], strategyMenu[15]];
 
   const adminMenu = [
     { title: 'Painel Admin', icon: Shield, path: '/admin' },

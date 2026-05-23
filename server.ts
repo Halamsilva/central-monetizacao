@@ -9,6 +9,7 @@ import povAgentHandler from "./api/agents/pov";
 import tiktokShopPersuasivoHandler from "./api/agents/tiktok-shop-persuasivo";
 import revisorVeo3Handler from "./api/agents/revisor-veo-3";
 import meninaDaRocaHandler from "./api/agents/menina-da-roca";
+import remixVideoHandler from "./api/agents/remix-video";
 import legacyStudentsHandler from "./api/admin/legacy-students";
 
 dotenv.config();
@@ -158,7 +159,7 @@ async function startServer() {
   const PORT = 3000;
   const isProd = process.env.NODE_ENV === "production";
 
-  app.use(express.json({ limit: "15mb" }));
+  app.use(express.json({ limit: "30mb" }));
 
   // Gemini Proxy Endpoint (Server-Side)
   // This keeps the API key safe from the browser
@@ -204,6 +205,7 @@ async function startServer() {
   app.post("/api/agents/tiktok-shop-persuasivo", tiktokShopPersuasivoHandler);
   app.post("/api/agents/revisor-veo-3", revisorVeo3Handler);
   app.post("/api/agents/menina-da-roca", meninaDaRocaHandler);
+  app.post("/api/agents/remix-video", remixVideoHandler);
   app.post("/api/admin/legacy-students", legacyStudentsHandler);
 
   app.post("/api/webhooks/kiwify", async (req, res) => {

@@ -20,6 +20,7 @@ const Novelinhas = lazy(() => import('./pages/Novelinhas'));
 const Pov = lazy(() => import('./pages/Pov'));
 const RevisorVeo3 = lazy(() => import('./pages/RevisorVeo3'));
 const MeninaDaRoca = lazy(() => import('./pages/MeninaDaRoca'));
+const RemixVideo = lazy(() => import('./pages/RemixVideo'));
 const Downloads = lazy(() => import('./pages/Downloads'));
 const ShopVIP = lazy(() => import('./pages/ShopVIP')); // <-- Importado com calma aqui!
 const Profile = lazy(() => import('./pages/Profile'));
@@ -48,6 +49,7 @@ const routeTitles: Record<string, string> = {
   '/pov': 'POV Vendas',
   '/revisor-veo-3': 'Revisor Veo 3',
   '/menina-da-roca': 'Menina da Roca',
+  '/remix-video': 'Remix Video',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',
   '/profile': 'Perfil',
@@ -181,6 +183,7 @@ export default function App() {
               <Route path="pov" element={<Pov />} />
               <Route path="revisor-veo-3" element={<RevisorVeo3 />} />
               <Route path="menina-da-roca" element={<MeninaDaRoca />} />
+              <Route path="remix-video" element={<RemixVideo />} />
               <Route path="downloads" element={<Downloads />} />
               <Route path="shop-vip" element={<ShopVIP />} /> {/* <-- Rota da loja registrada aqui! */}
               <Route path="profile" element={<Profile />} />

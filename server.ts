@@ -10,6 +10,7 @@ import tiktokShopPersuasivoHandler from "./api/agents/tiktok-shop-persuasivo";
 import revisorVeo3Handler from "./api/agents/revisor-veo-3";
 import meninaDaRocaHandler from "./api/agents/menina-da-roca";
 import remixVideoHandler from "./api/agents/remix-video";
+import transformacaoVideosHandler from "./api/agents/transformacao-videos";
 import legacyStudentsHandler from "./api/admin/legacy-students";
 
 dotenv.config();
@@ -206,6 +207,7 @@ async function startServer() {
   app.post("/api/agents/revisor-veo-3", revisorVeo3Handler);
   app.post("/api/agents/menina-da-roca", meninaDaRocaHandler);
   app.post("/api/agents/remix-video", remixVideoHandler);
+  app.post("/api/agents/transformacao-videos", transformacaoVideosHandler);
   app.post("/api/admin/legacy-students", legacyStudentsHandler);
 
   app.post("/api/webhooks/kiwify", async (req, res) => {

@@ -1,8 +1,9 @@
-import { mkdir, readFile, rm } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
+import { config as loadDotenv } from 'dotenv';
 import { chromium } from 'playwright';
 
 const PROJECT_ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -12,6 +13,9 @@ const DEFAULT_FLOW_PROJECT_URL =
   'https://labs.google/fx/tools/flow/project/63ab691c-6565-40df-bdf5-77a0a90c2e10';
 const SAMPLE_TIMEOUT_MS = 30 * 60 * 1000;
 const FLOW_CONFIG_PATH = resolve(PROJECT_ROOT, '.flow-config.json');
+
+loadDotenv({ path: resolve(PROJECT_ROOT, '.env.local'), override: false });
+loadDotenv({ path: resolve(PROJECT_ROOT, '.env'), override: false });
 
 const readLocalFlowProjectUrl = () => {
   try {
@@ -37,6 +41,8 @@ const config = {
   offscreen: process.env.FLOW_BROWSER_OFFSCREEN === '1',
 };
 
+const visibleWindowArgs = ['--window-position=40,40', '--window-size=1200,820', '--start-maximized'];
+
 if (!config.supabaseUrl || !config.supabaseKey) {
   console.error('Missing SUPABASE_URL and SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY.');
   process.exit(1);
@@ -47,6 +53,50 @@ const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
 });
 
 const sleep = (ms) => new Promise((resolveSleep) => setTimeout(resolveSleep, ms));
+
+const patchJsonFile = async (filePath, updater) => {
+  try {
+    const json = JSON.parse(readFileSync(filePath, 'utf8'));
+    updater(json);
+    await writeFile(filePath, `${JSON.stringify(json)}\n`);
+  } catch {
+    // Arquivos do perfil podem nao existir antes do primeiro login.
+  }
+};
+
+const resetVisibleBrowserProfileState = async () => {
+  await patchJsonFile(resolve(PROFILE_DIR, 'Default', 'Preferences'), (preferences) => {
+    preferences.profile = {
+      ...(preferences.profile || {}),
+      exit_type: 'Normal',
+      exited_cleanly: true,
+    };
+
+    preferences.session = {
+      ...(preferences.session || {}),
+      restore_on_startup: 5,
+    };
+
+    if (preferences.browser) {
+      delete preferences.browser.window_placement;
+    }
+
+    delete preferences.exit_type;
+    delete preferences.exited_cleanly;
+  });
+
+  await patchJsonFile(resolve(PROFILE_DIR, 'Local State'), (localState) => {
+    localState.profile = {
+      ...(localState.profile || {}),
+      exit_type: 'Normal',
+      exited_cleanly: true,
+    };
+
+    if (localState.browser) {
+      delete localState.browser.window_placement;
+    }
+  });
+};
 let workerHeartbeatState = {
   status: 'online',
   message: 'Gerador ligado e aguardando pedidos.',
@@ -130,13 +180,23 @@ const waitForFlowProjectReady = async (page) => {
 const launchFlow = async () => {
   await mkdir(PROFILE_DIR, { recursive: true });
 
+  if (config.loginOnly || !config.offscreen) {
+    await resetVisibleBrowserProfileState();
+  }
+
   const context = await chromium.launchPersistentContext(PROFILE_DIR, {
     headless: config.headless,
     viewport: { width: 1440, height: 960 },
     acceptDownloads: true,
-    args: config.offscreen
-      ? ['--window-position=-32000,-32000', '--window-size=1440,960']
-      : undefined,
+    args: [
+      '--disable-session-crashed-bubble',
+      '--disable-features=InfiniteSessionRestore',
+      ...(config.loginOnly
+        ? visibleWindowArgs
+        : config.offscreen
+          ? ['--window-position=-32000,-32000', '--window-size=1440,960']
+          : visibleWindowArgs),
+    ],
   });
 
   const page = context.pages()[0] || (await context.newPage());

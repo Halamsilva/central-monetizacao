@@ -8,7 +8,9 @@ import {
   Film,
   KeyRound,
   Loader2,
+  PauseCircle,
   PlayCircle,
+  Power,
   RefreshCw,
   Save,
   Send,
@@ -117,6 +119,9 @@ const GerarVideos: React.FC = () => {
   );
   const [savingFlowProject, setSavingFlowProject] = useState(false);
   const [openingFlowLogin, setOpeningFlowLogin] = useState(false);
+  const [localWorkerStatus, setLocalWorkerStatus] = useState<'running' | 'stopped' | 'unknown'>('unknown');
+  const [flowControlOnline, setFlowControlOnline] = useState(false);
+  const [togglingWorker, setTogglingWorker] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const isAdmin = profile?.role === 'admin';
@@ -176,8 +181,12 @@ const GerarVideos: React.FC = () => {
       if (response.ok && payload.flowProjectUrl) {
         setFlowProjectUrl(payload.flowProjectUrl);
         localStorage.setItem(flowProjectStorageKey, payload.flowProjectUrl);
+        setFlowControlOnline(true);
+        setLocalWorkerStatus(payload.localWorkerStatus === 'running' ? 'running' : 'stopped');
       }
     } catch {
+      setFlowControlOnline(false);
+      setLocalWorkerStatus('unknown');
       // O servidor local pode estar desligado. A tela continua funcionando para os alunos.
     }
   };
@@ -320,9 +329,14 @@ const GerarVideos: React.FC = () => {
       }
 
       setFlowProjectUrl(payload.flowProjectUrl || cleanUrl);
+      if (payload.localWorkerStatus) {
+        setLocalWorkerStatus(payload.localWorkerStatus === 'running' ? 'running' : 'stopped');
+      }
+      setFlowControlOnline(true);
       setSuccess('Projeto Flow/Veo 3 salvo para o worker local.');
       return true;
     } catch (flowError: any) {
+      setFlowControlOnline(false);
       setError(flowError.message || 'Ligue o servidor local do Flow antes de salvar o projeto.');
       return false;
     } finally {
@@ -347,10 +361,48 @@ const GerarVideos: React.FC = () => {
       }
 
       setSuccess('Flow aberto no navegador correto. Faca login ou confira se o projeto abriu no Veo 3.');
+      setFlowControlOnline(true);
+      setLocalWorkerStatus(payload.localWorkerStatus === 'running' ? 'running' : 'stopped');
     } catch (flowError: any) {
+      setFlowControlOnline(false);
       setError(flowError.message || 'Nao foi possivel abrir o login do Flow.');
     } finally {
       setOpeningFlowLogin(false);
+    }
+  };
+
+  const toggleWorker = async (nextAction: 'start' | 'stop') => {
+    setTogglingWorker(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      if (nextAction === 'start') {
+        const saved = await saveFlowProject();
+        if (!saved) return;
+      }
+
+      const response = await fetch(`${flowControlUrl}/worker/${nextAction}`, { method: 'POST' });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok || payload.ok === false) {
+        throw new Error(payload.error || 'Servidor local do Flow nao respondeu.');
+      }
+
+      setFlowControlOnline(true);
+      setLocalWorkerStatus(payload.localWorkerStatus === 'running' ? 'running' : 'stopped');
+      await fetchWorkerStatus();
+
+      setSuccess(
+        nextAction === 'start'
+          ? 'Gerador liberado. Os pedidos dos alunos agora entram na fila do Flow neste computador.'
+          : 'Gerador pausado. Os alunos ainda podem deixar pedidos salvos para processar depois.',
+      );
+    } catch (flowError: any) {
+      setFlowControlOnline(false);
+      setError(flowError.message || 'Nao foi possivel controlar o gerador local.');
+    } finally {
+      setTogglingWorker(false);
     }
   };
 
@@ -412,11 +464,11 @@ const GerarVideos: React.FC = () => {
                   className="mt-2 h-12 w-full rounded-2xl border border-white/10 bg-black/50 px-4 text-sm font-semibold text-white outline-none placeholder:text-slate-600 focus:border-orange-500"
                 />
                 <p className="mt-2 text-xs font-semibold text-orange-100/80">
-                  Cole aqui o projeto certo onde o worker deve abrir o Flow para gerar os videos.
+                  Use um perfil separado do navegador: abra o Flow, faca login, depois libere o gerador para os alunos.
                 </p>
               </div>
 
-              <div className="grid gap-2 sm:grid-cols-2 xl:w-[360px]">
+              <div className="grid gap-2 sm:grid-cols-2 xl:w-[540px]">
                 <button
                   type="button"
                   onClick={saveFlowProject}
@@ -435,7 +487,33 @@ const GerarVideos: React.FC = () => {
                   {openingFlowLogin ? <Loader2 className="animate-spin" size={16} /> : <KeyRound size={16} />}
                   Abrir Flow
                 </button>
+                <button
+                  type="button"
+                  onClick={() => toggleWorker('start')}
+                  disabled={togglingWorker || localWorkerStatus === 'running'}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 text-xs font-black uppercase tracking-wide text-black hover:bg-white disabled:opacity-50"
+                >
+                  {togglingWorker ? <Loader2 className="animate-spin" size={16} /> : <Power size={16} />}
+                  Liberar gerador
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleWorker('stop')}
+                  disabled={togglingWorker || localWorkerStatus === 'stopped'}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-white/10 bg-black/30 px-4 text-xs font-black uppercase tracking-wide text-white hover:bg-white/10 disabled:opacity-50"
+                >
+                  {togglingWorker ? <Loader2 className="animate-spin" size={16} /> : <PauseCircle size={16} />}
+                  Pausar
+                </button>
               </div>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2 text-xs font-black uppercase tracking-wide">
+              <span className={`rounded-full px-3 py-1 ${flowControlOnline ? 'bg-emerald-500/15 text-emerald-100' : 'bg-amber-500/15 text-amber-100'}`}>
+                Servidor local: {flowControlOnline ? 'ligado' : 'nao detectado'}
+              </span>
+              <span className={`rounded-full px-3 py-1 ${localWorkerStatus === 'running' ? 'bg-emerald-500/15 text-emerald-100' : 'bg-white/10 text-slate-200'}`}>
+                Worker: {localWorkerStatus === 'running' ? 'liberado' : localWorkerStatus === 'stopped' ? 'pausado' : 'desconhecido'}
+              </span>
             </div>
           </section>
         )}

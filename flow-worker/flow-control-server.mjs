@@ -4,12 +4,16 @@ import { createServer } from 'node:http';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
+import { config as loadDotenv } from 'dotenv';
 
 const PROJECT_ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const FLOW_CONFIG_PATH = resolve(PROJECT_ROOT, '.flow-config.json');
 const PORT = Number(process.env.FLOW_CONTROL_PORT || 8787);
 const DEFAULT_FLOW_PROJECT_URL =
   'https://labs.google/fx/tools/flow/project/63ab691c-6565-40df-bdf5-77a0a90c2e10';
+
+loadDotenv({ path: resolve(PROJECT_ROOT, '.env.local'), override: false });
+loadDotenv({ path: resolve(PROJECT_ROOT, '.env'), override: false });
 
 const json = (response, status, payload) => {
   response.writeHead(status, {
@@ -90,8 +94,16 @@ const runPowerShell = (command) =>
 
 const stopFlowProcesses = () =>
   runPowerShell(
-    "$targets = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'flow-browser-worker|run-flow-browser-worker|flow:worker|flow:login|chrome-win64|flow-browser-profile' -and $_.ProcessId -ne $PID }; foreach ($p in $targets) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1",
+    `$root = '${PROJECT_ROOT.replace(/'/g, "''")}'; $targets = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match [regex]::Escape($root) -and $_.CommandLine -match 'flow-browser-worker|chrome-win64|flow-browser-profile' -and $_.ProcessId -ne $PID }; foreach ($p in $targets) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1`,
   );
+
+const getLocalWorkerStatus = async () => {
+  const { stdout } = await runPowerShell(
+    `$root = '${PROJECT_ROOT.replace(/'/g, "''")}'; $worker = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match [regex]::Escape($root) -and $_.CommandLine -match 'flow-browser-worker\\.mjs' -and $_.CommandLine -notmatch '--login' } | Select-Object -First 1; if ($worker) { 'running' } else { 'stopped' }`,
+  );
+
+  return stdout.trim() === 'running' ? 'running' : 'stopped';
+};
 
 const openFlowLogin = async () => {
   const flowProjectUrl = await getFlowProjectUrl();
@@ -100,7 +112,22 @@ const openFlowLogin = async () => {
     `$env:FLOW_PROJECT_URL='${flowProjectUrl.replace(/'/g, "''")}'`,
     `$env:FLOW_BROWSER_HEADLESS='0'`,
     `$env:FLOW_BROWSER_OFFSCREEN='0'`,
-    `Start-Process -FilePath node -ArgumentList 'flow-worker\\flow-browser-worker.mjs','--login' -WorkingDirectory '${PROJECT_ROOT.replace(/'/g, "''")}' -WindowStyle Normal`,
+    `Start-Process -FilePath node -ArgumentList 'flow-worker\\flow-browser-worker.mjs','--login' -WorkingDirectory '${PROJECT_ROOT.replace(/'/g, "''")}' -WindowStyle Hidden`,
+  ].join('; ');
+
+  await runPowerShell(command);
+  return flowProjectUrl;
+};
+
+const startFlowWorker = async () => {
+  const flowProjectUrl = await getFlowProjectUrl();
+  await stopFlowProcesses();
+
+  const command = [
+    `$env:FLOW_PROJECT_URL='${flowProjectUrl.replace(/'/g, "''")}'`,
+    `$env:FLOW_BROWSER_HEADLESS='0'`,
+    `$env:FLOW_BROWSER_OFFSCREEN='1'`,
+    `Start-Process -FilePath node -ArgumentList 'flow-worker\\flow-browser-worker.mjs' -WorkingDirectory '${PROJECT_ROOT.replace(/'/g, "''")}' -WindowStyle Hidden`,
   ].join('; ');
 
   await runPowerShell(command);
@@ -117,7 +144,11 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host}`);
 
     if (request.method === 'GET' && url.pathname === '/health') {
-      json(response, 200, { ok: true, flowProjectUrl: await getFlowProjectUrl() });
+      json(response, 200, {
+        ok: true,
+        flowProjectUrl: await getFlowProjectUrl(),
+        localWorkerStatus: await getLocalWorkerStatus(),
+      });
       return;
     }
 
@@ -130,7 +161,19 @@ const server = createServer(async (request, response) => {
 
     if (request.method === 'POST' && url.pathname === '/flow-login') {
       const flowProjectUrl = await openFlowLogin();
-      json(response, 200, { ok: true, flowProjectUrl });
+      json(response, 200, { ok: true, flowProjectUrl, localWorkerStatus: await getLocalWorkerStatus() });
+      return;
+    }
+
+    if (request.method === 'POST' && url.pathname === '/worker/start') {
+      const flowProjectUrl = await startFlowWorker();
+      json(response, 200, { ok: true, flowProjectUrl, localWorkerStatus: await getLocalWorkerStatus() });
+      return;
+    }
+
+    if (request.method === 'POST' && url.pathname === '/worker/stop') {
+      await stopFlowProcesses();
+      json(response, 200, { ok: true, flowProjectUrl: await getFlowProjectUrl(), localWorkerStatus: 'stopped' });
       return;
     }
 

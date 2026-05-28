@@ -77,6 +77,14 @@ const patchJsonFile = async (filePath, updater) => {
 
 const resetVisibleBrowserProfileState = async () => {
   await rm(resolve(PROFILE_DIR, 'Default', 'Sessions'), { recursive: true, force: true }).catch(() => {});
+  await rm(resolve(PROFILE_DIR, 'Default', 'Session Storage'), { recursive: true, force: true }).catch(() => {});
+  await rm(resolve(PROFILE_DIR, 'SingletonCookie'), { force: true }).catch(() => {});
+  await rm(resolve(PROFILE_DIR, 'SingletonLock'), { force: true }).catch(() => {});
+  await rm(resolve(PROFILE_DIR, 'SingletonSocket'), { force: true }).catch(() => {});
+  await rm(resolve(PROFILE_DIR, 'Last Session'), { force: true }).catch(() => {});
+  await rm(resolve(PROFILE_DIR, 'Last Tabs'), { force: true }).catch(() => {});
+  await rm(resolve(PROFILE_DIR, 'Default', 'Last Session'), { force: true }).catch(() => {});
+  await rm(resolve(PROFILE_DIR, 'Default', 'Last Tabs'), { force: true }).catch(() => {});
 
   await patchJsonFile(resolve(PROFILE_DIR, 'Default', 'Preferences'), (preferences) => {
     preferences.profile = {
@@ -118,6 +126,7 @@ const resetVisibleBrowserProfileState = async () => {
     }
 
     localState.exited_cleanly = true;
+    localState.exit_type = 'Normal';
   });
 };
 let workerHeartbeatState = {

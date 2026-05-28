@@ -109,9 +109,8 @@ let workerHeartbeatState = {
 const updateWorkerStatus = async (status, message, currentJobId = null) => {
   workerHeartbeatState = { status, message, currentJobId };
 
-  await supabase
-    .from('generation_worker_status')
-    .upsert(
+  try {
+    const { error } = await supabase.from('generation_worker_status').upsert(
       {
         id: 'flow-video',
         status,
@@ -122,10 +121,12 @@ const updateWorkerStatus = async (status, message, currentJobId = null) => {
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'id' },
-    )
-    .catch((error) => {
-      console.error(`Falha ao atualizar status do worker: ${error.message || error}`);
-    });
+    );
+
+    if (error) throw error;
+  } catch (error) {
+    console.error(`Falha ao atualizar status do worker: ${error.message || error}`);
+  }
 };
 
 class FlowError extends Error {

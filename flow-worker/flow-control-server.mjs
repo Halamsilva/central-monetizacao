@@ -94,12 +94,12 @@ const runPowerShell = (command) =>
 
 const stopFlowProcesses = () =>
   runPowerShell(
-    `$root = '${PROJECT_ROOT.replace(/'/g, "''")}'; $targets = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match [regex]::Escape($root) -and $_.CommandLine -match 'flow-browser-worker|chrome-win64|flow-browser-profile' -and $_.ProcessId -ne $PID }; foreach ($p in $targets) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1`,
+    `$root = '${PROJECT_ROOT.replace(/'/g, "''")}'; $targets = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and (($_.CommandLine -match 'flow-browser-worker\\.mjs') -or ($_.CommandLine -match [regex]::Escape($root) -and $_.CommandLine -match 'chrome-win64|flow-browser-profile')) -and $_.ProcessId -ne $PID }; foreach ($p in $targets) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }; Start-Sleep -Seconds 1`,
   );
 
 const getLocalWorkerStatus = async () => {
   const { stdout } = await runPowerShell(
-    `$root = '${PROJECT_ROOT.replace(/'/g, "''")}'; $worker = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match [regex]::Escape($root) -and $_.CommandLine -match 'flow-browser-worker\\.mjs' -and $_.CommandLine -notmatch '--login' } | Select-Object -First 1; if ($worker) { 'running' } else { 'stopped' }`,
+    `$worker = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -and $_.CommandLine -match 'flow-browser-worker\\.mjs' -and $_.CommandLine -notmatch '--login' } | Select-Object -First 1; if ($worker) { 'running' } else { 'stopped' }`,
   );
 
   return stdout.trim() === 'running' ? 'running' : 'stopped';

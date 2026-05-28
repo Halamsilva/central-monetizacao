@@ -24,6 +24,7 @@ const RemixVideo = lazy(() => import('./pages/RemixVideo'));
 const TransformacaoVideos = lazy(() => import('./pages/TransformacaoVideos'));
 const Narracao = lazy(() => import('./pages/Narracao'));
 const GeradorImagens = lazy(() => import('./pages/GeradorImagens'));
+const GerarVideos = lazy(() => import('./pages/GerarVideos'));
 const Downloads = lazy(() => import('./pages/Downloads'));
 const ShopVIP = lazy(() => import('./pages/ShopVIP')); // <-- Importado com calma aqui!
 const Profile = lazy(() => import('./pages/Profile'));
@@ -56,6 +57,7 @@ const routeTitles: Record<string, string> = {
   '/transformacao-videos': 'Videos de Transformacao',
   '/narracao': 'Narracao IA',
   '/gerador-imagens': 'Gerador de Imagens',
+  '/gerar-videos': 'Gerar Videos',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',
   '/profile': 'Perfil',
@@ -193,6 +195,7 @@ export default function App() {
               <Route path="transformacao-videos" element={<TransformacaoVideos />} />
               <Route path="narracao" element={<Narracao />} />
               <Route path="gerador-imagens" element={<GeradorImagens />} />
+              <Route path="gerar-videos" element={<GerarVideos />} />
               <Route path="downloads" element={<Downloads />} />
               <Route path="shop-vip" element={<ShopVIP />} /> {/* <-- Rota da loja registrada aqui! */}
               <Route path="profile" element={<Profile />} />

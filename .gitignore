@@ -9,3 +9,6 @@ coverage/
 
 .vercel
 .env*.local
+.flow-browser-profile/
+.flow-config.json
+flow-failure-*.png

@@ -73,3 +73,27 @@ export interface Update {
   is_published: boolean;
   created_at: string;
 }
+
+export interface GenerationJob {
+  id: string;
+  user_id: string;
+  type: 'video';
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  prompt: string;
+  model: string;
+  result_url?: string | null;
+  metadata: Record<string, any>;
+  error_message?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GenerationWorkerStatus {
+  id: string;
+  status: 'online' | 'offline' | 'working';
+  message?: string | null;
+  flow_project_url?: string | null;
+  current_job_id?: string | null;
+  online_until?: string | null;
+  updated_at: string;
+}

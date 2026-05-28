@@ -1,0 +1,53 @@
+# Gerador de Videos com Google Flow
+
+Este recurso usa fila no Supabase e um worker local no seu computador. A Vercel apenas mostra a tela e cria os pedidos; quem abre o Google Flow, gera e baixa o MP4 e o worker local.
+
+## 1. Criar as tabelas
+
+Rode o arquivo `supabase-flow-video-jobs.sql` no SQL Editor do Supabase do projeto da Central.
+
+Ele cria:
+
+- `public.generation_jobs`
+- `public.generation_worker_status`
+- bucket publico `flow-results`
+- politicas para cada aluno ver apenas os proprios pedidos
+
+## 2. Variaveis locais
+
+No `.env.local`, preencha:
+
+```env
+VITE_SUPABASE_URL=https://dzbxmrzomzbnkwgujmmm.supabase.co
+VITE_SUPABASE_ANON_KEY=sua_anon_key
+SUPABASE_SERVICE_ROLE_KEY=sua_service_role_key
+FLOW_PROJECT_URL=https://labs.google/fx/tools/flow/project/63ab691c-6565-40df-bdf5-77a0a90c2e10
+FLOW_BROWSER_HEADLESS=0
+FLOW_BROWSER_OFFSCREEN=1
+```
+
+O worker deve usar `SUPABASE_SERVICE_ROLE_KEY`, porque ele precisa ler pedidos de todos os alunos e atualizar resultados.
+
+## 3. Login no Flow
+
+Rode:
+
+```bat
+login-flow-browser.cmd
+```
+
+Entre na sua conta Google/Flow no navegador que abrir. O login fica salvo na pasta `.flow-browser-profile`.
+
+## 4. Rodar o worker
+
+Quando quiser deixar o gerador funcionando, rode:
+
+```bat
+run-flow-browser-worker.cmd
+```
+
+Enquanto esse terminal estiver aberto e o computador ligado, os pedidos da pagina `/gerar-videos` entram na fila e sao processados.
+
+## 5. Aviso aos alunos
+
+Quando o worker nao estiver ligado, os pedidos continuam salvos como `Pendente`. Quando voce ligar o computador e iniciar o worker, ele processa os pedidos na ordem de chegada.

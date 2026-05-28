@@ -74,6 +74,16 @@ export interface Update {
   created_at: string;
 }
 
+export interface Tutorial {
+  id: string;
+  title: string;
+  description: string;
+  video_url: string;
+  category: string;
+  is_published: boolean;
+  created_at: string;
+}
+
 export interface GenerationJob {
   id: string;
   user_id: string;

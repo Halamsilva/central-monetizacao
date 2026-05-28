@@ -54,8 +54,36 @@ type OutputVideo = {
   size: number;
 };
 
+type OutputPreset = 'fast' | 'standard';
+
 const canvasWidth = 1080;
 const canvasHeight = 1920;
+
+const outputPresets: Record<OutputPreset, {
+  label: string;
+  description: string;
+  width: number;
+  height: number;
+  bitrate: string;
+  preset: string;
+}> = {
+  fast: {
+    label: 'Leve e rapido',
+    description: '720x1280, ideal para celular e videos grandes.',
+    width: 720,
+    height: 1280,
+    bitrate: '3500k',
+    preset: 'veryfast',
+  },
+  standard: {
+    label: 'Padrao 1080p',
+    description: '1080x1920 com mais qualidade, exige mais memoria.',
+    width: 1080,
+    height: 1920,
+    bitrate: '8000k',
+    preset: 'medium',
+  },
+};
 
 const defaultTemplate: TemplateConfig = {
   paginaNome: 'Halam silva',
@@ -139,8 +167,11 @@ const drawCircleImage = (
   context: CanvasRenderingContext2D,
   image: HTMLImageElement | null,
   config: TemplateConfig,
+  scale: number,
 ) => {
-  const { perfilX, perfilY, perfilTamanho } = config;
+  const perfilX = config.perfilX * scale;
+  const perfilY = config.perfilY * scale;
+  const perfilTamanho = config.perfilTamanho * scale;
   context.save();
   context.beginPath();
   context.arc(
@@ -173,7 +204,7 @@ const drawCircleImage = (
     context.fillStyle = config.corBorda;
     context.fillRect(perfilX, perfilY, perfilTamanho, perfilTamanho);
     context.fillStyle = '#FFFFFF';
-    context.font = `700 ${Math.max(28, Math.round(perfilTamanho / 3))}px Arial`;
+    context.font = `700 ${Math.max(18, Math.round(perfilTamanho / 3))}px Arial`;
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     const initials = config.paginaNome
@@ -212,63 +243,74 @@ const drawVerifiedBadge = (
   context.restore();
 };
 
-const createTemplateBlob = async (config: TemplateConfig, logoFile: File | null) => {
+const createTemplateBlob = async (
+  config: TemplateConfig,
+  logoFile: File | null,
+  outputWidth: number,
+  outputHeight: number,
+) => {
+  const scale = outputWidth / canvasWidth;
   const canvas = document.createElement('canvas');
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
+  canvas.width = outputWidth;
+  canvas.height = outputHeight;
   const context = canvas.getContext('2d');
   if (!context) throw new Error('Nao foi possivel criar o template.');
 
-  context.clearRect(0, 0, canvasWidth, canvasHeight);
+  context.clearRect(0, 0, outputWidth, outputHeight);
   context.fillStyle = config.fundo;
-  context.fillRect(0, 0, canvasWidth, canvasHeight);
+  context.fillRect(0, 0, outputWidth, outputHeight);
 
   if (config.bordaLateral) {
     context.fillStyle = config.corBorda;
-    const width = config.bordaLateralEspessura;
-    context.fillRect(0, 0, width, canvasHeight);
-    context.fillRect(canvasWidth - width, 0, width, canvasHeight);
-    context.fillRect(0, 0, canvasWidth, width);
-    context.fillRect(0, canvasHeight - width, canvasWidth, width);
+    const width = config.bordaLateralEspessura * scale;
+    context.fillRect(0, 0, width, outputHeight);
+    context.fillRect(outputWidth - width, 0, width, outputHeight);
+    context.fillRect(0, 0, outputWidth, width);
+    context.fillRect(0, outputHeight - width, outputWidth, width);
   }
 
-  context.clearRect(config.videoX, config.videoY, config.videoLargura, config.videoAltura);
+  context.clearRect(
+    config.videoX * scale,
+    config.videoY * scale,
+    config.videoLargura * scale,
+    config.videoAltura * scale,
+  );
 
   if (config.videoBorda > 0) {
     context.strokeStyle = config.corBorda;
-    context.lineWidth = config.videoBorda;
+    context.lineWidth = config.videoBorda * scale;
     context.strokeRect(
-      config.videoX - config.videoBorda / 2,
-      config.videoY - config.videoBorda / 2,
-      config.videoLargura + config.videoBorda,
-      config.videoAltura + config.videoBorda,
+      (config.videoX - config.videoBorda / 2) * scale,
+      (config.videoY - config.videoBorda / 2) * scale,
+      (config.videoLargura + config.videoBorda) * scale,
+      (config.videoAltura + config.videoBorda) * scale,
     );
   }
 
   const logoImage = logoFile ? await readImage(logoFile) : null;
-  drawCircleImage(context, logoImage, config);
+  drawCircleImage(context, logoImage, config, scale);
 
   context.textAlign = 'left';
   context.textBaseline = 'top';
   context.fillStyle = config.corTexto;
-  context.font = `700 ${config.nomeTamanho}px Arial`;
-  context.fillText(config.paginaNome, config.nomeX, config.nomeY);
+  context.font = `700 ${config.nomeTamanho * scale}px Arial`;
+  context.fillText(config.paginaNome, config.nomeX * scale, config.nomeY * scale);
 
   if (config.verificado) {
     const nameWidth = context.measureText(config.paginaNome).width;
-    drawVerifiedBadge(context, config.nomeX + nameWidth + 14, config.nomeY + 5, 25);
+    drawVerifiedBadge(context, config.nomeX * scale + nameWidth + 14 * scale, (config.nomeY + 5) * scale, 25 * scale);
   }
 
   context.fillStyle = config.corUsuario;
-  context.font = `500 ${config.usuarioTamanho}px Arial`;
-  context.fillText(config.usuario, config.usuarioX, config.usuarioY);
+  context.font = `500 ${config.usuarioTamanho * scale}px Arial`;
+  context.fillText(config.usuario, config.usuarioX * scale, config.usuarioY * scale);
 
   context.fillStyle = config.corTexto;
-  context.font = `700 ${config.topoTamanho}px Arial`;
-  let y = config.topoY;
-  for (const line of wrapCanvasText(context, config.textoTopo, config.topoLargura)) {
-    context.fillText(line, config.topoX, y);
-    y += config.topoTamanho + config.topoEntrelinhas;
+  context.font = `700 ${config.topoTamanho * scale}px Arial`;
+  let y = config.topoY * scale;
+  for (const line of wrapCanvasText(context, config.textoTopo, config.topoLargura * scale)) {
+    context.fillText(line, config.topoX * scale, y);
+    y += (config.topoTamanho + config.topoEntrelinhas) * scale;
   }
 
   return new Promise<Blob>((resolve, reject) => {
@@ -279,14 +321,19 @@ const createTemplateBlob = async (config: TemplateConfig, logoFile: File | null)
   });
 };
 
-const getVideoFilter = (config: TemplateConfig) => {
+const getVideoFilter = (config: TemplateConfig, outputWidth: number, outputHeight: number) => {
+  const scale = outputWidth / canvasWidth;
+  const videoX = Math.round(config.videoX * scale);
+  const videoY = Math.round(config.videoY * scale);
+  const videoWidth = Math.round(config.videoLargura * scale);
+  const videoHeight = Math.round(config.videoAltura * scale);
   const background = `0x${config.fundo.replace('#', '')}`;
   const fit =
     config.videoModo === 'cover'
-      ? `scale=${config.videoLargura}:${config.videoAltura}:force_original_aspect_ratio=increase,crop=${config.videoLargura}:${config.videoAltura}`
-      : `scale=${config.videoLargura}:${config.videoAltura}:force_original_aspect_ratio=decrease,pad=${config.videoLargura}:${config.videoAltura}:(ow-iw)/2:(oh-ih)/2:color=${background}`;
+      ? `scale=${videoWidth}:${videoHeight}:force_original_aspect_ratio=increase,crop=${videoWidth}:${videoHeight}`
+      : `scale=${videoWidth}:${videoHeight}:force_original_aspect_ratio=decrease,pad=${videoWidth}:${videoHeight}:(ow-iw)/2:(oh-ih)/2:color=${background}`;
 
-  return `[0:v]${fit},setsar=1[slot];[slot]pad=${canvasWidth}:${canvasHeight}:${config.videoX}:${config.videoY}:color=${background}[base];[base][1:v]overlay=0:0:format=auto[v]`;
+  return `[0:v]${fit},setsar=1[slot];[slot]pad=${outputWidth}:${outputHeight}:${videoX}:${videoY}:color=${background}[base];[base][1:v]overlay=0:0:format=auto[v]`;
 };
 
 const EditorMassaVideos: React.FC = () => {
@@ -295,6 +342,7 @@ const EditorMassaVideos: React.FC = () => {
   const [videos, setVideos] = useState<File[]>([]);
   const [logo, setLogo] = useState<File | null>(null);
   const [outputs, setOutputs] = useState<OutputVideo[]>([]);
+  const [outputPreset, setOutputPreset] = useState<OutputPreset>('fast');
   const [loadingFfmpeg, setLoadingFfmpeg] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [progressText, setProgressText] = useState('');
@@ -302,6 +350,8 @@ const EditorMassaVideos: React.FC = () => {
   const [error, setError] = useState('');
 
   const previewLogoUrl = useMemo(() => (logo ? URL.createObjectURL(logo) : ''), [logo]);
+  const selectedPreset = outputPresets[outputPreset];
+  const totalVideoSize = videos.reduce((total, video) => total + video.size, 0);
 
   const updateConfig = <K extends keyof TemplateConfig>(key: K, value: TemplateConfig[K]) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
@@ -353,7 +403,7 @@ const EditorMassaVideos: React.FC = () => {
 
     try {
       const ffmpeg = await loadFfmpeg();
-      const templateBlob = await createTemplateBlob(config, logo);
+      const templateBlob = await createTemplateBlob(config, logo, selectedPreset.width, selectedPreset.height);
       const nextOutputs: OutputVideo[] = [];
 
       for (let index = 0; index < videos.length; index += 1) {
@@ -374,7 +424,7 @@ const EditorMassaVideos: React.FC = () => {
           '-i',
           templateName,
           '-filter_complex',
-          getVideoFilter(config),
+          getVideoFilter(config, selectedPreset.width, selectedPreset.height),
           '-map',
           '[v]',
           '-map',
@@ -386,9 +436,9 @@ const EditorMassaVideos: React.FC = () => {
           '-c:a',
           'aac',
           '-b:v',
-          '8000k',
+          selectedPreset.bitrate,
           '-preset',
-          'medium',
+          selectedPreset.preset,
           '-shortest',
           outputName,
         ]);
@@ -478,6 +528,13 @@ const EditorMassaVideos: React.FC = () => {
 
             {videos.length > 0 && (
               <div className="space-y-2">
+                <div className={`rounded-2xl border p-3 text-xs font-bold ${
+                  totalVideoSize > 180 * 1024 * 1024
+                    ? 'border-amber-200 bg-amber-50 text-amber-800'
+                    : 'border-slate-200 bg-slate-50 text-slate-600'
+                }`}>
+                  Total selecionado: {formatSize(totalVideoSize)}. Para arquivos pesados, use o modo leve.
+                </div>
                 {videos.map((video) => (
                   <div key={`${video.name}-${video.size}`} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">
                     <div className="truncate text-slate-900">{video.name}</div>
@@ -543,6 +600,14 @@ const EditorMassaVideos: React.FC = () => {
                     <option value="contain">Caber inteiro</option>
                     <option value="cover">Preencher cortando</option>
                   </select>
+                </Field>
+                <Field label="Saida" icon={Video}>
+                  <select value={outputPreset} onChange={(event) => setOutputPreset(event.target.value as OutputPreset)} className="field">
+                    {Object.entries(outputPresets).map(([key, preset]) => (
+                      <option key={key} value={key}>{preset.label}</option>
+                    ))}
+                  </select>
+                  <p className="mt-2 text-xs font-semibold text-slate-500">{selectedPreset.description}</p>
                 </Field>
                 <Field label="Borda do video" icon={SlidersHorizontal}>
                   <input type="number" min={0} max={40} value={config.videoBorda} onChange={(event) => updateConfig('videoBorda', Number(event.target.value))} className="field" />

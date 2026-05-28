@@ -38,6 +38,14 @@ login-flow-browser.cmd
 
 Entre na sua conta Google/Flow no navegador que abrir. O login fica salvo na pasta `.flow-browser-profile`.
 
+Voce tambem pode fazer isso pela aba `/gerar-videos`, usando o painel admin:
+
+- cole o link do projeto Flow/Veo 3
+- clique em `Salvar projeto`
+- clique em `Abrir Flow`
+
+Esse painel so aparece para administrador e conversa com o servidor local `http://127.0.0.1:8787`.
+
 ## 4. Rodar o worker
 
 Quando quiser deixar o gerador funcionando, rode:

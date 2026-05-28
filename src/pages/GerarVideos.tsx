@@ -6,9 +6,11 @@ import {
   Clock3,
   Download,
   Film,
+  KeyRound,
   Loader2,
   PlayCircle,
   RefreshCw,
+  Save,
   Send,
   Trash2,
 } from 'lucide-react';
@@ -17,6 +19,9 @@ import { GenerationJob, GenerationWorkerStatus, supabase } from '../lib/supabase
 
 const modelValue = 'veo-3.1-lite-lower-priority';
 const modelLabel = 'Veo 3.1 - Lite [Lower Priority]';
+const defaultFlowProjectUrl = 'https://labs.google/fx/tools/flow/project/63ab691c-6565-40df-bdf5-77a0a90c2e10';
+const flowControlUrl = 'http://127.0.0.1:8787';
+const flowProjectStorageKey = 'central-flow-project-url';
 const aspectRatios = ['9:16', '16:9'];
 const durations = [4, 6, 8];
 const quantities = [1, 2, 3, 4];
@@ -107,8 +112,14 @@ const GerarVideos: React.FC = () => {
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState('');
+  const [flowProjectUrl, setFlowProjectUrl] = useState(() =>
+    localStorage.getItem(flowProjectStorageKey) || defaultFlowProjectUrl,
+  );
+  const [savingFlowProject, setSavingFlowProject] = useState(false);
+  const [openingFlowLogin, setOpeningFlowLogin] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const isAdmin = profile?.role === 'admin';
 
   const workerOnline = getWorkerOnline(workerStatus);
   const jobsByStatus = useMemo(
@@ -155,9 +166,26 @@ const GerarVideos: React.FC = () => {
     if (data) setWorkerStatus(data as GenerationWorkerStatus);
   };
 
+  const refreshLocalFlowProject = async () => {
+    if (!isAdmin) return;
+
+    try {
+      const response = await fetch(`${flowControlUrl}/health`);
+      const payload = await response.json().catch(() => ({}));
+
+      if (response.ok && payload.flowProjectUrl) {
+        setFlowProjectUrl(payload.flowProjectUrl);
+        localStorage.setItem(flowProjectStorageKey, payload.flowProjectUrl);
+      }
+    } catch {
+      // O servidor local pode estar desligado. A tela continua funcionando para os alunos.
+    }
+  };
+
   useEffect(() => {
     fetchJobs();
     fetchWorkerStatus();
+    refreshLocalFlowProject();
 
     const interval = window.setInterval(() => {
       fetchJobs();
@@ -266,6 +294,66 @@ const GerarVideos: React.FC = () => {
     setDeletingId('');
   };
 
+  const saveFlowProject = async () => {
+    const cleanUrl = flowProjectUrl.trim();
+
+    if (!/^https:\/\/labs\.google\/fx\/tools\/flow\/project\/[a-z0-9-]+$/i.test(cleanUrl)) {
+      setError('Cole um link de projeto do Flow no formato https://labs.google/fx/tools/flow/project/...');
+      return false;
+    }
+
+    setSavingFlowProject(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      localStorage.setItem(flowProjectStorageKey, cleanUrl);
+      const response = await fetch(`${flowControlUrl}/flow-project`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ flowProjectUrl: cleanUrl }),
+      });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok || payload.ok === false) {
+        throw new Error(payload.error || 'Servidor local do Flow nao respondeu.');
+      }
+
+      setFlowProjectUrl(payload.flowProjectUrl || cleanUrl);
+      setSuccess('Projeto Flow/Veo 3 salvo para o worker local.');
+      return true;
+    } catch (flowError: any) {
+      setError(flowError.message || 'Ligue o servidor local do Flow antes de salvar o projeto.');
+      return false;
+    } finally {
+      setSavingFlowProject(false);
+    }
+  };
+
+  const openFlowLogin = async () => {
+    setOpeningFlowLogin(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const saved = await saveFlowProject();
+      if (!saved) return;
+
+      const response = await fetch(`${flowControlUrl}/flow-login`, { method: 'POST' });
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok || payload.ok === false) {
+        throw new Error(payload.error || 'Servidor local do Flow nao respondeu.');
+      }
+
+      setSuccess('Flow aberto no navegador correto. Faca login ou confira se o projeto abriu no Veo 3.');
+    } catch (flowError: any) {
+      setError(flowError.message || 'Nao foi possivel abrir o login do Flow.');
+    } finally {
+      setOpeningFlowLogin(false);
+    }
+  };
+
   return (
     <div className="-mx-2 -my-3 min-h-[calc(100vh-7rem)] bg-slate-950 px-3 py-6 text-white sm:-mx-6 sm:-my-6 sm:px-8 sm:py-10 lg:-mx-8 lg:-my-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -305,6 +393,52 @@ const GerarVideos: React.FC = () => {
             </div>
           </div>
         </motion.section>
+
+        {isAdmin && (
+          <section className="rounded-[2rem] border border-orange-500/20 bg-orange-500/10 p-5 shadow-2xl shadow-black/20 sm:p-6">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-end">
+              <div className="flex-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">
+                  Controle admin do worker
+                </p>
+                <label className="mt-3 block text-sm font-black text-white" htmlFor="flow-project-url">
+                  Link do projeto Flow/Veo 3
+                </label>
+                <input
+                  id="flow-project-url"
+                  value={flowProjectUrl}
+                  onChange={(event) => setFlowProjectUrl(event.target.value)}
+                  placeholder="https://labs.google/fx/tools/flow/project/..."
+                  className="mt-2 h-12 w-full rounded-2xl border border-white/10 bg-black/50 px-4 text-sm font-semibold text-white outline-none placeholder:text-slate-600 focus:border-orange-500"
+                />
+                <p className="mt-2 text-xs font-semibold text-orange-100/80">
+                  Cole aqui o projeto certo onde o worker deve abrir o Flow para gerar os videos.
+                </p>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2 xl:w-[360px]">
+                <button
+                  type="button"
+                  onClick={saveFlowProject}
+                  disabled={savingFlowProject}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-orange-500/30 bg-black/30 px-4 text-xs font-black uppercase tracking-wide text-orange-100 hover:bg-orange-500/20 disabled:opacity-50"
+                >
+                  {savingFlowProject ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                  Salvar projeto
+                </button>
+                <button
+                  type="button"
+                  onClick={openFlowLogin}
+                  disabled={openingFlowLogin}
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-orange-500 px-4 text-xs font-black uppercase tracking-wide text-black hover:bg-white disabled:opacity-50"
+                >
+                  {openingFlowLogin ? <Loader2 className="animate-spin" size={16} /> : <KeyRound size={16} />}
+                  Abrir Flow
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="grid gap-5 xl:grid-cols-[420px_1fr]">
           <form

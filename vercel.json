@@ -1,6 +1,10 @@
 {
     "rewrites": [
         {
+            "source": "/api/agents/:agent",
+            "destination": "/api/agents-router?agent=:agent"
+        },
+        {
             "source": "/",
             "destination": "/agents/home.html"
         },

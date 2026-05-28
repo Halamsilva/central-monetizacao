@@ -41,6 +41,14 @@ const config = {
   offscreen: process.env.FLOW_BROWSER_OFFSCREEN === '1',
 };
 
+const stableBrowserArgs = [
+  '--disable-session-crashed-bubble',
+  '--disable-infobars',
+  '--no-first-run',
+  '--no-default-browser-check',
+  '--disable-features=InfiniteSessionRestore,SessionRestore',
+  '--hide-crash-restore-bubble',
+];
 const visibleWindowArgs = ['--window-position=40,40', '--window-size=1200,820', '--start-maximized'];
 
 if (!config.loginOnly && (!config.supabaseUrl || !config.supabaseKey)) {
@@ -68,6 +76,8 @@ const patchJsonFile = async (filePath, updater) => {
 };
 
 const resetVisibleBrowserProfileState = async () => {
+  await rm(resolve(PROFILE_DIR, 'Default', 'Sessions'), { recursive: true, force: true }).catch(() => {});
+
   await patchJsonFile(resolve(PROFILE_DIR, 'Default', 'Preferences'), (preferences) => {
     preferences.profile = {
       ...(preferences.profile || {}),
@@ -78,10 +88,18 @@ const resetVisibleBrowserProfileState = async () => {
     preferences.session = {
       ...(preferences.session || {}),
       restore_on_startup: 5,
+      startup_urls: [],
     };
+
+    preferences.has_seen_welcome_page = true;
+    preferences.was_profile_shortcut_created = true;
 
     if (preferences.browser) {
       delete preferences.browser.window_placement;
+      preferences.browser = {
+        ...preferences.browser,
+        check_default_browser: false,
+      };
     }
 
     delete preferences.exit_type;
@@ -98,6 +116,8 @@ const resetVisibleBrowserProfileState = async () => {
     if (localState.browser) {
       delete localState.browser.window_placement;
     }
+
+    localState.exited_cleanly = true;
   });
 };
 let workerHeartbeatState = {
@@ -193,8 +213,7 @@ const launchFlow = async () => {
     viewport: { width: 1440, height: 960 },
     acceptDownloads: true,
     args: [
-      '--disable-session-crashed-bubble',
-      '--disable-features=InfiniteSessionRestore',
+      ...stableBrowserArgs,
       ...(config.loginOnly
         ? visibleWindowArgs
         : config.offscreen

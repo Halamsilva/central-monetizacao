@@ -21,7 +21,7 @@ import { GenerationJob, GenerationWorkerStatus, supabase } from '../lib/supabase
 
 const modelValue = 'veo-3.1-lite-lower-priority';
 const modelLabel = 'Veo 3.1 - Lite [Lower Priority]';
-const defaultFlowProjectUrl = 'https://labs.google/fx/tools/flow/project/63ab691c-6565-40df-bdf5-77a0a90c2e10';
+const defaultFlowProjectUrl = 'https://labs.google/fx/tools/flow/project/3c44b205-a81a-4359-b4af-e001bea75c3a';
 const flowControlUrl = 'http://127.0.0.1:8787';
 const flowProjectStorageKey = 'central-flow-project-url';
 const aspectRatios = ['9:16', '16:9'];

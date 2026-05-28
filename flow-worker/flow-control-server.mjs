@@ -10,7 +10,7 @@ const PROJECT_ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const FLOW_CONFIG_PATH = resolve(PROJECT_ROOT, '.flow-config.json');
 const PORT = Number(process.env.FLOW_CONTROL_PORT || 8787);
 const DEFAULT_FLOW_PROJECT_URL =
-  'https://labs.google/fx/tools/flow/project/63ab691c-6565-40df-bdf5-77a0a90c2e10';
+  'https://labs.google/fx/tools/flow/project/3c44b205-a81a-4359-b4af-e001bea75c3a';
 
 loadDotenv({ path: resolve(PROJECT_ROOT, '.env.local'), override: false });
 loadDotenv({ path: resolve(PROJECT_ROOT, '.env'), override: false });

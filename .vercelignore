@@ -1,0 +1,6 @@
+.flow-browser-profile/
+.flow-config.json
+flow-failure-*.png
+node_modules/
+dist/
+*.log

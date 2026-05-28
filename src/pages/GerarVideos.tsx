@@ -156,6 +156,7 @@ const GerarVideos: React.FC = () => {
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState('');
+  const [retryingId, setRetryingId] = useState('');
   const [downloadingUrl, setDownloadingUrl] = useState('');
   const [flowProjectUrl, setFlowProjectUrl] = useState(() =>
     localStorage.getItem(flowProjectStorageKey) || defaultFlowProjectUrl,
@@ -343,6 +344,40 @@ const GerarVideos: React.FC = () => {
     if (deleteError) setError(friendlyDbError(deleteError.message));
     await fetchJobs();
     setDeletingId('');
+  };
+
+  const retryJob = async (job: GenerationJob) => {
+    if (job.status !== 'failed' || !user) return;
+
+    setRetryingId(job.id);
+    setError('');
+    setSuccess('');
+
+    const metadata = normalizeMetadata(job.metadata);
+    const { error: retryError } = await supabase.from('generation_jobs').insert({
+      user_id: user.id,
+      type: 'video',
+      status: 'pending',
+      prompt: job.prompt,
+      model: job.model || modelValue,
+      metadata: {
+        ...metadata,
+        retried_from_job_id: job.id,
+        retry_requested_at: new Date().toISOString(),
+        result_urls: undefined,
+        worker_failed_at: undefined,
+        error_type: undefined,
+      },
+    });
+
+    if (retryError) {
+      setError(friendlyDbError(retryError.message));
+    } else {
+      setSuccess('Pedido reenviado para a fila.');
+      await fetchJobs();
+    }
+
+    setRetryingId('');
   };
 
   const downloadVideo = async (url: string, jobId: string, index: number) => {
@@ -756,15 +791,28 @@ const GerarVideos: React.FC = () => {
                           </div>
 
                           {['pending', 'failed'].includes(job.status) && (
-                            <button
-                              type="button"
-                              onClick={() => deleteJob(job)}
-                              disabled={deletingId === job.id}
-                              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 text-xs font-black uppercase tracking-wide text-red-200 hover:bg-red-500/20 disabled:opacity-40"
-                            >
-                              {deletingId === job.id ? <Loader2 className="animate-spin" size={15} /> : <Trash2 size={15} />}
-                              Remover
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                              {job.status === 'failed' && (
+                                <button
+                                  type="button"
+                                  onClick={() => retryJob(job)}
+                                  disabled={retryingId === job.id}
+                                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 text-xs font-black uppercase tracking-wide text-emerald-100 hover:bg-emerald-500/20 disabled:opacity-40"
+                                >
+                                  {retryingId === job.id ? <Loader2 className="animate-spin" size={15} /> : <Send size={15} />}
+                                  Tentar novamente
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => deleteJob(job)}
+                                disabled={deletingId === job.id}
+                                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 text-xs font-black uppercase tracking-wide text-red-200 hover:bg-red-500/20 disabled:opacity-40"
+                              >
+                                {deletingId === job.id ? <Loader2 className="animate-spin" size={15} /> : <Trash2 size={15} />}
+                                Remover
+                              </button>
+                            </div>
                           )}
                         </div>
 

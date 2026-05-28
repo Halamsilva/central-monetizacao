@@ -857,6 +857,8 @@ const moveMouseAwayFromFlowCards = async (page) => {
 };
 
 const claimNextJob = async () => {
+  await markStaleProcessingJobs();
+
   const { data: jobs, error: fetchError } = await supabase
     .from('generation_jobs')
     .select('*')
@@ -871,7 +873,15 @@ const claimNextJob = async () => {
   const job = jobs[0];
   const { data: claimed, error: updateError } = await supabase
     .from('generation_jobs')
-    .update({ status: 'processing' })
+    .update({
+      status: 'processing',
+      error_message: null,
+      metadata: {
+        ...(job.metadata || {}),
+        worker_started_at: new Date().toISOString(),
+        provider: 'google-flow-browser',
+      },
+    })
     .eq('id', job.id)
     .eq('status', 'pending')
     .select('*')
@@ -879,6 +889,25 @@ const claimNextJob = async () => {
 
   if (updateError) throw updateError;
   return claimed;
+};
+
+const markStaleProcessingJobs = async () => {
+  const staleBefore = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+  const { data: staleJobs, error: fetchError } = await supabase
+    .from('generation_jobs')
+    .select('*')
+    .eq('type', 'video')
+    .eq('status', 'processing')
+    .lt('updated_at', staleBefore)
+    .limit(10);
+
+  if (fetchError) throw fetchError;
+  if (!staleJobs?.length) return;
+
+  for (const staleJob of staleJobs) {
+    console.warn(`Marcando job travado como falha: ${staleJob.id}`);
+    await failJob(staleJob, new Error('O gerador perdeu o acompanhamento desse pedido. Tente novamente.'));
+  }
 };
 
 const completeJob = async (job, urls) => {
@@ -923,7 +952,7 @@ const failJob = async (job, error) => {
       ? 'policy_violation'
       : 'generic';
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('generation_jobs')
     .update({
       status: 'failed',
@@ -936,6 +965,10 @@ const failJob = async (job, error) => {
       },
     })
     .eq('id', job.id);
+
+  if (updateError) {
+    throw new Error(`Nao foi possivel marcar o pedido como falha: ${updateError.message}`);
+  }
 };
 
 const processJob = async (page, job) => {

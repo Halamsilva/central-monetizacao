@@ -620,6 +620,27 @@ const EditorMassaVideos: React.FC = () => {
                 <Field label="@usuario" icon={Type}>
                   <input value={config.usuario} onChange={(event) => updateConfig('usuario', event.target.value)} className="field" />
                 </Field>
+                <Field label="Imagem do perfil" icon={ImageIcon} wide>
+                  <label className="flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-violet-300 hover:bg-violet-50">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-violet-600 text-white">
+                      {previewLogoUrl ? (
+                        <img src={previewLogoUrl} className="h-full w-full object-cover" />
+                      ) : (
+                        <ImageIcon size={22} />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-black text-slate-900">
+                        {logo ? logo.name : 'Subir foto/logo do perfil'}
+                      </p>
+                      <p className="mt-1 text-xs font-semibold text-slate-500">
+                        Essa imagem aparece redonda ao lado do nome.
+                      </p>
+                    </div>
+                    <Upload size={20} className="text-violet-600" />
+                    <input type="file" accept="image/*" className="hidden" onChange={(event) => setLogo(event.target.files?.[0] || null)} />
+                  </label>
+                </Field>
                 <Field label="Texto do topo" icon={Type} wide>
                   <textarea value={config.textoTopo} onChange={(event) => updateConfig('textoTopo', event.target.value)} className="field min-h-24 resize-y" />
                 </Field>

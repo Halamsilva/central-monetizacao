@@ -114,6 +114,7 @@ const GerarVideos: React.FC = () => {
   const [loadingJobs, setLoadingJobs] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState('');
+  const [downloadingUrl, setDownloadingUrl] = useState('');
   const [flowProjectUrl, setFlowProjectUrl] = useState(() =>
     localStorage.getItem(flowProjectStorageKey) || defaultFlowProjectUrl,
   );
@@ -301,6 +302,30 @@ const GerarVideos: React.FC = () => {
     if (deleteError) setError(friendlyDbError(deleteError.message));
     await fetchJobs();
     setDeletingId('');
+  };
+
+  const downloadVideo = async (url: string, jobId: string, index: number) => {
+    setDownloadingUrl(url);
+    setError('');
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Nao foi possivel baixar o video.');
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `video-flow-${jobId.slice(0, 8)}${index > 0 ? `-${index + 1}` : ''}.mp4`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    } catch (downloadError: any) {
+      setError(downloadError.message || 'Nao foi possivel baixar o video.');
+    } finally {
+      setDownloadingUrl('');
+    }
   };
 
   const saveFlowProject = async () => {
@@ -720,14 +745,15 @@ const GerarVideos: React.FC = () => {
                             {videoUrls.map((url, index) => (
                               <div key={url} className="overflow-hidden rounded-2xl border border-white/10 bg-black">
                                 <video controls playsInline crossOrigin="anonymous" src={url} className="aspect-video w-full bg-black object-contain" />
-                                <a
-                                  href={url}
-                                  download
+                                <button
+                                  type="button"
+                                  onClick={() => downloadVideo(url, job.id, index)}
+                                  disabled={downloadingUrl === url}
                                   className="flex h-12 items-center justify-center gap-2 border-t border-white/10 text-sm font-black text-orange-200 hover:bg-white/5"
                                 >
-                                  <Download size={16} />
-                                  Baixar MP4 {videoUrls.length > 1 ? index + 1 : ''}
-                                </a>
+                                  {downloadingUrl === url ? <Loader2 className="animate-spin" size={16} /> : <Download size={16} />}
+                                  {downloadingUrl === url ? 'Baixando...' : `Baixar MP4 ${videoUrls.length > 1 ? index + 1 : ''}`}
+                                </button>
                               </div>
                             ))}
                           </div>

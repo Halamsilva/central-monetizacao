@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
 import {
+  AlertTriangle,
   BadgeCheck,
   Download,
   Image as ImageIcon,
@@ -58,6 +59,7 @@ type OutputPreset = 'fast' | 'standard';
 
 const canvasWidth = 1080;
 const canvasHeight = 1920;
+const maxVideoDurationSeconds = 30;
 
 const outputPresets: Record<OutputPreset, {
   label: string;
@@ -138,6 +140,22 @@ const readImage = (file: File) =>
     };
     image.onerror = reject;
     image.src = url;
+  });
+
+const getVideoDuration = (file: File) =>
+  new Promise<number>((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      resolve(video.duration);
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error(`Nao foi possivel ler a duracao de ${file.name}.`));
+    };
+    video.src = url;
   });
 
 const wrapCanvasText = (
@@ -391,6 +409,15 @@ const EditorMassaVideos: React.FC = () => {
     });
   };
 
+  const validateDurations = async () => {
+    for (const video of videos) {
+      const duration = await getVideoDuration(video);
+      if (duration > maxVideoDurationSeconds + 0.5) {
+        throw new Error(`O video "${video.name}" tem ${Math.round(duration)}s. Use videos de ate ${maxVideoDurationSeconds}s.`);
+      }
+    }
+  };
+
   const processVideos = async () => {
     if (!videos.length) {
       setError('Envie pelo menos um video.');
@@ -402,6 +429,8 @@ const EditorMassaVideos: React.FC = () => {
     setProcessing(true);
 
     try {
+      setProgressText('Conferindo duracao dos videos...');
+      await validateDurations();
       const ffmpeg = await loadFfmpeg();
       const templateBlob = await createTemplateBlob(config, logo, selectedPreset.width, selectedPreset.height);
       const nextOutputs: OutputVideo[] = [];
@@ -516,9 +545,14 @@ const EditorMassaVideos: React.FC = () => {
             <label className="flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 text-center transition hover:border-violet-400 hover:bg-violet-50">
               <Video className="mb-3 text-violet-600" size={34} />
               <span className="text-sm font-black text-slate-900">Enviar videos</span>
-              <span className="mt-1 text-xs font-semibold text-slate-500">MP4, MOV, WEBM, MKV e outros formatos comuns</span>
+              <span className="mt-1 text-xs font-semibold text-slate-500">MP4, MOV, WEBM, MKV. Maximo de 30 segundos por video.</span>
               <input type="file" accept="video/*" multiple className="hidden" onChange={(event) => handleVideos(event.target.files)} />
             </label>
+
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold leading-relaxed text-amber-800">
+              <AlertTriangle size={18} className="mr-2 inline" />
+              Use apenas videos de ate 30 segundos. Videos longos podem travar o navegador e nao serao processados.
+            </div>
 
             <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm font-bold text-slate-700 hover:border-violet-300">
               <ImageIcon className="text-violet-600" size={22} />

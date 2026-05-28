@@ -25,6 +25,10 @@ body {
   @apply bg-[#F8FAFC] text-slate-900 font-sans antialiased;
 }
 
+.field {
+  @apply h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-900 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100;
+}
+
 .dark {
   color-scheme: dark;
 }

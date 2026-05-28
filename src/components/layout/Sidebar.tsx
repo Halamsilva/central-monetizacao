@@ -137,12 +137,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Narracao IA', icon: Mic2, path: '/narracao' },
     { title: 'Gerador Imagens', icon: Image, path: '/gerador-imagens' },
     { title: 'Gerar Videos', icon: Film, path: '/gerar-videos' },
+    { title: 'Editor em Massa', icon: Film, path: '/editor-massa-videos' },
     { title: 'Downloads', icon: Download, path: '/downloads' },
     { title: 'Perfil', icon: User, path: '/profile' },
     { title: 'Configurações', icon: Settings, path: '/settings' },
   ];
 
-  const primaryStrategyMenu = [strategyMenu[0], strategyMenu[1], strategyMenu[17]];
+  const primaryStrategyMenu = [strategyMenu[0], strategyMenu[1], strategyMenu[18]];
   const agentToolsMenu = [
     strategyMenu[2],
     strategyMenu[4],
@@ -155,12 +156,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     strategyMenu[14],
     strategyMenu[15],
     strategyMenu[16],
+    strategyMenu[17],
     strategyMenu[3],
     strategyMenu[5],
     strategyMenu[6],
     strategyMenu[7],
   ];
-  const accountMenu = [strategyMenu[18], strategyMenu[19]];
+  const accountMenu = [strategyMenu[19], strategyMenu[20]];
 
   const adminMenu = [
     { title: 'Painel Admin', icon: Shield, path: '/admin' },

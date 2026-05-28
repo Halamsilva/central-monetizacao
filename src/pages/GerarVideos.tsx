@@ -28,6 +28,7 @@ const flowProjectStorageKey = 'central-flow-project-url';
 const aspectRatios = ['9:16', '16:9'];
 const durations = [4, 6, 8];
 const quantities = [1, 2, 3, 4];
+const staleProcessingMinutes = 45;
 
 const statusLabels: Record<GenerationJob['status'], string> = {
   pending: 'Pendente',
@@ -122,6 +123,51 @@ const getWorkerOnline = (workerStatus: GenerationWorkerStatus | null) => {
   return new Date(workerStatus.online_until).getTime() > Date.now();
 };
 
+const isStaleProcessing = (job: GenerationJob) => {
+  if (job.status !== 'processing') return false;
+  const updatedAt = new Date(job.updated_at).getTime();
+  if (Number.isNaN(updatedAt)) return false;
+  return Date.now() - updatedAt > staleProcessingMinutes * 60 * 1000;
+};
+
+const getJobStatusCopy = (job: GenerationJob, workerOnline: boolean) => {
+  if (job.status === 'pending') {
+    return workerOnline
+      ? {
+          title: 'Aguardando na fila',
+          detail: 'O gerador esta ligado e vai pegar este pedido em ordem.',
+        }
+      : {
+          title: 'Aguardando computador ligar',
+          detail: 'O pedido esta salvo e sera processado quando o gerador estiver online.',
+        };
+  }
+
+  if (job.status === 'processing') {
+    return isStaleProcessing(job)
+      ? {
+          title: 'Processamento travado',
+          detail: 'Este pedido ficou muito tempo sem atualizacao. O admin pode destravar a fila.',
+        }
+      : {
+          title: 'Gerando no Flow',
+          detail: 'O navegador do gerador esta criando ou baixando o video.',
+        };
+  }
+
+  if (job.status === 'completed') {
+    return {
+      title: 'Video pronto',
+      detail: 'O MP4 ja pode ser assistido ou baixado.',
+    };
+  }
+
+  return {
+    title: 'Falhou - tente novamente',
+    detail: friendlyFailureMessage(job),
+  };
+};
+
 const friendlyFailureMessage = (job: GenerationJob) => {
   const metadata = normalizeMetadata(job.metadata);
   const technicalMessage = job.error_message || metadata.error || '';
@@ -158,6 +204,7 @@ const GerarVideos: React.FC = () => {
   const [deletingId, setDeletingId] = useState('');
   const [retryingId, setRetryingId] = useState('');
   const [downloadingUrl, setDownloadingUrl] = useState('');
+  const [releasingStuck, setReleasingStuck] = useState(false);
   const [flowProjectUrl, setFlowProjectUrl] = useState(() =>
     localStorage.getItem(flowProjectStorageKey) || defaultFlowProjectUrl,
   );
@@ -182,19 +229,25 @@ const GerarVideos: React.FC = () => {
   );
 
   const completedJobs = jobs.filter((job) => job.status === 'completed');
+  const staleProcessingJobs = jobs.filter(isStaleProcessing);
 
   const fetchJobs = async () => {
     if (!user) return;
     setLoadingJobs(true);
     setError('');
 
-    const { data, error: fetchError } = await supabase
+    let query = supabase
       .from('generation_jobs')
       .select('*')
       .eq('type', 'video')
-      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(60);
+
+    if (!isAdmin) {
+      query = query.eq('user_id', user.id);
+    }
+
+    const { data, error: fetchError } = await query;
 
     if (fetchError) {
       setError(friendlyDbError(fetchError.message));
@@ -245,7 +298,7 @@ const GerarVideos: React.FC = () => {
     }, 15000);
 
     return () => window.clearInterval(interval);
-  }, [user?.id]);
+  }, [user?.id, isAdmin]);
 
   useEffect(() => {
     if (!user) return undefined;
@@ -378,6 +431,47 @@ const GerarVideos: React.FC = () => {
     }
 
     setRetryingId('');
+  };
+
+  const releaseStuckJobs = async () => {
+    if (!isAdmin || staleProcessingJobs.length === 0) return;
+
+    setReleasingStuck(true);
+    setError('');
+    setSuccess('');
+
+    let released = 0;
+    for (const job of staleProcessingJobs) {
+      const metadata = normalizeMetadata(job.metadata);
+      const { error: releaseError } = await supabase
+        .from('generation_jobs')
+        .update({
+          status: 'failed',
+          error_message: 'Pedido destravado manualmente pelo admin. Pode ser reenviado para a fila.',
+          metadata: {
+            ...metadata,
+            admin_released_at: new Date().toISOString(),
+            error_type: 'admin_released_stuck_processing',
+          },
+        })
+        .eq('id', job.id)
+        .eq('status', 'processing');
+
+      if (releaseError) {
+        setError(friendlyDbError(releaseError.message));
+        break;
+      }
+
+      released += 1;
+    }
+
+    if (released > 0) {
+      setSuccess(`${released} pedido(s) travado(s) foram liberados para tentar novamente.`);
+      await fetchJobs();
+      await fetchWorkerStatus();
+    }
+
+    setReleasingStuck(false);
   };
 
   const downloadVideo = async (url: string, jobId: string, index: number) => {
@@ -608,6 +702,18 @@ const GerarVideos: React.FC = () => {
               <span className={`rounded-full px-3 py-1 ${localWorkerStatus === 'running' ? 'bg-emerald-500/15 text-emerald-100' : 'bg-white/10 text-slate-200'}`}>
                 Worker: {localWorkerStatus === 'running' ? 'liberado' : localWorkerStatus === 'stopped' ? 'pausado' : 'desconhecido'}
               </span>
+              <span className={`rounded-full px-3 py-1 ${staleProcessingJobs.length ? 'bg-red-500/15 text-red-100' : 'bg-white/10 text-slate-200'}`}>
+                Travados: {staleProcessingJobs.length}
+              </span>
+              <button
+                type="button"
+                onClick={releaseStuckJobs}
+                disabled={releasingStuck || staleProcessingJobs.length === 0}
+                className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-red-100 hover:bg-red-500/20 disabled:opacity-40"
+              >
+                {releasingStuck ? <Loader2 className="animate-spin" size={13} /> : <RefreshCw size={13} />}
+                Destravar fila
+              </button>
             </div>
           </section>
         )}
@@ -742,7 +848,7 @@ const GerarVideos: React.FC = () => {
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.22em] text-orange-300">Fila</p>
-                  <h2 className="text-2xl font-black">Meus pedidos</h2>
+                  <h2 className="text-2xl font-black">{isAdmin ? 'Fila de videos' : 'Meus pedidos'}</h2>
                 </div>
                 <button
                   type="button"
@@ -767,6 +873,7 @@ const GerarVideos: React.FC = () => {
                   jobs.map((job) => {
                     const metadata = normalizeMetadata(job.metadata);
                     const videoUrls = videoUrlsForJob(job);
+                    const statusCopy = getJobStatusCopy(job, workerOnline);
 
                     return (
                       <article key={job.id} className="rounded-3xl border border-white/10 bg-black/30 p-4">
@@ -774,7 +881,7 @@ const GerarVideos: React.FC = () => {
                           <div className="min-w-0">
                             <div className="mb-2 flex flex-wrap items-center gap-2">
                               <span className={`rounded-full px-3 py-1 text-[11px] font-black uppercase ring-1 ${statusClasses[job.status]}`}>
-                                {statusLabels[job.status]}
+                                {statusCopy.title}
                               </span>
                               <span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-black text-slate-300">
                                 {metadata.aspect_ratio || '9:16'}
@@ -787,7 +894,11 @@ const GerarVideos: React.FC = () => {
                               </span>
                             </div>
                             <p className="line-clamp-3 text-sm font-bold leading-relaxed text-slate-100">{job.prompt}</p>
-                            <p className="mt-2 text-xs font-semibold text-slate-500">{formatDate(job.created_at)}</p>
+                            <p className="mt-2 text-xs font-semibold text-slate-400">{statusCopy.detail}</p>
+                            <p className="mt-1 text-xs font-semibold text-slate-500">
+                              Criado em {formatDate(job.created_at)}
+                              {job.updated_at && job.updated_at !== job.created_at ? ` · Atualizado em ${formatDate(job.updated_at)}` : ''}
+                            </p>
                           </div>
 
                           {['pending', 'failed'].includes(job.status) && (

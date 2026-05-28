@@ -12,7 +12,7 @@ import meninaDaRocaHandler from "./api/agents/menina-da-roca";
 import remixVideoHandler from "./api/agents/remix-video";
 import transformacaoVideosHandler from "./api/agents/transformacao-videos";
 import narracaoHandler from "./api/agents/narracao";
-import geradorImagensHandler from "./api/agents/gerador-imagens";
+import geradorImagensHandler from "./server-agents/gerador-imagens";
 import legacyStudentsHandler from "./api/admin/legacy-students";
 
 dotenv.config();

@@ -21,6 +21,7 @@ import {
   Users,
   LogOut,
   Hammer,
+  Mic2,
   X,
 } from 'lucide-react';
 
@@ -132,12 +133,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Menina da Roca', icon: Camera, path: '/menina-da-roca' },
     { title: 'Remix Video', icon: Film, path: '/remix-video' },
     { title: 'Transformacao Videos', icon: Hammer, path: '/transformacao-videos' },
+    { title: 'Narracao IA', icon: Mic2, path: '/narracao' },
     { title: 'Downloads', icon: Download, path: '/downloads' },
     { title: 'Perfil', icon: User, path: '/profile' },
     { title: 'Configurações', icon: Settings, path: '/settings' },
   ];
 
-  const primaryStrategyMenu = [strategyMenu[0], strategyMenu[1], strategyMenu[14]];
+  const primaryStrategyMenu = [strategyMenu[0], strategyMenu[1], strategyMenu[15]];
   const agentToolsMenu = [
     strategyMenu[2],
     strategyMenu[4],
@@ -147,12 +149,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     strategyMenu[11],
     strategyMenu[12],
     strategyMenu[13],
+    strategyMenu[14],
     strategyMenu[3],
     strategyMenu[5],
     strategyMenu[6],
     strategyMenu[7],
   ];
-  const accountMenu = [strategyMenu[15], strategyMenu[16]];
+  const accountMenu = [strategyMenu[16], strategyMenu[17]];
 
   const adminMenu = [
     { title: 'Painel Admin', icon: Shield, path: '/admin' },

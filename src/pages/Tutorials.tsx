@@ -64,6 +64,7 @@ const Tutorials: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState('');
+  const [setupMissing, setSetupMissing] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -86,14 +87,14 @@ const Tutorials: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      setSetupMissing(false);
       setTutorials((data || []) as Tutorial[]);
     } catch (error: any) {
-      setMessage({
-        type: 'error',
-        text: /tutorials|schema cache|Could not find the table/i.test(error.message || '')
-          ? 'A tabela de tutoriais ainda precisa ser criada no Supabase.'
-          : 'Erro ao carregar tutoriais.',
-      });
+      const isMissingTable = /tutorials|schema cache|Could not find the table/i.test(error.message || '');
+      setSetupMissing(isMissingTable);
+      if (!isMissingTable) {
+        setMessage({ type: 'error', text: 'Erro ao carregar tutoriais.' });
+      }
     } finally {
       setLoading(false);
     }
@@ -104,6 +105,11 @@ const Tutorials: React.FC = () => {
   };
 
   const saveTutorial = async () => {
+    if (setupMissing) {
+      setMessage({ type: 'error', text: 'Crie a tabela de tutoriais no Supabase antes de publicar.' });
+      return;
+    }
+
     if (!formData.title.trim() || !formData.description.trim() || !formData.video_url.trim()) {
       setMessage({ type: 'error', text: 'Preencha titulo, descricao e link do video.' });
       return;
@@ -126,7 +132,12 @@ const Tutorials: React.FC = () => {
       setMessage({ type: 'success', text: 'Tutorial publicado para os alunos.' });
       await loadTutorials();
     } catch (error: any) {
-      setMessage({ type: 'error', text: error.message || 'Erro ao salvar tutorial.' });
+      const isMissingTable = /tutorials|schema cache|Could not find the table/i.test(error.message || '');
+      setSetupMissing(isMissingTable);
+      setMessage({
+        type: 'error',
+        text: isMissingTable ? 'Crie a tabela de tutoriais no Supabase antes de publicar.' : 'Erro ao salvar tutorial.',
+      });
     } finally {
       setSaving(false);
     }
@@ -171,6 +182,15 @@ const Tutorials: React.FC = () => {
         </div>
       )}
 
+      {setupMissing && (
+        <section className="rounded-[24px] border border-amber-200 bg-amber-50 p-5 shadow-sm sm:p-6">
+          <h2 className="text-xl font-black text-amber-950">Configuração pendente no Supabase</h2>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-amber-800">
+            A aba ja esta criada, mas falta rodar o arquivo <span className="font-black">supabase-tutorials.sql</span> no SQL Editor do Supabase para salvar os videos.
+          </p>
+        </section>
+      )}
+
       {isAdmin && (
         <section className="rounded-[24px] border border-blue-200 bg-blue-50/30 p-5 shadow-sm sm:p-6">
           <div className="mb-4 flex items-center gap-2">
@@ -201,7 +221,7 @@ const Tutorials: React.FC = () => {
           <button
             type="button"
             onClick={saveTutorial}
-            disabled={saving}
+            disabled={saving || setupMissing}
             className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 text-sm font-black text-white shadow-md shadow-blue-100 transition hover:bg-blue-700 disabled:opacity-50"
           >
             {saving ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}

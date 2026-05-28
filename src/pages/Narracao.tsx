@@ -13,24 +13,97 @@ import {
   Square,
   Volume2,
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 
 const draftKey = 'narracao-generator-draft';
 
 const voices = [
-  { value: 'pt_BR', label: 'Português BR' },
-  { value: 'pt_BR-female', label: 'Voz feminina BR' },
-  { value: 'pt_BR-male', label: 'Voz masculina BR' },
-  { value: 'narrador', label: 'Narrador grave' },
+  { value: 'piper_pt', label: 'Piper local PT' },
+  { value: 'browser_pt', label: 'Prévia do navegador' },
 ];
+
+let piperPromise: Promise<any> | null = null;
+
+const getPiper = async (onProgress: (message: string) => void) => {
+  if (!piperPromise) {
+    piperPromise = Promise.all([import('piper-plus'), import('onnxruntime-web')]).then(
+      ([{ PiperPlus }, ort]) =>
+        PiperPlus.initialize({
+          model: 'ayousanz/piper-plus-tsukuyomi-chan',
+          ort,
+          onProgress: ({ progress, message }: { progress?: number; message?: string }) => {
+            const percent = typeof progress === 'number' ? ` ${Math.round(progress * 100)}%` : '';
+            onProgress(`${message || 'Baixando modelo'}${percent}`);
+          },
+        }),
+    );
+  }
+
+  return piperPromise;
+};
+
+const splitForTts = (value: string) => {
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  const sentences = normalized.match(/[^.!?…]+[.!?…]*/g) || [normalized];
+  const chunks: string[] = [];
+  let current = '';
+
+  sentences.forEach((sentence) => {
+    const next = `${current} ${sentence}`.trim();
+    if (next.length > 650 && current) {
+      chunks.push(current);
+      current = sentence.trim();
+    } else {
+      current = next;
+    }
+  });
+
+  if (current) chunks.push(current);
+  return chunks;
+};
+
+const floatTo16BitPcm = (output: DataView, offset: number, input: Float32Array) => {
+  for (let index = 0; index < input.length; index += 1, offset += 2) {
+    const sample = Math.max(-1, Math.min(1, input[index]));
+    output.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+  }
+};
+
+const writeString = (view: DataView, offset: number, value: string) => {
+  for (let index = 0; index < value.length; index += 1) {
+    view.setUint8(offset + index, value.charCodeAt(index));
+  }
+};
+
+const createWavBlob = (samples: Float32Array, sampleRate: number) => {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+
+  writeString(view, 0, 'RIFF');
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(view, 8, 'WAVE');
+  writeString(view, 12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(view, 36, 'data');
+  view.setUint32(40, samples.length * 2, true);
+  floatTo16BitPcm(view, 44, samples);
+
+  return new Blob([view], { type: 'audio/wav' });
+};
 
 const Narracao: React.FC = () => {
   const [text, setText] = useState('');
-  const [voice, setVoice] = useState('pt_BR');
+  const [voice, setVoice] = useState('piper_pt');
   const [speed, setSpeed] = useState(1);
   const [pitch, setPitch] = useState(1);
   const [audioUrl, setAudioUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState('');
   const [speaking, setSpeaking] = useState(false);
   const [paused, setPaused] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -70,6 +143,7 @@ const Narracao: React.FC = () => {
     setText('');
     setAudioUrl('');
     setError('');
+    setGenerationStatus('');
     setSpeaking(false);
     setPaused(false);
     localStorage.removeItem(draftKey);
@@ -127,31 +201,41 @@ const Narracao: React.FC = () => {
     setLoading(true);
     setError('');
     setAudioUrl('');
+    setGenerationStatus('Preparando motor de voz local...');
 
     try {
-      const { data } = await supabase.auth.getSession();
-      const token = data.session?.access_token;
-
-      if (!token) {
-        throw new Error('Faça login novamente para usar este agente.');
+      if (chars > 12000) {
+        throw new Error('O texto ficou grande demais. Divida o roteiro em partes menores.');
       }
 
-      const response = await fetch('/api/agents/narracao', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ text, voice, speed, pitch }),
+      const piper = await getPiper(setGenerationStatus);
+      const chunks = splitForTts(text);
+      const rendered: Float32Array[] = [];
+      let sampleRate = 22050;
+      let totalLength = 0;
+
+      for (let index = 0; index < chunks.length; index += 1) {
+        setGenerationStatus(`Gerando trecho ${index + 1} de ${chunks.length} no navegador...`);
+        const result = await piper.synthesize(chunks[index], {
+          language: 'pt',
+          lengthScale: 1 / speed,
+        });
+
+        sampleRate = result.sampleRate || sampleRate;
+        rendered.push(result.samples);
+        totalLength += result.samples.length;
+      }
+
+      const samples = new Float32Array(totalLength);
+      let offset = 0;
+      rendered.forEach((chunk) => {
+        samples.set(chunk, offset);
+        offset += chunk.length;
       });
 
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null);
-        throw new Error(payload?.error || 'Não foi possível gerar o áudio.');
-      }
-
-      const blob = await response.blob();
+      const blob = createWavBlob(samples, sampleRate);
       setAudioUrl(URL.createObjectURL(blob));
+      setGenerationStatus('Áudio WAV pronto para baixar.');
     } catch (err: any) {
       setError(err.message || 'Erro ao gerar narração.');
     } finally {
@@ -184,7 +268,7 @@ const Narracao: React.FC = () => {
                 Narração IA
               </h1>
               <p className="mt-3 max-w-3xl text-sm font-semibold leading-relaxed text-zinc-400 sm:text-base">
-                Cole um roteiro, teste a leitura no navegador e gere áudio quando o servidor Piper/Kokoro estiver conectado.
+                Cole um roteiro e gere um áudio WAV baixável direto no navegador, sem API paga e sem servidor de voz.
               </p>
             </div>
 
@@ -255,7 +339,10 @@ const Narracao: React.FC = () => {
               </select>
 
               <ControlSlider label="Velocidade" value={speed} min={0.6} max={1.4} step={0.05} onChange={setSpeed} />
-              <ControlSlider label="Tom" value={pitch} min={0.7} max={1.3} step={0.05} onChange={setPitch} />
+              <ControlSlider label="Tom da prévia" value={pitch} min={0.7} max={1.3} step={0.05} onChange={setPitch} />
+              <p className="rounded-xl border border-orange-500/20 bg-orange-500/10 p-3 text-xs font-bold leading-relaxed text-orange-100">
+                O arquivo baixável usa Piper local. Na primeira vez, o navegador baixa o modelo e depois deixa em cache.
+              </p>
             </div>
 
             <div className="rounded-[2rem] border border-zinc-800 bg-[#070707] p-5">
@@ -304,15 +391,20 @@ const Narracao: React.FC = () => {
                 className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 text-xs font-black uppercase tracking-widest text-black shadow-[0_18px_60px_rgba(249,115,22,0.25)] hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {loading ? <Loader2 className="animate-spin" size={18} /> : <Mic2 size={18} />}
-                {loading ? 'Gerando...' : 'Gerar MP3'}
+                {loading ? 'Gerando...' : 'Gerar WAV grátis'}
               </button>
+              {generationStatus && (
+                <p className="mt-3 rounded-xl border border-zinc-800 bg-black p-3 text-xs font-bold leading-relaxed text-zinc-400">
+                  {generationStatus}
+                </p>
+              )}
 
               {audioUrl && (
                 <div className="mt-4 rounded-2xl border border-zinc-800 bg-black p-4">
                   <audio controls src={audioUrl} className="w-full" />
                   <a
                     href={audioUrl}
-                    download="narracao.mp3"
+                    download="narracao.wav"
                     className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-950 text-xs font-black uppercase tracking-wide text-white hover:border-orange-500"
                   >
                     <Download size={15} />

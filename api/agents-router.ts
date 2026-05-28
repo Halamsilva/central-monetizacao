@@ -1,12 +1,12 @@
-import meninaDaRocaHandler from '../server-agents/menina-da-roca';
-import narracaoHandler from '../server-agents/narracao';
-import novelinhasHandler from '../server-agents/novelinhas';
-import povHandler from '../server-agents/pov';
-import remixVideoHandler from '../server-agents/remix-video';
-import revisorVeo3Handler from '../server-agents/revisor-veo-3';
-import tiktokShopPersuasivoHandler from '../server-agents/tiktok-shop-persuasivo';
-import transformacaoVideosHandler from '../server-agents/transformacao-videos';
-import geradorImagensHandler from '../server-agents/gerador-imagens';
+import meninaDaRocaHandler from '../server-agents/menina-da-roca.js';
+import narracaoHandler from '../server-agents/narracao.js';
+import novelinhasHandler from '../server-agents/novelinhas.js';
+import povHandler from '../server-agents/pov.js';
+import remixVideoHandler from '../server-agents/remix-video.js';
+import revisorVeo3Handler from '../server-agents/revisor-veo-3.js';
+import tiktokShopPersuasivoHandler from '../server-agents/tiktok-shop-persuasivo.js';
+import transformacaoVideosHandler from '../server-agents/transformacao-videos.js';
+import geradorImagensHandler from '../server-agents/gerador-imagens.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,

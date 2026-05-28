@@ -14,8 +14,8 @@ const DEFAULT_FLOW_PROJECT_URL =
 const SAMPLE_TIMEOUT_MS = 30 * 60 * 1000;
 const FLOW_CONFIG_PATH = resolve(PROJECT_ROOT, '.flow-config.json');
 
-loadDotenv({ path: resolve(PROJECT_ROOT, '.env.local'), override: false });
-loadDotenv({ path: resolve(PROJECT_ROOT, '.env'), override: false });
+loadDotenv({ path: resolve(PROJECT_ROOT, '.env.local'), override: false, quiet: true });
+loadDotenv({ path: resolve(PROJECT_ROOT, '.env'), override: false, quiet: true });
 
 const readLocalFlowProjectUrl = () => {
   try {
@@ -43,14 +43,17 @@ const config = {
 
 const visibleWindowArgs = ['--window-position=40,40', '--window-size=1200,820', '--start-maximized'];
 
-if (!config.supabaseUrl || !config.supabaseKey) {
+if (!config.loginOnly && (!config.supabaseUrl || !config.supabaseKey)) {
   console.error('Missing SUPABASE_URL and SUPABASE_ANON_KEY/SUPABASE_SERVICE_ROLE_KEY.');
   process.exit(1);
 }
 
-const supabase = createClient(config.supabaseUrl, config.supabaseKey, {
-  auth: { persistSession: false },
-});
+const supabase =
+  config.supabaseUrl && config.supabaseKey
+    ? createClient(config.supabaseUrl, config.supabaseKey, {
+        auth: { persistSession: false },
+      })
+    : null;
 
 const sleep = (ms) => new Promise((resolveSleep) => setTimeout(resolveSleep, ms));
 

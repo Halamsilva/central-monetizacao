@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn } from 'node:child_process';
 import { config as loadDotenv } from 'dotenv';
+import { WebSocketServer } from 'ws';
 
 const PROJECT_ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const FLOW_CONFIG_PATH = resolve(PROJECT_ROOT, '.flow-config.json');
@@ -20,6 +21,7 @@ const json = (response, status, payload) => {
     'access-control-allow-origin': '*',
     'access-control-allow-methods': 'GET,POST,OPTIONS',
     'access-control-allow-headers': 'content-type',
+    'access-control-allow-private-network': 'true',
     'content-type': 'application/json; charset=utf-8',
   });
   response.end(JSON.stringify(payload));
@@ -134,6 +136,38 @@ const startFlowWorker = async () => {
   return flowProjectUrl;
 };
 
+const handleControlAction = async (path, body = {}) => {
+  if (path === '/health') {
+    return {
+      ok: true,
+      flowProjectUrl: await getFlowProjectUrl(),
+      localWorkerStatus: await getLocalWorkerStatus(),
+    };
+  }
+
+  if (path === '/flow-project') {
+    const flowProjectUrl = await saveFlowProjectUrl(body.flowProjectUrl);
+    return { ok: true, flowProjectUrl };
+  }
+
+  if (path === '/flow-login') {
+    const flowProjectUrl = await openFlowLogin();
+    return { ok: true, flowProjectUrl, localWorkerStatus: await getLocalWorkerStatus() };
+  }
+
+  if (path === '/worker/start') {
+    const flowProjectUrl = await startFlowWorker();
+    return { ok: true, flowProjectUrl, localWorkerStatus: await getLocalWorkerStatus() };
+  }
+
+  if (path === '/worker/stop') {
+    await stopFlowProcesses();
+    return { ok: true, flowProjectUrl: await getFlowProjectUrl(), localWorkerStatus: 'stopped' };
+  }
+
+  return { ok: false, error: 'Rota nÃ£o encontrada.' };
+};
+
 const server = createServer(async (request, response) => {
   if (request.method === 'OPTIONS') {
     json(response, 204, {});
@@ -144,36 +178,28 @@ const server = createServer(async (request, response) => {
     const url = new URL(request.url, `http://${request.headers.host}`);
 
     if (request.method === 'GET' && url.pathname === '/health') {
-      json(response, 200, {
-        ok: true,
-        flowProjectUrl: await getFlowProjectUrl(),
-        localWorkerStatus: await getLocalWorkerStatus(),
-      });
+      json(response, 200, await handleControlAction('/health'));
       return;
     }
 
     if (request.method === 'POST' && url.pathname === '/flow-project') {
       const body = JSON.parse((await readBody(request)) || '{}');
-      const flowProjectUrl = await saveFlowProjectUrl(body.flowProjectUrl);
-      json(response, 200, { ok: true, flowProjectUrl });
+      json(response, 200, await handleControlAction('/flow-project', body));
       return;
     }
 
     if (request.method === 'POST' && url.pathname === '/flow-login') {
-      const flowProjectUrl = await openFlowLogin();
-      json(response, 200, { ok: true, flowProjectUrl, localWorkerStatus: await getLocalWorkerStatus() });
+      json(response, 200, await handleControlAction('/flow-login'));
       return;
     }
 
     if (request.method === 'POST' && url.pathname === '/worker/start') {
-      const flowProjectUrl = await startFlowWorker();
-      json(response, 200, { ok: true, flowProjectUrl, localWorkerStatus: await getLocalWorkerStatus() });
+      json(response, 200, await handleControlAction('/worker/start'));
       return;
     }
 
     if (request.method === 'POST' && url.pathname === '/worker/stop') {
-      await stopFlowProcesses();
-      json(response, 200, { ok: true, flowProjectUrl: await getFlowProjectUrl(), localWorkerStatus: 'stopped' });
+      json(response, 200, await handleControlAction('/worker/stop'));
       return;
     }
 
@@ -183,6 +209,20 @@ const server = createServer(async (request, response) => {
   }
 });
 
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`Flow control server listening on http://127.0.0.1:${PORT}`);
+const wss = new WebSocketServer({ server });
+
+wss.on('connection', (socket) => {
+  socket.once('message', async (message) => {
+    try {
+      const request = JSON.parse(message.toString());
+      const payload = await handleControlAction(request.path, request.body || {});
+      socket.send(JSON.stringify(payload));
+    } catch (error) {
+      socket.send(JSON.stringify({ ok: false, error: error.message || String(error) }));
+    }
+  });
+});
+
+server.listen(PORT, () => {
+  console.log(`Flow control server listening on http://localhost:${PORT}`);
 });

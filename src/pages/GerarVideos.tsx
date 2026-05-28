@@ -22,7 +22,8 @@ import { GenerationJob, GenerationWorkerStatus, supabase } from '../lib/supabase
 const modelValue = 'veo-3.1-lite-lower-priority';
 const modelLabel = 'Veo 3.1 - Lite [Lower Priority]';
 const defaultFlowProjectUrl = 'https://labs.google/fx/tools/flow/project/3c44b205-a81a-4359-b4af-e001bea75c3a';
-const flowControlUrl = 'http://127.0.0.1:8787';
+const flowControlUrl = 'http://localhost:8787';
+const flowControlWsUrl = 'ws://127.0.0.1:8787';
 const flowProjectStorageKey = 'central-flow-project-url';
 const aspectRatios = ['9:16', '16:9'];
 const durations = [4, 6, 8];
@@ -52,6 +53,47 @@ const normalizeMetadata = (metadata: unknown) => {
     }
   }
   return metadata as Record<string, any>;
+};
+
+const requestFlowControl = async (path: string, body?: Record<string, unknown>) => {
+  const tryWebSocket = () =>
+    new Promise<any>((resolve, reject) => {
+      const socket = new WebSocket(flowControlWsUrl);
+      const timeout = window.setTimeout(() => {
+        socket.close();
+        reject(new Error('Servidor local do Flow nao respondeu.'));
+      }, 8000);
+
+      socket.onopen = () => {
+        socket.send(JSON.stringify({ path, body }));
+      };
+
+      socket.onmessage = (event) => {
+        window.clearTimeout(timeout);
+        socket.close();
+        resolve(JSON.parse(event.data));
+      };
+
+      socket.onerror = () => {
+        window.clearTimeout(timeout);
+        socket.close();
+        reject(new Error('Servidor local do Flow nao respondeu.'));
+      };
+    });
+
+  try {
+    return await tryWebSocket();
+  } catch {
+    const response = await fetch(`${flowControlUrl}${path}`, {
+      method: body ? 'POST' : 'GET',
+      headers: body ? { 'content-type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) throw new Error(payload.error || 'Servidor local do Flow nao respondeu.');
+    return payload;
+  }
 };
 
 const videoUrlsForJob = (job: GenerationJob) => {
@@ -176,10 +218,9 @@ const GerarVideos: React.FC = () => {
     if (!isAdmin) return;
 
     try {
-      const response = await fetch(`${flowControlUrl}/health`);
-      const payload = await response.json().catch(() => ({}));
+      const payload = await requestFlowControl('/health');
 
-      if (response.ok && payload.flowProjectUrl) {
+      if (payload.ok !== false && payload.flowProjectUrl) {
         setFlowProjectUrl(payload.flowProjectUrl);
         localStorage.setItem(flowProjectStorageKey, payload.flowProjectUrl);
         setFlowControlOnline(true);
@@ -342,14 +383,9 @@ const GerarVideos: React.FC = () => {
 
     try {
       localStorage.setItem(flowProjectStorageKey, cleanUrl);
-      const response = await fetch(`${flowControlUrl}/flow-project`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ flowProjectUrl: cleanUrl }),
-      });
-      const payload = await response.json().catch(() => ({}));
+      const payload = await requestFlowControl('/flow-project', { flowProjectUrl: cleanUrl });
 
-      if (!response.ok || payload.ok === false) {
+      if (payload.ok === false) {
         throw new Error(payload.error || 'Servidor local do Flow nao respondeu.');
       }
 
@@ -378,10 +414,9 @@ const GerarVideos: React.FC = () => {
       const saved = await saveFlowProject();
       if (!saved) return;
 
-      const response = await fetch(`${flowControlUrl}/flow-login`, { method: 'POST' });
-      const payload = await response.json().catch(() => ({}));
+      const payload = await requestFlowControl('/flow-login', {});
 
-      if (!response.ok || payload.ok === false) {
+      if (payload.ok === false) {
         throw new Error(payload.error || 'Servidor local do Flow nao respondeu.');
       }
 
@@ -407,10 +442,9 @@ const GerarVideos: React.FC = () => {
         if (!saved) return;
       }
 
-      const response = await fetch(`${flowControlUrl}/worker/${nextAction}`, { method: 'POST' });
-      const payload = await response.json().catch(() => ({}));
+      const payload = await requestFlowControl(`/worker/${nextAction}`, {});
 
-      if (!response.ok || payload.ok === false) {
+      if (payload.ok === false) {
         throw new Error(payload.error || 'Servidor local do Flow nao respondeu.');
       }
 

@@ -64,7 +64,33 @@ const triggerManual: Record<string, string> = {
     'Gatilho benefício: foque no ganho real da pessoa: economia, conforto, status, praticidade ou revenda.',
 };
 
-const buildSystemInstruction = (triggers: string[], gender: string) => {
+const getLengthInfo = (videoLength: string) => {
+  const lengths: Record<string, string> = {
+    '15s': 'Duracao: 15 segundos. Texto ultra rapido, direto, com no maximo 35 a 45 palavras.',
+    '25s': 'Duracao: 25 segundos. Texto dinamico, com no maximo 60 a 75 palavras.',
+    '35s': 'Duracao: 35 segundos. Texto envolvente, com no maximo 85 a 105 palavras.',
+    '45s': 'Duracao: 45 segundos. Texto equilibrado, com no maximo 110 a 135 palavras.',
+    '60s': 'Duracao: 60 segundos. Texto completo, com no maximo 150 a 180 palavras.',
+    '90s': 'Duracao: 90 segundos. Texto mais completo, com no maximo 220 a 270 palavras.',
+  };
+
+  return lengths[videoLength] || lengths['35s'];
+};
+
+const getHookStyleInfo = (hookStyle: string) => {
+  const styles: Record<string, string> = {
+    espontaneo: 'Gancho principal: tom amigavel e espontaneo, como recomendacao de amiga ou achado secreto.',
+    curiosidade: 'Gancho principal: abrir com misterio, surpresa e curiosidade forte sobre o produto.',
+    segredo: 'Gancho principal: apresentar como segredo de lojistas, fornecedor escondido ou oportunidade pouco conhecida.',
+    dor_solucao: 'Gancho principal: comecar pela dor do publico e apresentar o produto como solucao.',
+    provocativo: 'Gancho principal: abrir com alerta, provocacao leve ou erro que a pessoa precisa parar de cometer.',
+    prova_social: 'Gancho principal: usar prova social, pessoas perguntando ou amigas querendo saber onde comprou.',
+  };
+
+  return styles[hookStyle] || styles.espontaneo;
+};
+
+const buildSystemInstruction = (triggers: string[], gender: string, videoLength: string, hookStyle: string) => {
   const triggersInfo = triggers.length
     ? `Use estes gatilhos como centro dos scripts:\n${triggers
         .map((trigger) => triggerManual[trigger] || trigger)
@@ -81,6 +107,13 @@ Você é um especialista em copy de vendas para TikTok Shop.
 Crie scripts humanizados para vídeos curtos no estilo achado secreto, com alta conversão e fala natural.
 
 ${genderInfo}
+${getLengthInfo(videoLength)}
+${getHookStyleInfo(hookStyle)}
+
+Regras adicionais:
+- Escreva 100% em portugues brasileiro natural e coloquial.
+- Evite termos em ingles como copy, script, CTA, hook, pitch, trend e marketing.
+- Para cada roteiro, gere tambem exatamente 3 ganchos alternativos curtos, de uma linha, especificos para o produto e diferentes do gancho principal.
 
 Estrutura obrigatoria de cada script:
 1. Abrir com descoberta, curiosidade ou oportunidade.
@@ -107,6 +140,8 @@ Responda somente em JSON válido no schema solicitado.
 const buildGeneratePrompt = (body: any) => {
   const product = cleanText(body?.product, 160);
   const triggers = cleanStringList(body?.triggers);
+  const videoLength = cleanText(body?.videoLength, 20) || '35s';
+  const hookStyle = cleanText(body?.hookStyle, 40) || 'espontaneo';
 
   return `
 Produto informado: ${product || 'identifique pela imagem'}
@@ -237,6 +272,8 @@ export default async function handler(req: any, res: any) {
 
   const triggers = cleanStringList(req.body?.triggers);
   const gender = cleanText(req.body?.gender, 20) === 'homem' ? 'homem' : 'mulher';
+  const videoLength = cleanText(req.body?.videoLength, 20) || '35s';
+  const hookStyle = cleanText(req.body?.hookStyle, 40) || 'espontaneo';
   const contents: any = image
     ? {
         parts: [
@@ -251,15 +288,29 @@ export default async function handler(req: any, res: any) {
       model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
       contents,
       config: {
-        systemInstruction: buildSystemInstruction(triggers, gender),
+        systemInstruction: buildSystemInstruction(triggers, gender, videoLength, hookStyle),
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
           properties: {
             scripts: {
               type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: 'Lista com 5 scripts de venda',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  text: {
+                    type: Type.STRING,
+                    description: 'Roteiro completo de venda, pronto para copiar e gravar.',
+                  },
+                  hooks: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                    description: 'Exatamente 3 ganchos alternativos curtos para o roteiro.',
+                  },
+                },
+                required: ['text', 'hooks'],
+              },
+              description: 'Lista com 5 roteiros de venda e seus ganchos alternativos',
             },
           },
           required: ['scripts'],

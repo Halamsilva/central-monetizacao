@@ -13,6 +13,8 @@ import {
   Sparkles,
   TrendingUp,
   UploadCloud,
+  Video,
+  Clock,
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -20,9 +22,18 @@ import { supabase } from '../lib/supabase';
 type Script = {
   id: number;
   text: string;
+  hooks: string[];
 };
 
 type Gender = 'homem' | 'mulher';
+type VideoLength = '15s' | '25s' | '35s' | '45s' | '60s' | '90s';
+type HookStyle =
+  | 'espontaneo'
+  | 'curiosidade'
+  | 'segredo'
+  | 'dor_solucao'
+  | 'provocativo'
+  | 'prova_social';
 
 const triggers = [
   'Curiosidade',
@@ -37,6 +48,24 @@ const triggers = [
 ];
 
 const suggestions = ['Escova Secadora', 'Fone Bluetooth', 'Mini Geladeira', 'Cinta Modeladora'];
+
+const videoLengths: Array<{ id: VideoLength; label: string; sub: string }> = [
+  { id: '15s', label: '15s', sub: 'Ultra rapido' },
+  { id: '25s', label: '25s', sub: 'Dinamico' },
+  { id: '35s', label: '35s', sub: 'Envolvente' },
+  { id: '45s', label: '45s', sub: 'Equilibrado' },
+  { id: '60s', label: '60s', sub: 'Detalhado' },
+  { id: '90s', label: '90s', sub: 'Completo' },
+];
+
+const hookStyles: Array<{ id: HookStyle; label: string; desc: string }> = [
+  { id: 'espontaneo', label: 'Amigavel', desc: 'Amiga, olha isso...' },
+  { id: 'curiosidade', label: 'Curiosidade', desc: 'Voce nao imagina...' },
+  { id: 'segredo', label: 'Segredo', desc: 'Lojistas escondem...' },
+  { id: 'dor_solucao', label: 'Dor e solucao', desc: 'Se voce sofre...' },
+  { id: 'provocativo', label: 'Alerta', desc: 'Pare de fazer isso...' },
+  { id: 'prova_social', label: 'Prova social', desc: 'Todo mundo perguntou...' },
+];
 
 const readImage = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -53,11 +82,14 @@ const TikTokShopPersuasivo: React.FC = () => {
   const [image, setImage] = useState('');
   const [selectedTriggers, setSelectedTriggers] = useState<string[]>([]);
   const [gender, setGender] = useState<Gender>('mulher');
+  const [videoLength, setVideoLength] = useState<VideoLength>('35s');
+  const [hookStyle, setHookStyle] = useState<HookStyle>('espontaneo');
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [scripts, setScripts] = useState<Script[]>([]);
   const [error, setError] = useState('');
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [copiedHookId, setCopiedHookId] = useState<string | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
 
   const requestAgent = async (body: Record<string, unknown>) => {
@@ -128,9 +160,12 @@ const TikTokShopPersuasivo: React.FC = () => {
     setImage('');
     setSelectedTriggers([]);
     setGender('mulher');
+    setVideoLength('35s');
+    setHookStyle('espontaneo');
     setScripts([]);
     setError('');
     setCopiedId(null);
+    setCopiedHookId(null);
     setCopiedAll(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -160,12 +195,17 @@ const TikTokShopPersuasivo: React.FC = () => {
         image: image || undefined,
         triggers: selectedTriggers,
         gender,
+        videoLength,
+        hookStyle,
       });
 
       const mappedScripts = Array.isArray(payload.scripts)
-        ? payload.scripts.map((text: string, index: number) => ({
+        ? payload.scripts.map((item: any, index: number) => ({
             id: index,
-            text: String(text || '').trim(),
+            text: String(typeof item === 'string' ? item : item?.text || '').trim(),
+            hooks: Array.isArray(item?.hooks)
+              ? item.hooks.map((hook: unknown) => String(hook || '').trim()).filter(Boolean)
+              : [],
           }))
         : [];
 
@@ -189,9 +229,54 @@ const TikTokShopPersuasivo: React.FC = () => {
 
   const copyAll = async () => {
     if (!scripts.length) return;
-    await navigator.clipboard.writeText(scripts.map((script, index) => `Versão ${index + 1}\n${script.text}`).join('\n\n---\n\n'));
+    await navigator.clipboard.writeText(
+      scripts
+        .map((script, index) => {
+          const hooks = script.hooks.length
+            ? `\n\nGanchos alternativos:\n${script.hooks
+                .map((hook, hookIndex) => `${hookIndex + 1}. ${hook}`)
+                .join('\n')}`
+            : '';
+
+          return `Versao ${index + 1}\n${script.text}${hooks}`;
+        })
+        .join('\n\n---\n\n')
+    );
     setCopiedAll(true);
     setTimeout(() => setCopiedAll(false), 1800);
+  };
+
+  const copyHookToClipboard = async (text: string, id: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedHookId(id);
+    setTimeout(() => setCopiedHookId(null), 1800);
+  };
+
+  const substituteHook = (scriptId: number, hook: string) => {
+    setScripts((current) =>
+      current.map((script) => {
+        if (script.id !== scriptId) return script;
+
+        const firstSentence = script.text.match(/^[^.!?]+[.!?]/)?.[0];
+
+        if (firstSentence) {
+          return {
+            ...script,
+            text: `${hook.trim()} ${script.text.slice(firstSentence.length).trim()}`,
+          };
+        }
+
+        const words = script.text.split(' ');
+
+        return {
+          ...script,
+          text:
+            words.length > 6
+              ? `${hook.trim()} ${words.slice(6).join(' ').trim()}`
+              : `${hook.trim()}. ${script.text}`,
+        };
+      })
+    );
   };
 
   return (
@@ -346,6 +431,35 @@ const TikTokShopPersuasivo: React.FC = () => {
                 e CTA para o carrinho laranja.
               </p>
             </div>
+
+            <div className="mt-5 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+              <p className="mb-3 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-zinc-400">
+                <Video size={14} className="text-orange-600" />
+                Tamanho do video
+              </p>
+
+              <div className="grid grid-cols-3 gap-2">
+                {videoLengths.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setVideoLength(item.id)}
+                    className={`rounded-xl border px-2 py-2 text-center transition ${
+                      videoLength === item.id
+                        ? 'border-zinc-950 bg-zinc-950 text-white'
+                        : 'border-zinc-200 bg-white text-zinc-500 hover:border-orange-300'
+                    }`}
+                  >
+                    <span className="block text-xs font-black">{item.label}</span>
+                    <span className={`mt-0.5 block text-[9px] font-bold ${
+                      videoLength === item.id ? 'text-orange-300' : 'text-zinc-400'
+                    }`}>
+                      {item.sub}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="rounded-[2rem] border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
@@ -368,6 +482,44 @@ const TikTokShopPersuasivo: React.FC = () => {
                   {trigger}
                 </button>
               ))}
+            </div>
+
+            <div className="mt-6 border-t border-zinc-100 pt-6">
+              <p className="mb-2 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-zinc-400">
+                <Sparkles size={14} className="text-orange-600" />
+                Estilo do gancho inicial
+              </p>
+
+              <p className="mb-3 text-xs font-semibold text-zinc-400">
+                Define a estratégia dos primeiros segundos do video.
+              </p>
+
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {hookStyles.map((style) => (
+                  <button
+                    key={style.id}
+                    type="button"
+                    onClick={() => setHookStyle(style.id)}
+                    className={`rounded-2xl border p-3 text-left transition ${
+                      hookStyle === style.id
+                        ? 'border-zinc-950 bg-zinc-950 text-white shadow-md'
+                        : 'border-zinc-200 bg-white text-zinc-500 hover:border-orange-300 hover:bg-orange-50/40'
+                    }`}
+                  >
+                    <span className="block text-xs font-black">{style.label}</span>
+                    <span className={`mt-1 block text-[10px] font-bold ${
+                      hookStyle === style.id ? 'text-orange-300' : 'text-zinc-400'
+                    }`}>
+                      {style.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-5 flex items-center gap-2 rounded-2xl bg-zinc-50 p-3 text-[11px] font-bold text-zinc-400">
+                <Clock size={14} />
+                Tempo selecionado: {videoLength}
+              </div>
             </div>
           </div>
         </section>
@@ -447,6 +599,59 @@ const TikTokShopPersuasivo: React.FC = () => {
                     <p className="whitespace-pre-wrap text-lg font-semibold leading-relaxed text-zinc-700">
                       {script.text}
                     </p>
+
+                    {script.hooks.length > 0 && (
+                      <div className="mt-6 border-t border-zinc-100 pt-5">
+                        <p className="mb-3 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-zinc-400">
+                          <Sparkles size={14} className="text-orange-600" />
+                          Ganchos alternativos
+                        </p>
+
+                        <div className="grid gap-2">
+                          {script.hooks.map((hook, hookIndex) => {
+                            const hookKey = `${script.id}-${hookIndex}`;
+
+                            return (
+                              <div
+                                key={hookKey}
+                                className="rounded-2xl border border-zinc-100 bg-zinc-50 p-3"
+                              >
+                                <p className="text-[10px] font-black uppercase tracking-widest text-orange-600">
+                                  Variacao {hookIndex + 1}
+                                </p>
+
+                                <p className="mt-1 text-sm font-semibold italic text-zinc-600">
+                                  {hook}
+                                </p>
+
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => substituteHook(script.id, hook)}
+                                    className="rounded-lg bg-zinc-950 px-3 py-1.5 text-[11px] font-black text-white transition hover:bg-zinc-800"
+                                  >
+                                    Usar gancho
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => copyHookToClipboard(hook, hookKey)}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-[11px] font-black text-zinc-600 transition hover:bg-orange-50 hover:text-orange-700"
+                                  >
+                                    {copiedHookId === hookKey ? (
+                                      <Check size={13} />
+                                    ) : (
+                                      <Copy size={13} />
+                                    )}
+                                    {copiedHookId === hookKey ? 'Copiado' : 'Copiar'}
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </motion.article>
               ))}

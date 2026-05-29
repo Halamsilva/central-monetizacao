@@ -9,9 +9,18 @@ import {
   Check,
   Star,
   Filter,
+  Heart,
+  Clock3,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+import {
+  getFavoriteAgentIds,
+  getRecentAgentIds,
+  markAgentUsed,
+  toggleFavoriteAgent,
+} from '../lib/agentActivity';
 
 interface Agent {
   id: string;
@@ -62,6 +71,7 @@ const AgentImage = ({ src, alt }: { src?: string; alt: string }) => {
 };
 
 const Agents = () => {
+  const { user } = useAuth();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -69,6 +79,10 @@ const Agents = () => {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [featuredOnly, setFeaturedOnly] = useState(false);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [recentOnly, setRecentOnly] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [recentIds, setRecentIds] = useState<string[]>([]);
 
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [selectedPromptTitle, setSelectedPromptTitle] = useState('');
@@ -77,6 +91,11 @@ const Agents = () => {
   useEffect(() => {
     fetchAgents();
   }, []);
+
+  useEffect(() => {
+    setFavoriteIds(getFavoriteAgentIds(user?.id));
+    setRecentIds(getRecentAgentIds(user?.id));
+  }, [user?.id]);
 
   const showSuccessMessage = (message: string) => {
     setSuccessMessage(message);
@@ -114,15 +133,17 @@ const Agents = () => {
   const categories = useMemo(() => {
     const categoryMap = new Map<string, string>();
 
-    agents.forEach((agent) => {
-      const key = normalizeText(agent.category);
+    agents
+      .filter((agent) => agent.is_published !== false)
+      .forEach((agent) => {
+        const key = normalizeText(agent.category);
 
-      if (!key) return;
+        if (!key) return;
 
-      if (!categoryMap.has(key)) {
-        categoryMap.set(key, formatCategoryLabel(agent.category));
-      }
-    });
+        if (!categoryMap.has(key)) {
+          categoryMap.set(key, formatCategoryLabel(agent.category));
+        }
+      });
 
     return [
       'Todos',
@@ -132,12 +153,47 @@ const Agents = () => {
     ];
   }, [agents]);
 
+  const visibleAgents = useMemo(
+    () => agents.filter((agent) => agent.is_published !== false),
+    [agents]
+  );
+
+  const favoriteAgents = useMemo(
+    () => visibleAgents.filter((agent) => favoriteIds.includes(agent.id)),
+    [favoriteIds, visibleAgents]
+  );
+
+  const recentAgents = useMemo(
+    () =>
+      recentIds
+        .map((id) => visibleAgents.find((agent) => agent.id === id))
+        .filter(Boolean) as Agent[],
+    [recentIds, visibleAgents]
+  );
+
   const filteredAgents = useMemo(() => {
     const normalizedSearch = normalizeText(search);
 
-    return [...agents]
-      .filter((agent) => agent.is_published !== false)
+    return [...visibleAgents]
       .sort((agentA, agentB) => {
+        if (favoritesOnly) {
+          const favoriteA = favoriteIds.includes(agentA.id);
+          const favoriteB = favoriteIds.includes(agentB.id);
+
+          if (favoriteA !== favoriteB) return favoriteA ? -1 : 1;
+        }
+
+        if (recentOnly) {
+          const recentA = recentIds.indexOf(agentA.id);
+          const recentB = recentIds.indexOf(agentB.id);
+
+          if (recentA !== recentB) {
+            if (recentA === -1) return 1;
+            if (recentB === -1) return -1;
+            return recentA - recentB;
+          }
+        }
+
         if (agentA.featured !== agentB.featured) {
           return agentA.featured ? -1 : 1;
         }
@@ -160,18 +216,41 @@ const Agents = () => {
           selectedCategory === 'Todos' || categoryLabel === selectedCategory;
 
         const matchesFeatured = !featuredOnly || agent.featured;
+        const matchesFavorite = !favoritesOnly || favoriteIds.includes(agent.id);
+        const matchesRecent = !recentOnly || recentIds.includes(agent.id);
 
-        return matchesSearch && matchesCategory && matchesFeatured;
+        return (
+          matchesSearch &&
+          matchesCategory &&
+          matchesFeatured &&
+          matchesFavorite &&
+          matchesRecent
+        );
       });
-  }, [agents, search, selectedCategory, featuredOnly]);
+  }, [
+    favoriteIds,
+    favoritesOnly,
+    featuredOnly,
+    recentIds,
+    recentOnly,
+    search,
+    selectedCategory,
+    visibleAgents,
+  ]);
 
   const hasActiveFilters =
-    search.trim() !== '' || selectedCategory !== 'Todos' || featuredOnly;
+    search.trim() !== '' ||
+    selectedCategory !== 'Todos' ||
+    featuredOnly ||
+    favoritesOnly ||
+    recentOnly;
 
   const clearFilters = () => {
     setSearch('');
     setSelectedCategory('Todos');
     setFeaturedOnly(false);
+    setFavoritesOnly(false);
+    setRecentOnly(false);
   };
 
   const copyPrompt = async (prompt: string) => {
@@ -182,8 +261,23 @@ const Agents = () => {
   };
 
   const openPrompt = (agent: Agent) => {
+    setRecentIds(markAgentUsed(user?.id, agent.id).map((item) => item.id));
     setSelectedPrompt(agent.prompt);
     setSelectedPromptTitle(agent.title);
+  };
+
+  const toggleFavorite = (agent: Agent) => {
+    const nextFavorites = toggleFavoriteAgent(user?.id, agent.id);
+    setFavoriteIds(nextFavorites);
+    showSuccessMessage(
+      nextFavorites.includes(agent.id)
+        ? 'Agente adicionado aos favoritos.'
+        : 'Agente removido dos favoritos.'
+    );
+  };
+
+  const openAgentLink = (agent: Agent) => {
+    setRecentIds(markAgentUsed(user?.id, agent.id).map((item) => item.id));
   };
 
   if (loading) {
@@ -283,6 +377,30 @@ const Agents = () => {
 
           <div className="grid grid-cols-2 gap-2 xl:flex">
             <button
+              onClick={() => setFavoritesOnly((current) => !current)}
+              aria-pressed={favoritesOnly}
+              className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-2xl px-3 text-xs font-black transition sm:h-14 sm:px-5 sm:text-sm ${favoritesOnly
+                  ? 'bg-rose-500 text-white shadow-sm'
+                  : 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+                }`}
+            >
+              <Heart className="h-3.5 w-3.5" />
+              Favoritos
+            </button>
+
+            <button
+              onClick={() => setRecentOnly((current) => !current)}
+              aria-pressed={recentOnly}
+              className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-2xl px-3 text-xs font-black transition sm:h-14 sm:px-5 sm:text-sm ${recentOnly
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+            >
+              <Clock3 className="h-3.5 w-3.5" />
+              Recentes
+            </button>
+
+            <button
               onClick={() => setFeaturedOnly((current) => !current)}
               aria-pressed={featuredOnly}
               className={`inline-flex h-10 items-center justify-center gap-1.5 rounded-2xl px-3 text-xs font-black transition sm:h-14 sm:px-5 sm:text-sm ${featuredOnly
@@ -309,12 +427,24 @@ const Agents = () => {
         <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] font-black text-slate-500 sm:text-sm">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1">
             <Filter className="h-3.5 w-3.5" />
-            {filteredAgents.length} de {agents.length}
+            {filteredAgents.length} de {visibleAgents.length}
           </span>
 
           {featuredOnly && (
             <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-700">
               Destaques
+            </span>
+          )}
+
+          {favoritesOnly && (
+            <span className="rounded-full bg-rose-100 px-3 py-1 text-rose-700">
+              Favoritos
+            </span>
+          )}
+
+          {recentOnly && (
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+              Recentes
             </span>
           )}
 
@@ -333,6 +463,83 @@ const Agents = () => {
           </button>
         </div>
       </div>
+
+      {(favoriteAgents.length > 0 || recentAgents.length > 0) && (
+        <div className="mb-4 grid gap-3 lg:grid-cols-2">
+          {recentAgents.length > 0 && (
+            <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-slate-900">
+                  <Clock3 className="h-4 w-4 text-slate-500" />
+                  Continuar
+                </h2>
+
+                <button
+                  onClick={() => setRecentOnly(true)}
+                  className="text-xs font-black text-blue-600"
+                >
+                  Ver recentes
+                </button>
+              </div>
+
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {recentAgents.slice(0, 6).map((agent) => (
+                  <a
+                    key={agent.id}
+                    href={agent.agent_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => openAgentLink(agent)}
+                    className="min-w-[180px] rounded-2xl border border-slate-100 bg-slate-50 p-3 transition hover:border-blue-200 hover:bg-blue-50"
+                  >
+                    <p className="line-clamp-2 text-xs font-black text-slate-900">
+                      {agent.title}
+                    </p>
+                    <p className="mt-1 text-[10px] font-bold uppercase text-slate-400">
+                      {formatCategoryLabel(agent.category)}
+                    </p>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {favoriteAgents.length > 0 && (
+            <section className="rounded-[24px] border border-rose-100 bg-white p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-slate-900">
+                  <Heart className="h-4 w-4 text-rose-500" />
+                  Favoritos
+                </h2>
+
+                <button
+                  onClick={() => setFavoritesOnly(true)}
+                  className="text-xs font-black text-rose-600"
+                >
+                  Ver favoritos
+                </button>
+              </div>
+
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {favoriteAgents.slice(0, 6).map((agent) => (
+                  <button
+                    key={agent.id}
+                    onClick={() => openPrompt(agent)}
+                    className="min-w-[180px] rounded-2xl border border-rose-100 bg-rose-50 p-3 text-left transition hover:border-rose-200 hover:bg-rose-100"
+                  >
+                    <p className="line-clamp-2 text-xs font-black text-slate-900">
+                      {agent.title}
+                    </p>
+                    <p className="mt-1 text-[10px] font-bold uppercase text-rose-500">
+                      {formatCategoryLabel(agent.category)}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
 
       {filteredAgents.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center">
@@ -373,6 +580,25 @@ const Agents = () => {
                     </span>
                   </div>
                 )}
+
+                <button
+                  onClick={() => toggleFavorite(agent)}
+                  className={`absolute bottom-1.5 right-1.5 flex h-8 w-8 items-center justify-center rounded-full shadow-sm transition sm:bottom-4 sm:right-4 ${favoriteIds.includes(agent.id)
+                      ? 'bg-rose-500 text-white'
+                      : 'bg-white/90 text-slate-700 hover:bg-rose-50 hover:text-rose-600'
+                    }`}
+                  aria-label={
+                    favoriteIds.includes(agent.id)
+                      ? `Remover ${agent.title} dos favoritos`
+                      : `Favoritar ${agent.title}`
+                  }
+                  type="button"
+                >
+                  <Heart
+                    className="h-4 w-4"
+                    fill={favoriteIds.includes(agent.id) ? 'currentColor' : 'none'}
+                  />
+                </button>
               </div>
 
               <div className="flex flex-1 flex-col p-2 sm:p-6">
@@ -390,6 +616,7 @@ const Agents = () => {
                       href={agent.agent_link}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => openAgentLink(agent)}
                       aria-label={`Abrir ferramenta externa ${agent.title}`}
                       className="flex h-8 items-center justify-center gap-1 rounded-xl bg-blue-600 text-[9px] font-black text-white transition-all hover:bg-blue-700 sm:h-12 sm:gap-2 sm:rounded-2xl sm:text-base"
                     >

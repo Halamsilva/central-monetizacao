@@ -25,6 +25,7 @@ import {
     MoreHorizontal,
     Eye,
     EyeOff,
+    Undo2,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -39,6 +40,13 @@ interface Agent {
     featured: boolean;
     is_published?: boolean;
     created_at?: string;
+}
+
+interface DeletedAgentBackup {
+    id: string;
+    agent_id?: string;
+    agent_snapshot: Agent;
+    deleted_at: string;
 }
 
 const draftKey = 'central_admin_agent_draft';
@@ -152,9 +160,16 @@ const AdminAgents = () => {
     >('recent');
     const [publishStatusAvailable, setPublishStatusAvailable] =
         useState(false);
+    const [deletedBackups, setDeletedBackups] = useState<DeletedAgentBackup[]>(
+        []
+    );
+    const [restoringBackupId, setRestoringBackupId] = useState<string | null>(
+        null
+    );
 
     useEffect(() => {
         fetchAgents();
+        fetchDeletedBackups();
     }, []);
 
     useEffect(() => {
@@ -199,6 +214,32 @@ const AdminAgents = () => {
         );
         setAgents(data || []);
         setIsLoadingAgents(false);
+    };
+
+    const fetchDeletedBackups = async () => {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+
+        if (!token) return;
+
+        try {
+            const response = await fetch('/api/admin/agents-backups', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok || payload.unavailable) {
+                setDeletedBackups([]);
+                return;
+            }
+
+            setDeletedBackups(payload.backups || []);
+        } catch {
+            setDeletedBackups([]);
+        }
     };
 
     const updateField = (
@@ -556,11 +597,51 @@ const AdminAgents = () => {
 
             showSuccessMessage('Agente excluido com sucesso.');
             await fetchAgents();
+            await fetchDeletedBackups();
         } catch (deleteError: any) {
             console.error(deleteError);
             showErrorMessage(deleteError.message || 'Erro ao excluir agente.');
         } finally {
             setDeletingAgentId(null);
+        }
+    };
+
+    const handleRestoreBackup = async (backup: DeletedAgentBackup) => {
+        setRestoringBackupId(backup.id);
+
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+
+        if (!token) {
+            showErrorMessage('Sessao expirada. Faca login novamente.');
+            setRestoringBackupId(null);
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/admin/agents-backups', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: backup.id }),
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok || payload.ok === false) {
+                throw new Error(payload.error || 'Erro ao restaurar agente.');
+            }
+
+            showSuccessMessage('Agente restaurado com sucesso.');
+            await fetchAgents();
+            await fetchDeletedBackups();
+        } catch (restoreError: any) {
+            console.error(restoreError);
+            showErrorMessage(restoreError.message || 'Erro ao restaurar agente.');
+        } finally {
+            setRestoringBackupId(null);
         }
     };
 
@@ -977,6 +1058,61 @@ const AdminAgents = () => {
                     </p>
                 </div>
             </div>
+
+            {deletedBackups.length > 0 && (
+                <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h2 className="text-lg font-black text-slate-900">
+                                Lixeira de agentes
+                            </h2>
+
+                            <p className="mt-1 text-sm text-slate-500">
+                                Agentes apagados recentemente podem ser restaurados.
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={fetchDeletedBackups}
+                            className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-200"
+                        >
+                            <RefreshCw className="h-4 w-4" />
+                            Atualizar lixeira
+                        </button>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                        {deletedBackups.slice(0, 6).map((backup) => (
+                            <div
+                                key={backup.id}
+                                className="rounded-2xl border border-slate-100 bg-slate-50 p-4"
+                            >
+                                <p className="line-clamp-1 text-sm font-black text-slate-900">
+                                    {backup.agent_snapshot?.title || 'Agente sem titulo'}
+                                </p>
+
+                                <p className="mt-1 text-xs font-semibold text-slate-500">
+                                    Apagado em{' '}
+                                    {new Date(backup.deleted_at).toLocaleDateString('pt-BR')}
+                                </p>
+
+                                <button
+                                    onClick={() => handleRestoreBackup(backup)}
+                                    disabled={restoringBackupId === backup.id}
+                                    className="mt-3 inline-flex h-10 items-center gap-2 rounded-xl bg-emerald-500 px-4 text-sm font-bold text-white transition hover:bg-emerald-600 disabled:opacity-60"
+                                >
+                                    {restoringBackupId === backup.id ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Undo2 className="h-4 w-4" />
+                                    )}
+                                    Restaurar
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>

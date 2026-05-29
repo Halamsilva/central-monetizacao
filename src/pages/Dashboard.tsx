@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import {
@@ -12,10 +12,14 @@ import {
   Flame,
   Bell,
   ArrowRight,
+  Heart,
+  Clock3,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
 import { fetchNoticeFeed, type NoticeFeedItem } from '../lib/notices';
+import { useAuth } from '../context/AuthContext';
+import { getFavoriteAgentIds, getRecentAgentIds, markAgentUsed } from '../lib/agentActivity';
 
 interface Agent {
   id: string;
@@ -74,6 +78,7 @@ const AgentImage = ({ src, alt }: { src?: string; alt: string }) => {
 };
 
 const Dashboard: React.FC = () => {
+  const { user } = useAuth();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [latestNotices, setLatestNotices] = useState<NoticeFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +95,7 @@ const Dashboard: React.FC = () => {
           .select('*')
           .order('featured', { ascending: false })
           .order('created_at', { ascending: false })
-          .limit(9),
+          .limit(24),
         fetchNoticeFeed(3).catch((noticeError) => {
           console.error(noticeError);
           return [];
@@ -110,6 +115,22 @@ const Dashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const favoriteAgentIds = useMemo(() => getFavoriteAgentIds(user?.id), [user?.id]);
+  const recentAgentIds = useMemo(() => getRecentAgentIds(user?.id), [user?.id]);
+  const favoriteAgents = useMemo(
+    () => agents.filter((agent) => favoriteAgentIds.includes(agent.id)).slice(0, 3),
+    [agents, favoriteAgentIds]
+  );
+  const recentAgents = useMemo(
+    () =>
+      recentAgentIds
+        .map((id) => agents.find((agent) => agent.id === id))
+        .filter(Boolean)
+        .slice(0, 3) as Agent[],
+    [agents, recentAgentIds]
+  );
+  const highlightedAgents = agents.slice(0, 9);
 
   return (
     <div className="space-y-5 pb-8">
@@ -198,6 +219,80 @@ const Dashboard: React.FC = () => {
         </section>
       )}
 
+      {(recentAgents.length > 0 || favoriteAgents.length > 0) && (
+        <section className="grid gap-3 lg:grid-cols-2">
+          {recentAgents.length > 0 && (
+            <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-slate-900">
+                  <Clock3 size={16} className="text-slate-500" />
+                  Continuar de onde parou
+                </h3>
+
+                <Link to="/agents" className="text-xs font-bold text-blue-600">
+                  Abrir biblioteca
+                </Link>
+              </div>
+
+              <div className="grid gap-2">
+                {recentAgents.map((agent) => (
+                  <a
+                    key={agent.id}
+                    href={agent.agent_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => markAgentUsed(user?.id, agent.id)}
+                    className="rounded-2xl border border-slate-100 bg-slate-50 p-3 transition hover:border-blue-200 hover:bg-blue-50"
+                  >
+                    <p className="line-clamp-1 text-xs font-black text-slate-900">
+                      {agent.title}
+                    </p>
+                    <p className="mt-1 text-[10px] font-bold uppercase text-slate-400">
+                      {agent.category}
+                    </p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {favoriteAgents.length > 0 && (
+            <div className="rounded-[24px] border border-rose-100 bg-white p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-slate-900">
+                  <Heart size={16} className="text-rose-500" />
+                  Seus favoritos
+                </h3>
+
+                <Link to="/agents" className="text-xs font-bold text-rose-600">
+                  Ver favoritos
+                </Link>
+              </div>
+
+              <div className="grid gap-2">
+                {favoriteAgents.map((agent) => (
+                  <a
+                    key={agent.id}
+                    href={agent.agent_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => markAgentUsed(user?.id, agent.id)}
+                    className="rounded-2xl border border-rose-100 bg-rose-50 p-3 transition hover:border-rose-200 hover:bg-rose-100"
+                  >
+                    <p className="line-clamp-1 text-xs font-black text-slate-900">
+                      {agent.title}
+                    </p>
+                    <p className="mt-1 text-[10px] font-bold uppercase text-rose-500">
+                      {agent.category}
+                    </p>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-black uppercase tracking-wide text-slate-900">
@@ -261,7 +356,7 @@ const Dashboard: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {agents.map((agent, idx) => (
+            {highlightedAgents.map((agent, idx) => (
               <motion.article
                 key={agent.id}
                 initial={{ opacity: 0, y: 8 }}
@@ -292,6 +387,7 @@ const Dashboard: React.FC = () => {
                     href={agent.agent_link}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => markAgentUsed(user?.id, agent.id)}
                     aria-label={`Abrir ferramenta externa ${agent.title}`}
                     className="mt-2 flex h-9 w-full items-center justify-center gap-1 rounded-2xl bg-slate-950 text-[10px] font-black text-white transition hover:bg-blue-600"
                   >

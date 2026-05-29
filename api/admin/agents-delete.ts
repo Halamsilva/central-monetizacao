@@ -39,7 +39,7 @@ const checkAdminAccess = async (serviceSupabase: any, token?: string) => {
     return { ok: false as const, status: 403, error: 'Apenas administradores podem excluir agentes.' };
   }
 
-  return { ok: true as const };
+  return { ok: true as const, userId: user.id };
 };
 
 export default async function handler(req: any, res: any) {
@@ -67,7 +67,7 @@ export default async function handler(req: any, res: any) {
 
   const { data: agent, error: fetchError } = await serviceSupabase
     .from('agents')
-    .select('id, title')
+    .select('*')
     .eq('id', agentId)
     .maybeSingle();
 
@@ -78,6 +78,18 @@ export default async function handler(req: any, res: any) {
 
   if (!agent) {
     return res.status(404).json({ error: 'Agente nao encontrado.' });
+  }
+
+  const { error: backupError } = await serviceSupabase
+    .from('agent_deleted_backups')
+    .insert({
+      agent_id: agent.id,
+      deleted_by: adminCheck.userId,
+      agent_snapshot: agent,
+    });
+
+  if (backupError && backupError.code !== '42P01' && backupError.code !== 'PGRST205') {
+    console.warn('Agent delete backup skipped:', backupError.message);
   }
 
   const { error: deleteError } = await serviceSupabase

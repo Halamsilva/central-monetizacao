@@ -9,6 +9,8 @@ import {
     ShieldAlert,
     RefreshCw,
     UploadCloud,
+    Search,
+    Filter,
 } from 'lucide-react';
 
 import { supabase, UserProfile } from '../lib/supabase';
@@ -20,6 +22,10 @@ const AdminStudents: React.FC = () => {
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [legacyStudents, setLegacyStudents] = useState('');
     const [importingLegacy, setImportingLegacy] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<
+        'all' | 'active' | 'pending' | 'blocked'
+    >('all');
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     useEffect(() => {
@@ -239,6 +245,51 @@ const AdminStudents: React.FC = () => {
         );
     };
 
+    const normalizeStatus = (status?: string) => {
+        if (status === 'active' || status === 'blocked') return status;
+        return 'pending';
+    };
+
+    const filteredStudents = students
+        .filter((student) => {
+            const search = searchTerm.trim().toLowerCase();
+            const status = normalizeStatus(student.access_status);
+
+            const matchesSearch =
+                !search ||
+                student.email?.toLowerCase().includes(search) ||
+                student.full_name?.toLowerCase().includes(search);
+
+            const matchesStatus =
+                statusFilter === 'all' || status === statusFilter;
+
+            return matchesSearch && matchesStatus;
+        })
+        .sort((studentA, studentB) => {
+            const priority = { pending: 0, active: 1, blocked: 2 };
+            const statusA = normalizeStatus(studentA.access_status);
+            const statusB = normalizeStatus(studentB.access_status);
+
+            if (priority[statusA] !== priority[statusB]) {
+                return priority[statusA] - priority[statusB];
+            }
+
+            return (
+                new Date(studentB.created_at).getTime() -
+                new Date(studentA.created_at).getTime()
+            );
+        });
+
+    const totalPending = students.filter(
+        student => normalizeStatus(student.access_status) === 'pending'
+    ).length;
+    const totalActive = students.filter(
+        student => normalizeStatus(student.access_status) === 'active'
+    ).length;
+    const totalBlocked = students.filter(
+        student => normalizeStatus(student.access_status) === 'blocked'
+    ).length;
+
     return (
         <div className="space-y-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -292,9 +343,7 @@ const AdminStudents: React.FC = () => {
                     </p>
                     <h2 className="mt-2 text-3xl font-black text-amber-600">
                         {
-                            students.filter(
-                                student => student.access_status !== 'active' && student.access_status !== 'blocked'
-                            ).length
+                            totalPending
                         }
                     </h2>
                     <p className="mt-2 text-xs font-semibold text-slate-400">
@@ -307,7 +356,7 @@ const AdminStudents: React.FC = () => {
                         Ativos na Central
                     </p>
                     <h2 className="mt-2 text-3xl font-black text-emerald-600">
-                        {students.filter(student => student.access_status === 'active').length}
+                        {totalActive}
                     </h2>
                     <p className="mt-2 text-xs font-semibold text-slate-400">
                         Contas liberadas para acessar os agentes.
@@ -377,6 +426,61 @@ const AdminStudents: React.FC = () => {
                 </div>
             </div>
 
+            <div className="grid gap-4 md:grid-cols-4">
+                <button
+                    onClick={() => setStatusFilter('all')}
+                    className={`rounded-3xl border p-5 text-left shadow-sm transition ${statusFilter === 'all'
+                        ? 'border-slate-900 bg-slate-900 text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-blue-200'
+                        }`}
+                >
+                    <p className="flex items-center gap-2 text-xs font-black uppercase tracking-wide opacity-70">
+                        <Filter size={15} />
+                        Todos
+                    </p>
+                    <strong className="mt-2 block text-3xl">{students.length}</strong>
+                </button>
+
+                <button
+                    onClick={() => setStatusFilter('pending')}
+                    className={`rounded-3xl border p-5 text-left shadow-sm transition ${statusFilter === 'pending'
+                        ? 'border-amber-500 bg-amber-500 text-white'
+                        : 'border-amber-100 bg-amber-50 text-amber-700 hover:border-amber-200'
+                        }`}
+                >
+                    <p className="text-xs font-black uppercase tracking-wide opacity-80">
+                        Pendentes
+                    </p>
+                    <strong className="mt-2 block text-3xl">{totalPending}</strong>
+                </button>
+
+                <button
+                    onClick={() => setStatusFilter('active')}
+                    className={`rounded-3xl border p-5 text-left shadow-sm transition ${statusFilter === 'active'
+                        ? 'border-emerald-500 bg-emerald-500 text-white'
+                        : 'border-emerald-100 bg-emerald-50 text-emerald-700 hover:border-emerald-200'
+                        }`}
+                >
+                    <p className="text-xs font-black uppercase tracking-wide opacity-80">
+                        Ativos
+                    </p>
+                    <strong className="mt-2 block text-3xl">{totalActive}</strong>
+                </button>
+
+                <button
+                    onClick={() => setStatusFilter('blocked')}
+                    className={`rounded-3xl border p-5 text-left shadow-sm transition ${statusFilter === 'blocked'
+                        ? 'border-red-500 bg-red-500 text-white'
+                        : 'border-red-100 bg-red-50 text-red-700 hover:border-red-200'
+                        }`}
+                >
+                    <p className="text-xs font-black uppercase tracking-wide opacity-80">
+                        Bloqueados
+                    </p>
+                    <strong className="mt-2 block text-3xl">{totalBlocked}</strong>
+                </button>
+            </div>
+
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-6 flex items-center gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
@@ -391,6 +495,27 @@ const AdminStudents: React.FC = () => {
                         <p className="text-sm text-slate-500">
                             Contas cadastradas na Central. Compras importadas aparecem aqui quando o aluno cria login com o mesmo e-mail.
                         </p>
+                    </div>
+                </div>
+
+                <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="relative flex-1">
+                        <Search
+                            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                            size={18}
+                        />
+
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                            placeholder="Buscar aluno por nome ou e-mail"
+                            className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                        />
+                    </div>
+
+                    <div className="rounded-2xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-600">
+                        {filteredStudents.length} de {students.length} aluno(s)
                     </div>
                 </div>
 
@@ -410,9 +535,21 @@ const AdminStudents: React.FC = () => {
                             Quando alguém se cadastrar, aparecerá aqui.
                         </p>
                     </div>
+                ) : filteredStudents.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center">
+                        <Search className="mx-auto mb-4 text-slate-300" size={46} />
+
+                        <h3 className="text-xl font-bold text-slate-700">
+                            Nenhum aluno nesse filtro
+                        </h3>
+
+                        <p className="mt-2 text-slate-500">
+                            Limpe a busca ou escolha outro status.
+                        </p>
+                    </div>
                 ) : (
                     <div className="space-y-4">
-                        {students.map((student, index) => (
+                        {filteredStudents.map((student, index) => (
                             <motion.div
                                 key={student.id}
                                 initial={{ opacity: 0, y: 10 }}

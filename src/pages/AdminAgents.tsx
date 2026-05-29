@@ -23,6 +23,8 @@ import {
     CircleAlert,
     Files,
     MoreHorizontal,
+    Eye,
+    EyeOff,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -35,6 +37,7 @@ interface Agent {
     agent_link: string;
     prompt: string;
     featured: boolean;
+    is_published?: boolean;
     created_at?: string;
 }
 
@@ -48,6 +51,7 @@ const emptyForm = {
     agent_link: '',
     prompt: '',
     featured: false,
+    is_published: true,
 };
 
 const getInitialForm = () => {
@@ -141,11 +145,13 @@ const AdminAgents = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [featuredFilter, setFeaturedFilter] = useState<
-        'all' | 'featured' | 'incomplete'
+        'all' | 'featured' | 'incomplete' | 'hidden'
     >('all');
     const [sortBy, setSortBy] = useState<
-        'recent' | 'title' | 'category' | 'featured'
+        'recent' | 'title' | 'category' | 'featured' | 'status'
     >('recent');
+    const [publishStatusAvailable, setPublishStatusAvailable] =
+        useState(false);
 
     useEffect(() => {
         fetchAgents();
@@ -188,6 +194,9 @@ const AdminAgents = () => {
             return;
         }
 
+        setPublishStatusAvailable(
+            Boolean(data?.some((agent) => 'is_published' in agent))
+        );
         setAgents(data || []);
         setIsLoadingAgents(false);
     };
@@ -249,7 +258,21 @@ const AdminAgents = () => {
         formData.category ||
         formData.agent_link ||
         formData.prompt ||
-        formData.featured;
+        formData.featured ||
+        formData.is_published !== true;
+
+    const isAgentPublished = (agent: Agent) => agent.is_published !== false;
+
+    const isMissingColumnError = (error: any) => {
+        const message = String(error?.message || '').toLowerCase();
+
+        return (
+            error?.code === 'PGRST204' ||
+            message.includes('is_published') ||
+            message.includes('schema cache') ||
+            message.includes('column')
+        );
+    };
 
     const handleImageUpload = async (
         e: React.ChangeEvent<HTMLInputElement>
@@ -348,6 +371,7 @@ const AdminAgents = () => {
             agent_link: formData.agent_link.trim(),
             prompt: formData.prompt.trim(),
             featured: formData.featured,
+            is_published: formData.is_published,
         };
 
         if (editingId) {
@@ -357,6 +381,24 @@ const AdminAgents = () => {
                 .eq('id', editingId);
 
             if (error) {
+                if (isMissingColumnError(error)) {
+                    const { is_published, ...fallbackPayload } = payload;
+                    const { error: fallbackError } = await supabase
+                        .from('agents')
+                        .update(fallbackPayload)
+                        .eq('id', editingId);
+
+                    if (!fallbackError) {
+                        showSuccessMessage(
+                            'Agente atualizado. Para ativar Publicado/Oculto, aplique o SQL de melhoria no Supabase.'
+                        );
+                        resetForm();
+                        await fetchAgents();
+                        setIsSavingAgent(false);
+                        return;
+                    }
+                }
+
                 console.error(error);
                 showErrorMessage('Erro ao atualizar agente.');
                 setIsSavingAgent(false);
@@ -370,6 +412,23 @@ const AdminAgents = () => {
                 .insert([payload]);
 
             if (error) {
+                if (isMissingColumnError(error)) {
+                    const { is_published, ...fallbackPayload } = payload;
+                    const { error: fallbackError } = await supabase
+                        .from('agents')
+                        .insert([fallbackPayload]);
+
+                    if (!fallbackError) {
+                        showSuccessMessage(
+                            'Agente criado. Para ativar Publicado/Oculto, aplique o SQL de melhoria no Supabase.'
+                        );
+                        resetForm();
+                        await fetchAgents();
+                        setIsSavingAgent(false);
+                        return;
+                    }
+                }
+
                 console.error(error);
                 showErrorMessage('Erro ao criar agente.');
                 setIsSavingAgent(false);
@@ -407,6 +466,7 @@ const AdminAgents = () => {
             agent_link: agent.agent_link || '',
             prompt: agent.prompt || '',
             featured: agent.featured || false,
+            is_published: isAgentPublished(agent),
         });
 
         scrollToTop();
@@ -424,10 +484,40 @@ const AdminAgents = () => {
             agent_link: agent.agent_link || '',
             prompt: agent.prompt || '',
             featured: false,
+            is_published: true,
         });
 
         showSuccessMessage('Agente duplicado no formulário. Revise e salve.');
         scrollToTop();
+    };
+
+    const handleTogglePublished = async (agent: Agent) => {
+        if (!publishStatusAvailable) {
+            showErrorMessage(
+                'Para ocultar agentes, aplique o arquivo supabase-agents-admin-improvements.sql no Supabase.'
+            );
+            setOpenActionsId(null);
+            return;
+        }
+
+        const nextStatus = !isAgentPublished(agent);
+
+        const { error } = await supabase
+            .from('agents')
+            .update({ is_published: nextStatus })
+            .eq('id', agent.id);
+
+        if (error) {
+            console.error(error);
+            showErrorMessage('Erro ao atualizar status do agente.');
+            return;
+        }
+
+        setOpenActionsId(null);
+        showSuccessMessage(
+            nextStatus ? 'Agente publicado novamente.' : 'Agente ocultado dos alunos.'
+        );
+        await fetchAgents();
     };
 
     const handleDelete = async (agent: Agent) => {
@@ -507,6 +597,8 @@ const AdminAgents = () => {
 
     const totalFeatured = agents.filter((agent) => agent.featured).length;
     const totalCategories = categories.length;
+    const totalPublished = agents.filter(isAgentPublished).length;
+    const totalHidden = agents.length - totalPublished;
     const totalIncomplete = agents.filter(
         (agent) => !getAgentQuality(agent).isComplete
     ).length;
@@ -530,6 +622,14 @@ const AdminAgents = () => {
             ).localeCompare(formatCategoryLabel(agentB.category));
 
             if (categoryComparison !== 0) return categoryComparison;
+
+            return agentA.title.localeCompare(agentB.title);
+        }
+
+        if (sortBy === 'status') {
+            if (isAgentPublished(agentA) !== isAgentPublished(agentB)) {
+                return isAgentPublished(agentA) ? -1 : 1;
+            }
 
             return agentA.title.localeCompare(agentB.title);
         }
@@ -558,7 +658,8 @@ const AdminAgents = () => {
         const matchesFeatured =
             featuredFilter === 'all' ||
             (featuredFilter === 'featured' && agent.featured) ||
-            (featuredFilter === 'incomplete' && !quality.isComplete);
+            (featuredFilter === 'incomplete' && !quality.isComplete) ||
+            (featuredFilter === 'hidden' && !isAgentPublished(agent));
 
         return matchesSearch && matchesCategory && matchesFeatured;
     });
@@ -731,6 +832,25 @@ const AdminAgents = () => {
                     Destaque
                 </label>
 
+                <label className="mt-3 flex w-fit items-center gap-3 text-sm font-semibold text-slate-700">
+                    <input
+                        type="checkbox"
+                        checked={formData.is_published}
+                        onChange={(e) =>
+                            updateField('is_published', e.target.checked)
+                        }
+                        className="h-4 w-4"
+                    />
+
+                    Publicado para alunos
+                </label>
+
+                {!publishStatusAvailable && (
+                    <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
+                        O controle Publicado/Oculto ja esta preparado. Para salvar esse status no banco, aplique o SQL de melhorias no Supabase.
+                    </p>
+                )}
+
                 <div className="mt-6 flex flex-wrap gap-4">
                     <button
                         onClick={handleCreateOrUpdate}
@@ -828,6 +948,36 @@ const AdminAgents = () => {
                 </div>
             </div>
 
+            <div className="mb-6 grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-emerald-700">
+                            Publicados para alunos
+                        </span>
+
+                        <Eye className="h-5 w-5 text-emerald-700" />
+                    </div>
+
+                    <p className="mt-2 text-3xl font-black text-emerald-800">
+                        {totalPublished}
+                    </p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-slate-600">
+                            Ocultos / rascunho
+                        </span>
+
+                        <EyeOff className="h-5 w-5 text-slate-500" />
+                    </div>
+
+                    <p className="mt-2 text-3xl font-black text-slate-900">
+                        {totalHidden}
+                    </p>
+                </div>
+            </div>
+
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                     <h2 className="text-2xl font-black text-slate-900">
@@ -899,6 +1049,7 @@ const AdminAgents = () => {
                                 | 'title'
                                 | 'category'
                                 | 'featured'
+                                | 'status'
                             )
                         }
                         className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
@@ -907,6 +1058,7 @@ const AdminAgents = () => {
                         <option value="featured">Destaques primeiro</option>
                         <option value="title">Título A-Z</option>
                         <option value="category">Categoria</option>
+                        <option value="status">Status</option>
                     </select>
 
                     <div className="flex flex-wrap gap-2">
@@ -940,6 +1092,17 @@ const AdminAgents = () => {
                         >
                             <CircleAlert className="h-4 w-4" />
                             Incompletos
+                        </button>
+
+                        <button
+                            onClick={() => setFeaturedFilter('hidden')}
+                            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${featuredFilter === 'hidden'
+                                ? 'bg-slate-900 text-white shadow-sm'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                }`}
+                        >
+                            <EyeOff className="h-4 w-4" />
+                            Ocultos
                         </button>
 
                         {hasActiveFilters && (
@@ -1013,6 +1176,20 @@ const AdminAgents = () => {
                                             Destaque
                                         </span>
                                     )}
+
+                                    <span
+                                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${isAgentPublished(agent)
+                                            ? 'bg-emerald-100 text-emerald-700'
+                                            : 'bg-slate-100 text-slate-600'
+                                            }`}
+                                    >
+                                        {isAgentPublished(agent) ? (
+                                            <Eye className="h-3 w-3" />
+                                        ) : (
+                                            <EyeOff className="h-3 w-3" />
+                                        )}
+                                        {isAgentPublished(agent) ? 'Publicado' : 'Oculto'}
+                                    </span>
 
                                     <span
                                         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${quality.isComplete
@@ -1142,6 +1319,24 @@ const AdminAgents = () => {
                                                     >
                                                         <Files className="h-4 w-4" />
                                                         Duplicar
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() =>
+                                                            handleTogglePublished(
+                                                                agent
+                                                            )
+                                                        }
+                                                        className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                                                    >
+                                                        {isAgentPublished(agent) ? (
+                                                            <EyeOff className="h-4 w-4" />
+                                                        ) : (
+                                                            <Eye className="h-4 w-4" />
+                                                        )}
+                                                        {isAgentPublished(agent)
+                                                            ? 'Ocultar dos alunos'
+                                                            : 'Publicar'}
                                                     </button>
 
                                                     <button

@@ -26,6 +26,7 @@ interface Agent {
   agent_link: string;
   prompt: string;
   featured: boolean;
+  is_published?: boolean;
 }
 
 const categories = [
@@ -101,7 +102,7 @@ const Dashboard: React.FC = () => {
         return;
       }
 
-      setAgents(agentsResult.data || []);
+      setAgents((agentsResult.data || []).filter((agent) => agent.is_published !== false));
       setLatestNotices(noticesResult);
     } catch (err) {
       console.error(err);

@@ -22,6 +22,7 @@ interface Agent {
   agent_link: string;
   prompt: string;
   featured: boolean;
+  is_published?: boolean;
   created_at?: string;
 }
 
@@ -135,6 +136,7 @@ const Agents = () => {
     const normalizedSearch = normalizeText(search);
 
     return [...agents]
+      .filter((agent) => agent.is_published !== false)
       .sort((agentA, agentB) => {
         if (agentA.featured !== agentB.featured) {
           return agentA.featured ? -1 : 1;

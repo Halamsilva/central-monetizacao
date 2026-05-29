@@ -440,21 +440,38 @@ const AdminAgents = () => {
         setOpenActionsId(null);
         setDeletingAgentId(agent.id);
 
-        const { error } = await supabase
-            .from('agents')
-            .delete()
-            .eq('id', agent.id);
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
 
-        if (error) {
-            console.error(error);
-            showErrorMessage('Erro ao excluir agente.');
+        if (!token) {
+            showErrorMessage('Sessao expirada. Faca login novamente.');
             setDeletingAgentId(null);
             return;
         }
+        try {
+            const response = await fetch('/api/admin/agents-delete', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: agent.id }),
+            });
 
-        showSuccessMessage('Agente excluído com sucesso.');
-        await fetchAgents();
-        setDeletingAgentId(null);
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok || payload.ok === false) {
+                throw new Error(payload.error || 'Erro ao excluir agente.');
+            }
+
+            showSuccessMessage('Agente excluido com sucesso.');
+            await fetchAgents();
+        } catch (deleteError: any) {
+            console.error(deleteError);
+            showErrorMessage(deleteError.message || 'Erro ao excluir agente.');
+        } finally {
+            setDeletingAgentId(null);
+        }
     };
 
     const categories = Array.from(

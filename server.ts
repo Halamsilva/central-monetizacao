@@ -14,6 +14,7 @@ import transformacaoVideosHandler from "./server-agents/transformacao-videos";
 import narracaoHandler from "./server-agents/narracao";
 import geradorImagensHandler from "./server-agents/gerador-imagens";
 import legacyStudentsHandler from "./api/admin/legacy-students";
+import agentsDeleteHandler from "./api/admin/agents-delete";
 
 dotenv.config();
 
@@ -213,6 +214,8 @@ async function startServer() {
   app.post("/api/agents/narracao", narracaoHandler);
   app.post("/api/agents/gerador-imagens", geradorImagensHandler);
   app.post("/api/admin/legacy-students", legacyStudentsHandler);
+  app.post("/api/admin/agents-delete", agentsDeleteHandler);
+  app.delete("/api/admin/agents-delete", agentsDeleteHandler);
 
   app.post("/api/webhooks/kiwify", async (req, res) => {
     const webhookToken = process.env.KIWIFY_WEBHOOK_TOKEN;

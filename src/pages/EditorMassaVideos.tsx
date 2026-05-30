@@ -10,6 +10,7 @@ import {
   Palette,
   Play,
   SlidersHorizontal,
+  Sparkles,
   Trash2,
   Type,
   Upload,
@@ -56,6 +57,7 @@ type OutputVideo = {
 };
 
 type OutputPreset = 'fast' | 'standard';
+type LayoutPreset = 'viralGrande' | 'classico' | 'compacto' | 'semBorda';
 
 const canvasWidth = 1080;
 const canvasHeight = 1920;
@@ -84,6 +86,104 @@ const outputPresets: Record<OutputPreset, {
     height: 1920,
     bitrate: '8000k',
     preset: 'medium',
+  },
+};
+
+const layoutPresets: Record<LayoutPreset, {
+  label: string;
+  description: string;
+  patch: Partial<TemplateConfig>;
+}> = {
+  viralGrande: {
+    label: 'Viral grande',
+    description: 'Video maior, com cabecalho limpo e borda lateral.',
+    patch: {
+      bordaLateral: true,
+      bordaLateralEspessura: 8,
+      videoX: 70,
+      videoY: 560,
+      videoLargura: 940,
+      videoAltura: 1250,
+      videoBorda: 0,
+      perfilX: 105,
+      perfilY: 230,
+      perfilTamanho: 96,
+      nomeX: 247,
+      nomeY: 245,
+      usuarioX: 247,
+      usuarioY: 290,
+      topoX: 74,
+      topoY: 385,
+      topoLargura: 900,
+    },
+  },
+  classico: {
+    label: 'Classico',
+    description: 'Mais parecido com post antigo, com video mais abaixo.',
+    patch: {
+      bordaLateral: true,
+      bordaLateralEspessura: 8,
+      videoX: 54,
+      videoY: 806,
+      videoLargura: 972,
+      videoAltura: 999,
+      videoBorda: 0,
+      perfilX: 105,
+      perfilY: 330,
+      perfilTamanho: 96,
+      nomeX: 247,
+      nomeY: 345,
+      usuarioX: 247,
+      usuarioY: 390,
+      topoX: 74,
+      topoY: 497,
+      topoLargura: 900,
+    },
+  },
+  compacto: {
+    label: 'Compacto',
+    description: 'Cabecalho mais alto e video ocupando mais espaco.',
+    patch: {
+      bordaLateral: true,
+      bordaLateralEspessura: 8,
+      videoX: 54,
+      videoY: 470,
+      videoLargura: 972,
+      videoAltura: 1350,
+      videoBorda: 0,
+      perfilX: 80,
+      perfilY: 170,
+      perfilTamanho: 82,
+      nomeX: 185,
+      nomeY: 180,
+      usuarioX: 185,
+      usuarioY: 220,
+      topoX: 74,
+      topoY: 310,
+      topoLargura: 930,
+    },
+  },
+  semBorda: {
+    label: 'Sem borda',
+    description: 'Visual limpo, sem moldura colorida.',
+    patch: {
+      bordaLateral: false,
+      videoX: 70,
+      videoY: 560,
+      videoLargura: 940,
+      videoAltura: 1250,
+      videoBorda: 0,
+      perfilX: 105,
+      perfilY: 230,
+      perfilTamanho: 96,
+      nomeX: 247,
+      nomeY: 245,
+      usuarioX: 247,
+      usuarioY: 290,
+      topoX: 74,
+      topoY: 385,
+      topoLargura: 900,
+    },
   },
 };
 
@@ -361,6 +461,7 @@ const EditorMassaVideos: React.FC = () => {
   const [logo, setLogo] = useState<File | null>(null);
   const [outputs, setOutputs] = useState<OutputVideo[]>([]);
   const [outputPreset, setOutputPreset] = useState<OutputPreset>('fast');
+  const [layoutPreset, setLayoutPreset] = useState<LayoutPreset>('viralGrande');
   const [loadingFfmpeg, setLoadingFfmpeg] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [progressText, setProgressText] = useState('');
@@ -373,6 +474,14 @@ const EditorMassaVideos: React.FC = () => {
 
   const updateConfig = <K extends keyof TemplateConfig>(key: K, value: TemplateConfig[K]) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const applyLayoutPreset = (presetKey: LayoutPreset) => {
+    setLayoutPreset(presetKey);
+    setConfig((prev) => ({
+      ...prev,
+      ...layoutPresets[presetKey].patch,
+    }));
   };
 
   const loadFfmpeg = async () => {
@@ -611,6 +720,32 @@ const EditorMassaVideos: React.FC = () => {
               <div className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-[0.16em] text-slate-500">
                 <SlidersHorizontal size={16} />
                 Template
+              </div>
+
+              <div className="mb-5 rounded-2xl border border-violet-100 bg-violet-50 p-4">
+                <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-violet-700">
+                  <Sparkles size={15} />
+                  Layout rapido
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(Object.entries(layoutPresets) as Array<[LayoutPreset, typeof layoutPresets[LayoutPreset]]>).map(([key, preset]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => applyLayoutPreset(key)}
+                      className={`rounded-2xl border px-4 py-3 text-left transition ${layoutPreset === key
+                        ? 'border-violet-500 bg-white text-violet-800 shadow-sm'
+                        : 'border-transparent bg-white/70 text-slate-700 hover:border-violet-200 hover:bg-white'
+                        }`}
+                    >
+                      <span className="block text-sm font-black">{preset.label}</span>
+                      <span className="mt-1 block text-xs font-semibold leading-relaxed text-slate-500">
+                        {preset.description}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">

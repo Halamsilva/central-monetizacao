@@ -216,6 +216,7 @@ async function startServer() {
   app.post("/api/agents/narracao", narracaoHandler);
   app.post("/api/agents/gerador-imagens", geradorImagensHandler);
   app.post("/api/agents/configurable", configurableAgentHandler);
+  app.get("/api/admin/legacy-students", legacyStudentsHandler);
   app.post("/api/admin/legacy-students", legacyStudentsHandler);
   app.post("/api/admin/agents-delete", agentsDeleteHandler);
   app.delete("/api/admin/agents-delete", agentsDeleteHandler);

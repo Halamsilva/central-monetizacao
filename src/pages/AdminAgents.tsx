@@ -616,7 +616,12 @@ const AdminAgents = () => {
             const payload = await response.json().catch(() => ({}));
 
             if (!response.ok || payload.ok === false) {
-                throw new Error(payload.error || 'Erro ao excluir agente.');
+                const detail = payload.detail || payload.hint || payload.code;
+                throw new Error(
+                    detail
+                        ? `${payload.error || 'Erro ao excluir agente.'} (${detail})`
+                        : payload.error || 'Erro ao excluir agente.'
+                );
             }
 
             showSuccessMessage('Agente excluido com sucesso.');

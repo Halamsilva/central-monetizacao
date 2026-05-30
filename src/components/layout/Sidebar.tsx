@@ -34,6 +34,13 @@ interface SidebarProps {
   toggle?: () => void;
 }
 
+type MenuItem = {
+  title: string;
+  icon: React.ElementType;
+  path: string;
+  badge?: boolean;
+};
+
 const Sidebar: React.FC<SidebarProps> = ({
   isOpen = true,
   toggle,
@@ -45,13 +52,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const visibleUnreadCount = location.pathname === '/notices' ? 0 : unreadCount;
-
-  // Link do som de notificação (estilo push/ping moderno e limpo)
   const audioUrl = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav';
 
-  // Monitora notifications em tempo real no Supabase
   useEffect(() => {
-    // 1. Busca a contagem inicial de notificações existentes
     const fetchNotificationCount = async () => {
       const { count, error } = await supabase
         .from('notifications')
@@ -64,7 +67,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     fetchNotificationCount();
 
-    // 2. Escuta em tempo real quando você insere um novo agente ou aviso
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -73,13 +75,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         () => {
           setUnreadCount((prev) => prev + 1);
 
-          // MÁGICA DO SOM: Toca o efeito sonoro na hora que o registro entra no banco
           try {
             const audio = new Audio(audioUrl);
-            audio.volume = 0.5; // Volume em 50% para não dar um susto no aluno
+            audio.volume = 0.5;
             audio.play();
-          } catch (audioError) {
-            console.log('Navegador bloqueou o som automático até o usuário clicar na tela.');
+          } catch {
+            console.log('Navegador bloqueou o som automatico ate o usuario clicar na tela.');
           }
         }
       )
@@ -90,7 +91,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     };
   }, []);
 
-  // Limpa o contador vermelho quando o aluno clica na aba de Avisos
   useEffect(() => {
     if (location.pathname === '/notices') {
       setUnreadCount(0);
@@ -114,71 +114,56 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const mainMenu = [
+  const mainMenu: MenuItem[] = [
     { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { title: 'Novidades', icon: Bell, path: '/notices', badge: true },
   ];
 
-  const strategyMenu = [
+  const primaryStrategyMenu: MenuItem[] = [
     { title: 'Agentes IA', icon: Bot, path: '/agents' },
-    { title: 'Loja VIP', icon: ShoppingBag, path: '/shop-vip' }, // <-- Movida para o topo com o máximo de destaque!
+    { title: 'Loja VIP', icon: ShoppingBag, path: '/shop-vip' },
+    { title: 'Downloads', icon: Download, path: '/downloads' },
+  ];
+
+  const videoToolsMenu: MenuItem[] = [
+    { title: 'Gerar Videos', icon: Film, path: '/gerar-videos' },
+    { title: 'Editor em Massa', icon: Film, path: '/editor-massa-videos' },
+    { title: 'Revisor Veo 3', icon: Film, path: '/revisor-veo-3' },
+    { title: 'Fábrica de Novelinhas', icon: BookOpen, path: '/novelinhas' },
+    { title: 'POV Vendas', icon: Camera, path: '/pov' },
+    { title: 'Menina da Roca', icon: Camera, path: '/menina-da-roca' },
+    { title: 'Remix Video', icon: Film, path: '/remix-video' },
+    { title: 'Transformacao Videos', icon: Hammer, path: '/transformacao-videos' },
+  ];
+
+  const socialToolsMenu: MenuItem[] = [
     { title: 'Prompts Virais', icon: Zap, path: '/viral-prompts' },
     { title: 'TikTok Shop', icon: ShoppingBag, path: '/tiktok-shop' },
     { title: 'TikTok Persuasivo', icon: ShoppingBag, path: '/tiktok-shop-persuasivo' },
     { title: 'Facebook', icon: Facebook, path: '/facebook' },
     { title: 'YouTube e Shorts', icon: Youtube, path: '/youtube-shorts' },
+  ];
+
+  const utilityMenu: MenuItem[] = [
     { title: 'Ferramentas IA', icon: Wrench, path: '/tools-ia' },
-    { title: 'Fábrica de Novelinhas', icon: BookOpen, path: '/novelinhas' },
-    { title: 'POV Vendas', icon: Camera, path: '/pov' },
-    { title: 'Revisor Veo 3', icon: Film, path: '/revisor-veo-3' },
-    { title: 'Menina da Roca', icon: Camera, path: '/menina-da-roca' },
-    { title: 'Remix Video', icon: Film, path: '/remix-video' },
-    { title: 'Transformacao Videos', icon: Hammer, path: '/transformacao-videos' },
     { title: 'Narracao IA', icon: Mic2, path: '/narracao' },
     { title: 'Gerador Imagens', icon: Image, path: '/gerador-imagens' },
-    { title: 'Gerar Videos', icon: Film, path: '/gerar-videos' },
-    { title: 'Editor em Massa', icon: Film, path: '/editor-massa-videos' },
     { title: 'Tutoriais', icon: Youtube, path: '/tutoriais' },
-    { title: 'Downloads', icon: Download, path: '/downloads' },
+  ];
+
+  const accountMenu: MenuItem[] = [
     { title: 'Perfil', icon: User, path: '/profile' },
     { title: 'Configurações', icon: Settings, path: '/settings' },
   ];
 
-  const primaryStrategyMenu = [strategyMenu[0], strategyMenu[1], strategyMenu[19]];
-  const agentToolsMenu = [
-    strategyMenu[2],
-    strategyMenu[4],
-    strategyMenu[9],
-    strategyMenu[8],
-    strategyMenu[10],
-    strategyMenu[11],
-    strategyMenu[12],
-    strategyMenu[13],
-    strategyMenu[14],
-    strategyMenu[15],
-    strategyMenu[16],
-    strategyMenu[17],
-    strategyMenu[18],
-    strategyMenu[3],
-    strategyMenu[5],
-    strategyMenu[6],
-    strategyMenu[7],
-  ];
-  const accountMenu = [strategyMenu[20], strategyMenu[21]];
-
-  const adminMenu = [
+  const adminMenu: MenuItem[] = [
     { title: 'Painel Admin', icon: Shield, path: '/admin' },
     { title: 'Gerenciar Agentes', icon: Boxes, path: '/admin/agents' },
     { title: 'Gerenciar Avisos', icon: Megaphone, path: '/admin/notices' },
     { title: 'Gerenciar Alunos', icon: Users, path: '/admin/students' },
   ];
 
-  const renderMenuItem = (item: {
-    title: string;
-    icon: React.ElementType;
-    path: string;
-    badge?: boolean;
-  }) => {
+  const renderMenuItem = (item: MenuItem) => {
     const Icon = item.icon;
     const active = location.pathname === item.path;
 
@@ -201,7 +186,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           <span>{item.title}</span>
         </div>
 
-        {/* Bolinha vermelha com a contagem de notificações não lidas */}
         {item.badge && visibleUnreadCount > 0 && (
           <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-black text-white animate-bounce shadow-sm">
             {visibleUnreadCount}
@@ -210,6 +194,17 @@ const Sidebar: React.FC<SidebarProps> = ({
       </Link>
     );
   };
+
+  const renderSection = (title: string, items: MenuItem[]) => (
+    <div>
+      <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
+        {title}
+      </p>
+      <div className="space-y-2">
+        {items.map(renderMenuItem)}
+      </div>
+    </div>
+  );
 
   return (
     <aside
@@ -248,43 +243,13 @@ const Sidebar: React.FC<SidebarProps> = ({
           {mainMenu.map(renderMenuItem)}
         </div>
 
-        <div>
-          <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
-            Estratégias
-          </p>
-          <div className="space-y-2">
-            {primaryStrategyMenu.map(renderMenuItem)}
-          </div>
-        </div>
+        {renderSection('Estratégias', primaryStrategyMenu)}
+        {renderSection('Vídeos', videoToolsMenu)}
+        {renderSection('Redes Sociais', socialToolsMenu)}
+        {renderSection('Ferramentas', utilityMenu)}
+        {renderSection('Conta', accountMenu)}
 
-        <div>
-          <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
-            Agentes
-          </p>
-          <div className="space-y-2">
-            {agentToolsMenu.map(renderMenuItem)}
-          </div>
-        </div>
-
-        <div>
-          <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
-            Conta
-          </p>
-          <div className="space-y-2">
-            {accountMenu.map(renderMenuItem)}
-          </div>
-        </div>
-
-        {isAdmin && (
-          <div>
-            <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
-              Administração
-            </p>
-            <div className="space-y-2">
-              {adminMenu.map(renderMenuItem)}
-            </div>
-          </div>
-        )}
+        {isAdmin && renderSection('Administração', adminMenu)}
       </nav>
 
       <div className="border-t border-slate-100 bg-white p-4">

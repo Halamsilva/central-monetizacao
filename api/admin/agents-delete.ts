@@ -49,7 +49,10 @@ export default async function handler(req: any, res: any) {
 
   const serviceSupabase = getServiceSupabase();
   if (!serviceSupabase) {
-    return res.status(500).json({ error: 'SUPABASE_SERVICE_ROLE_KEY nao esta configurada.' });
+    return res.status(500).json({
+      error: 'SUPABASE_SERVICE_ROLE_KEY nao esta configurada.',
+      code: 'missing_service_role_key',
+    });
   }
 
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
@@ -73,7 +76,12 @@ export default async function handler(req: any, res: any) {
 
   if (fetchError) {
     console.error('Agent fetch before delete error:', fetchError);
-    return res.status(500).json({ error: fetchError.message || 'Erro ao buscar agente.' });
+    return res.status(500).json({
+      error: 'Erro ao buscar agente antes de excluir.',
+      detail: fetchError.message,
+      code: fetchError.code,
+      hint: fetchError.hint,
+    });
   }
 
   if (!agent) {
@@ -99,7 +107,12 @@ export default async function handler(req: any, res: any) {
 
   if (deleteError) {
     console.error('Agent delete error:', deleteError);
-    return res.status(500).json({ error: deleteError.message || 'Erro ao excluir agente.' });
+    return res.status(500).json({
+      error: 'Nao foi possivel excluir agente.',
+      detail: deleteError.message,
+      code: deleteError.code,
+      hint: deleteError.hint,
+    });
   }
 
   return res.status(200).json({ ok: true, deleted: agent });

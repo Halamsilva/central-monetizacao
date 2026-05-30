@@ -11,6 +11,7 @@ import {
     UploadCloud,
     Search,
     Filter,
+    MailSearch,
 } from 'lucide-react';
 
 import { supabase, UserProfile } from '../lib/supabase';
@@ -26,6 +27,9 @@ const AdminStudents: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<
         'all' | 'active' | 'pending' | 'blocked'
     >('all');
+    const [diagnosticEmail, setDiagnosticEmail] = useState('');
+    const [diagnosingEmail, setDiagnosingEmail] = useState(false);
+    const [diagnosticResult, setDiagnosticResult] = useState<any>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     useEffect(() => {
@@ -102,6 +106,46 @@ const AdminStudents: React.FC = () => {
         }
 
         return result;
+    };
+
+    const diagnoseStudentEmail = async () => {
+        const email = diagnosticEmail.trim().toLowerCase();
+
+        if (!email.includes('@')) {
+            setMessage({ type: 'error', text: 'Digite um e-mail valido para diagnosticar.' });
+            return;
+        }
+
+        setDiagnosingEmail(true);
+        setDiagnosticResult(null);
+
+        try {
+            const { data } = await supabase.auth.getSession();
+            const token = data.session?.access_token;
+
+            if (!token) {
+                throw new Error('Faca login novamente para diagnosticar o aluno.');
+            }
+
+            const response = await fetch(`/api/admin/legacy-students?email=${encodeURIComponent(email)}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Erro ao diagnosticar aluno.');
+            }
+
+            setDiagnosticResult(result);
+            setMessage(null);
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message || 'Erro ao diagnosticar aluno.' });
+        } finally {
+            setDiagnosingEmail(false);
+        }
     };
 
     const parseCsvRows = (text: string) => {
@@ -424,6 +468,96 @@ const AdminStudents: React.FC = () => {
                         Importar CSV
                     </button>
                 </div>
+            </div>
+
+            <div className="rounded-3xl border border-blue-200 bg-white p-6 shadow-sm">
+                <div className="mb-4 flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
+                        <MailSearch className="text-blue-600" size={22} />
+                    </div>
+
+                    <div>
+                        <h2 className="text-xl font-black text-slate-900">
+                            Diagnosticar acesso por e-mail
+                        </h2>
+
+                        <p className="text-sm text-slate-500">
+                            Use quando um aluno antigo disser que comprou, mas ainda aparece como pendente.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-3 lg:flex-row">
+                    <input
+                        type="email"
+                        value={diagnosticEmail}
+                        onChange={(event) => setDiagnosticEmail(event.target.value)}
+                        placeholder="emaildoaluno@gmail.com"
+                        className="h-12 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                    />
+
+                    <button
+                        onClick={diagnoseStudentEmail}
+                        disabled={diagnosingEmail}
+                        className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                    >
+                        {diagnosingEmail ? (
+                            <RefreshCw className="animate-spin" size={18} />
+                        ) : (
+                            <MailSearch size={18} />
+                        )}
+                        {diagnosingEmail ? 'Verificando...' : 'Verificar e-mail'}
+                    </button>
+                </div>
+
+                {diagnosticResult && (
+                    <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div>
+                                <p className="text-xs font-black uppercase tracking-wide text-slate-400">
+                                    Resultado
+                                </p>
+                                <h3 className="mt-1 text-lg font-black text-slate-900">
+                                    {diagnosticResult.diagnosis?.title || 'Diagnostico encontrado'}
+                                </h3>
+                                <p className="mt-1 text-sm font-semibold text-slate-600">
+                                    {diagnosticResult.diagnosis?.detail}
+                                </p>
+                            </div>
+
+                            <span className="rounded-full bg-white px-3 py-1 text-xs font-black uppercase text-slate-500 ring-1 ring-slate-200">
+                                {diagnosticResult.email}
+                            </span>
+                        </div>
+
+                        <div className="mt-4 grid gap-3 md:grid-cols-3">
+                            <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">
+                                <p className="text-xs font-bold uppercase text-slate-400">Conta na Central</p>
+                                <p className="mt-1 text-sm font-black text-slate-800">
+                                    {diagnosticResult.profile
+                                        ? `${diagnosticResult.profile.access_status || 'pending'}`
+                                        : 'Nao criada'}
+                                </p>
+                            </div>
+
+                            <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">
+                                <p className="text-xs font-bold uppercase text-slate-400">Compras Kiwify</p>
+                                <p className="mt-1 text-sm font-black text-slate-800">
+                                    {diagnosticResult.purchases?.length || 0}
+                                </p>
+                            </div>
+
+                            <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">
+                                <p className="text-xs font-bold uppercase text-slate-400">Liberacao</p>
+                                <p className="mt-1 text-sm font-black text-slate-800">
+                                    {diagnosticResult.diagnosis?.release_at
+                                        ? new Date(diagnosticResult.diagnosis.release_at).toLocaleDateString('pt-BR')
+                                        : 'Sem data'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="grid gap-4 md:grid-cols-4">

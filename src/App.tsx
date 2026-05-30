@@ -26,6 +26,7 @@ const Narracao = lazy(() => import('./pages/Narracao'));
 const GeradorImagens = lazy(() => import('./pages/GeradorImagens'));
 const GerarVideos = lazy(() => import('./pages/GerarVideos'));
 const EditorMassaVideos = lazy(() => import('./pages/EditorMassaVideos'));
+const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
 const Tutorials = lazy(() => import('./pages/Tutorials'));
 const Downloads = lazy(() => import('./pages/Downloads'));
 const ShopVIP = lazy(() => import('./pages/ShopVIP')); // <-- Importado com calma aqui!
@@ -201,6 +202,7 @@ export default function App() {
               <Route path="gerador-imagens" element={<GeradorImagens />} />
               <Route path="gerar-videos" element={<GerarVideos />} />
               <Route path="editor-massa-videos" element={<EditorMassaVideos />} />
+              <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />
               <Route path="shop-vip" element={<ShopVIP />} /> {/* <-- Rota da loja registrada aqui! */}

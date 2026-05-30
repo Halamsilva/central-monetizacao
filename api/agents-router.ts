@@ -7,6 +7,7 @@ import revisorVeo3Handler from '../server-agents/revisor-veo-3.js';
 import tiktokShopPersuasivoHandler from '../server-agents/tiktok-shop-persuasivo.js';
 import transformacaoVideosHandler from '../server-agents/transformacao-videos.js';
 import geradorImagensHandler from '../server-agents/gerador-imagens.js';
+import configurableAgentHandler from '../server-agents/configurable-agent.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
@@ -18,6 +19,7 @@ const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'tiktok-shop-persuasivo': tiktokShopPersuasivoHandler,
   'transformacao-videos': transformacaoVideosHandler,
   'gerador-imagens': geradorImagensHandler,
+  configurable: configurableAgentHandler,
 };
 
 export default function handler(req: any, res: any) {

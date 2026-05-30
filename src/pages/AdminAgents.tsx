@@ -28,6 +28,11 @@ import {
     Undo2,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import {
+    buildConfigurableAgentPrompt,
+    parseConfigurableAgent,
+    slugifyAgentTitle,
+} from '../lib/configurableAgent';
 
 interface Agent {
     id: string;
@@ -109,12 +114,18 @@ const isValidUrl = (url: string) => {
     }
 };
 
+const isValidAgentLink = (url: string) => {
+    const normalizedUrl = url.trim();
+
+    return normalizedUrl.startsWith('/') || isValidUrl(normalizedUrl);
+};
+
 const getAgentQuality = (agent: Agent) => {
     const hasImage = Boolean(agent.image);
     const hasDescription = Boolean(agent.description?.trim());
     const hasPrompt = Boolean(agent.prompt?.trim());
     const hasLink =
-        Boolean(agent.agent_link?.trim()) && isValidUrl(agent.agent_link);
+        Boolean(agent.agent_link?.trim()) && isValidAgentLink(agent.agent_link);
     const hasCategory = Boolean(agent.category?.trim());
 
     const items = [
@@ -166,6 +177,7 @@ const AdminAgents = () => {
     const [restoringBackupId, setRestoringBackupId] = useState<string | null>(
         null
     );
+    const [isConfigurableAgent, setIsConfigurableAgent] = useState(false);
 
     useEffect(() => {
         fetchAgents();
@@ -255,6 +267,7 @@ const AdminAgents = () => {
     const resetForm = () => {
         setFormData(emptyForm);
         setEditingId(null);
+        setIsConfigurableAgent(false);
         localStorage.removeItem(draftKey);
     };
 
@@ -365,12 +378,16 @@ const AdminAgents = () => {
             return;
         }
 
-        if (!formData.agent_link.trim()) {
+        const computedAgentLink = isConfigurableAgent
+            ? `/custom-agent/${slugifyAgentTitle(formData.title)}`
+            : formData.agent_link.trim();
+
+        if (!computedAgentLink.trim()) {
             showErrorMessage('Cole o link do agente.');
             return;
         }
 
-        if (!isValidUrl(formData.agent_link.trim())) {
+        if (!isValidAgentLink(computedAgentLink)) {
             showErrorMessage(
                 'Use um link válido começando com http:// ou https://.'
             );
@@ -403,14 +420,17 @@ const AdminAgents = () => {
         setIsSavingAgent(true);
 
         const formattedCategory = formatCategoryLabel(formData.category);
+        const promptPayload = isConfigurableAgent
+            ? buildConfigurableAgentPrompt(formData.prompt.trim())
+            : formData.prompt.trim();
 
         const payload = {
             title: formData.title.trim(),
             description: formData.description.trim(),
             image: formData.image.trim(),
             category: formattedCategory,
-            agent_link: formData.agent_link.trim(),
-            prompt: formData.prompt.trim(),
+            agent_link: computedAgentLink,
+            prompt: promptPayload,
             featured: formData.featured,
             is_published: formData.is_published,
         };
@@ -498,6 +518,8 @@ const AdminAgents = () => {
     const handleEdit = (agent: Agent) => {
         setEditingId(agent.id);
         setOpenActionsId(null);
+        const configurableConfig = parseConfigurableAgent(agent.prompt);
+        setIsConfigurableAgent(Boolean(configurableConfig));
 
         setFormData({
             title: agent.title || '',
@@ -505,7 +527,7 @@ const AdminAgents = () => {
             image: agent.image || '',
             category: formatCategoryLabel(agent.category),
             agent_link: agent.agent_link || '',
-            prompt: agent.prompt || '',
+            prompt: configurableConfig?.masterPrompt || agent.prompt || '',
             featured: agent.featured || false,
             is_published: isAgentPublished(agent),
         });
@@ -516,6 +538,8 @@ const AdminAgents = () => {
     const handleDuplicate = (agent: Agent) => {
         setEditingId(null);
         setOpenActionsId(null);
+        const configurableConfig = parseConfigurableAgent(agent.prompt);
+        setIsConfigurableAgent(Boolean(configurableConfig));
 
         setFormData({
             title: `${agent.title} - Cópia`,
@@ -523,7 +547,7 @@ const AdminAgents = () => {
             image: agent.image || '',
             category: formatCategoryLabel(agent.category),
             agent_link: agent.agent_link || '',
-            prompt: agent.prompt || '',
+            prompt: configurableConfig?.masterPrompt || agent.prompt || '',
             featured: false,
             is_published: true,
         });
@@ -868,12 +892,34 @@ const AdminAgents = () => {
                 <input
                     type="text"
                     placeholder="Link do Agente"
-                    value={formData.agent_link}
+                    value={
+                        isConfigurableAgent && formData.title
+                            ? `/custom-agent/${slugifyAgentTitle(formData.title)}`
+                            : formData.agent_link
+                    }
                     onChange={(e) =>
                         updateField('agent_link', e.target.value)
                     }
+                    disabled={isConfigurableAgent}
                     className="mt-4 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 />
+
+                <label className="mt-3 flex w-fit items-center gap-3 text-sm font-semibold text-slate-700">
+                    <input
+                        type="checkbox"
+                        checked={isConfigurableAgent}
+                        onChange={(e) => setIsConfigurableAgent(e.target.checked)}
+                        className="h-4 w-4"
+                    />
+
+                    Criar como agente interno do site
+                </label>
+
+                {isConfigurableAgent && (
+                    <p className="mt-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">
+                        O link sera criado automaticamente dentro do site. O campo Prompt vira o prompt mestre do agente.
+                    </p>
+                )}
 
                 <div className="mt-4">
                     <textarea
@@ -1283,6 +1329,7 @@ const AdminAgents = () => {
                     {filteredAgents.map((agent) => {
                         const quality = getAgentQuality(agent);
                         const isActionsOpen = openActionsId === agent.id;
+                        const agentConfig = parseConfigurableAgent(agent.prompt);
 
                         return (
                             <div
@@ -1310,6 +1357,13 @@ const AdminAgents = () => {
                                         <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
                                             <Star className="h-3 w-3" />
                                             Destaque
+                                        </span>
+                                    )}
+
+                                    {agentConfig && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                                            <Bot className="h-3 w-3" />
+                                            Interno
                                         </span>
                                     )}
 

@@ -13,6 +13,7 @@ import remixVideoHandler from "./server-agents/remix-video";
 import transformacaoVideosHandler from "./server-agents/transformacao-videos";
 import narracaoHandler from "./server-agents/narracao";
 import geradorImagensHandler from "./server-agents/gerador-imagens";
+import configurableAgentHandler from "./server-agents/configurable-agent";
 import legacyStudentsHandler from "./api/admin/legacy-students";
 import agentsDeleteHandler from "./api/admin/agents-delete";
 import agentsBackupsHandler from "./api/admin/agents-backups";
@@ -214,6 +215,7 @@ async function startServer() {
   app.post("/api/agents/transformacao-videos", transformacaoVideosHandler);
   app.post("/api/agents/narracao", narracaoHandler);
   app.post("/api/agents/gerador-imagens", geradorImagensHandler);
+  app.post("/api/agents/configurable", configurableAgentHandler);
   app.post("/api/admin/legacy-students", legacyStudentsHandler);
   app.post("/api/admin/agents-delete", agentsDeleteHandler);
   app.delete("/api/admin/agents-delete", agentsDeleteHandler);

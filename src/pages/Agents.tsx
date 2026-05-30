@@ -280,6 +280,8 @@ const Agents = () => {
     setRecentIds(markAgentUsed(user?.id, agent.id).map((item) => item.id));
   };
 
+  const isInternalAgentLink = (link?: string) => link?.startsWith('/');
+
   if (loading) {
     return (
       <div className="space-y-4 pb-20">
@@ -487,7 +489,7 @@ const Agents = () => {
                   <a
                     key={agent.id}
                     href={agent.agent_link}
-                    target="_blank"
+                    target={isInternalAgentLink(agent.agent_link) ? undefined : '_blank'}
                     rel="noopener noreferrer"
                     onClick={() => openAgentLink(agent)}
                     className="min-w-[180px] rounded-2xl border border-slate-100 bg-slate-50 p-3 transition hover:border-blue-200 hover:bg-blue-50"
@@ -614,7 +616,7 @@ const Agents = () => {
                   {agent.agent_link && (
                     <a
                       href={agent.agent_link}
-                      target="_blank"
+                      target={isInternalAgentLink(agent.agent_link) ? undefined : '_blank'}
                       rel="noopener noreferrer"
                       onClick={() => openAgentLink(agent)}
                       aria-label={`Abrir ferramenta externa ${agent.title}`}

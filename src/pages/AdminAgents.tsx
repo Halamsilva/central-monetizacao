@@ -177,6 +177,7 @@ const AdminAgents = () => {
     const [restoringBackupId, setRestoringBackupId] = useState<string | null>(
         null
     );
+    const [testingDelete, setTestingDelete] = useState(false);
     const [isConfigurableAgent, setIsConfigurableAgent] = useState(false);
 
     useEffect(() => {
@@ -671,6 +672,90 @@ const AdminAgents = () => {
             showErrorMessage(restoreError.message || 'Erro ao restaurar agente.');
         } finally {
             setRestoringBackupId(null);
+        }
+    };
+
+    const handleDeleteSmokeTest = async () => {
+        const confirmed = confirm(
+            'Criar um agente temporario, apagar e conferir se a exclusao funciona?'
+        );
+
+        if (!confirmed) return;
+
+        setTestingDelete(true);
+
+        try {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const token = sessionData.session?.access_token;
+
+            if (!token) {
+                throw new Error('Sessao expirada. Faca login novamente.');
+            }
+
+            const title = `[TESTE EXCLUSAO] ${new Date().toLocaleString('pt-BR')}`;
+            const { data: createdAgent, error: createError } = await supabase
+                .from('agents')
+                .insert([
+                    {
+                        title,
+                        description: 'Agente temporario criado apenas para testar exclusao.',
+                        image: '',
+                        category: 'Sistema',
+                        agent_link: '/agents',
+                        prompt: 'Teste tecnico de exclusao. Pode apagar.',
+                        featured: false,
+                        is_published: false,
+                    },
+                ])
+                .select('*')
+                .single();
+
+            if (createError || !createdAgent) {
+                throw new Error(createError?.message || 'Nao foi possivel criar agente teste.');
+            }
+
+            const response = await fetch('/api/admin/agents-delete', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: createdAgent.id }),
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok || payload.ok === false) {
+                const detail = payload.detail || payload.hint || payload.code;
+                throw new Error(
+                    detail
+                        ? `${payload.error || 'Erro ao excluir agente teste.'} (${detail})`
+                        : payload.error || 'Erro ao excluir agente teste.'
+                );
+            }
+
+            const { data: stillExists, error: checkError } = await supabase
+                .from('agents')
+                .select('id')
+                .eq('id', createdAgent.id)
+                .maybeSingle();
+
+            if (checkError) {
+                throw new Error(checkError.message || 'Nao foi possivel conferir exclusao.');
+            }
+
+            if (stillExists) {
+                throw new Error('O agente teste ainda existe apos a exclusao.');
+            }
+
+            showSuccessMessage('Teste concluido: criar e excluir agente esta funcionando.');
+            await fetchAgents();
+            await fetchDeletedBackups();
+        } catch (testError: any) {
+            console.error(testError);
+            showErrorMessage(testError.message || 'Teste de exclusao falhou.');
+        } finally {
+            setTestingDelete(false);
         }
     };
 
@@ -1187,6 +1272,19 @@ const AdminAgents = () => {
                                 }`}
                         />
                         Atualizar
+                    </button>
+
+                    <button
+                        onClick={handleDeleteSmokeTest}
+                        disabled={testingDelete}
+                        className="inline-flex items-center gap-2 rounded-2xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 ring-1 ring-red-100 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {testingDelete ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Trash2 className="h-4 w-4" />
+                        )}
+                        Testar exclusão
                     </button>
 
                     <div className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">

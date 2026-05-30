@@ -739,6 +739,42 @@ const EditorMassaVideos: React.FC = () => {
                         : 'border-transparent bg-white/70 text-slate-700 hover:border-violet-200 hover:bg-white'
                         }`}
                     >
+                      <span className="mb-3 block aspect-[9/16] max-h-28 overflow-hidden rounded-xl bg-white ring-1 ring-slate-200">
+                        <span className="relative block h-full w-full">
+                          {preset.patch.bordaLateral !== false && (
+                            <span
+                              className="absolute inset-0"
+                              style={{ border: `2px solid ${config.corBorda}` }}
+                            />
+                          )}
+                          <span
+                            className="absolute rounded-full bg-violet-500"
+                            style={{
+                              left: `${((preset.patch.perfilX || defaultTemplate.perfilX) / canvasWidth) * 100}%`,
+                              top: `${((preset.patch.perfilY || defaultTemplate.perfilY) / canvasHeight) * 100}%`,
+                              width: '10%',
+                              aspectRatio: '1',
+                            }}
+                          />
+                          <span
+                            className="absolute h-2 rounded-full bg-slate-900"
+                            style={{
+                              left: `${((preset.patch.nomeX || defaultTemplate.nomeX) / canvasWidth) * 100}%`,
+                              top: `${((preset.patch.nomeY || defaultTemplate.nomeY) / canvasHeight) * 100}%`,
+                              width: '28%',
+                            }}
+                          />
+                          <span
+                            className="absolute rounded bg-slate-200"
+                            style={{
+                              left: `${((preset.patch.videoX || defaultTemplate.videoX) / canvasWidth) * 100}%`,
+                              top: `${((preset.patch.videoY || defaultTemplate.videoY) / canvasHeight) * 100}%`,
+                              width: `${((preset.patch.videoLargura || defaultTemplate.videoLargura) / canvasWidth) * 100}%`,
+                              height: `${((preset.patch.videoAltura || defaultTemplate.videoAltura) / canvasHeight) * 100}%`,
+                            }}
+                          />
+                        </span>
+                      </span>
                       <span className="block text-sm font-black">{preset.label}</span>
                       <span className="mt-1 block text-xs font-semibold leading-relaxed text-slate-500">
                         {preset.description}

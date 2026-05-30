@@ -19,6 +19,7 @@ import {
   Boxes,
   Megaphone,
   Users,
+  Activity,
   LogOut,
   Hammer,
   Mic2,
@@ -161,6 +162,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Gerenciar Agentes', icon: Boxes, path: '/admin/agents' },
     { title: 'Gerenciar Avisos', icon: Megaphone, path: '/admin/notices' },
     { title: 'Gerenciar Alunos', icon: Users, path: '/admin/students' },
+    { title: 'Status do Sistema', icon: Activity, path: '/admin/status' },
   ];
 
   const renderMenuItem = (item: MenuItem) => {

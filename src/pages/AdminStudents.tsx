@@ -29,6 +29,7 @@ const AdminStudents: React.FC = () => {
     >('all');
     const [diagnosticEmail, setDiagnosticEmail] = useState('');
     const [diagnosingEmail, setDiagnosingEmail] = useState(false);
+    const [releasingEmail, setReleasingEmail] = useState(false);
     const [diagnosticResult, setDiagnosticResult] = useState<any>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -145,6 +146,52 @@ const AdminStudents: React.FC = () => {
             setMessage({ type: 'error', text: err.message || 'Erro ao diagnosticar aluno.' });
         } finally {
             setDiagnosingEmail(false);
+        }
+    };
+
+    const releaseDiagnosticEmail = async () => {
+        const email = diagnosticResult?.email || diagnosticEmail.trim().toLowerCase();
+
+        if (!email.includes('@')) {
+            setMessage({ type: 'error', text: 'Digite um e-mail valido para liberar.' });
+            return;
+        }
+
+        const confirmed = confirm(`Liberar acesso agora para ${email}?`);
+        if (!confirmed) return;
+
+        setReleasingEmail(true);
+
+        try {
+            const { data } = await supabase.auth.getSession();
+            const token = data.session?.access_token;
+
+            if (!token) {
+                throw new Error('Faca login novamente para liberar o aluno.');
+            }
+
+            const response = await fetch('/api/admin/legacy-students', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Erro ao liberar aluno.');
+            }
+
+            setMessage({ type: 'success', text: result.note || 'Aluno liberado.' });
+            await loadStudents();
+            await diagnoseStudentEmail();
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message || 'Erro ao liberar aluno.' });
+        } finally {
+            setReleasingEmail(false);
         }
     };
 
@@ -529,6 +576,21 @@ const AdminStudents: React.FC = () => {
                                 {diagnosticResult.email}
                             </span>
                         </div>
+
+                        {diagnosticResult.diagnosis?.status !== 'active' && diagnosticResult.diagnosis?.status !== 'blocked' && (
+                            <button
+                                onClick={releaseDiagnosticEmail}
+                                disabled={releasingEmail}
+                                className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 text-sm font-bold text-white transition hover:bg-emerald-600 disabled:opacity-60"
+                            >
+                                {releasingEmail ? (
+                                    <RefreshCw className="animate-spin" size={17} />
+                                ) : (
+                                    <UserCheck size={17} />
+                                )}
+                                {releasingEmail ? 'Liberando...' : 'Liberar agora'}
+                            </button>
+                        )}
 
                         <div className="mt-4 grid gap-3 md:grid-cols-3">
                             <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">

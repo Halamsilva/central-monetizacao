@@ -17,6 +17,7 @@ import configurableAgentHandler from "./server-agents/configurable-agent";
 import legacyStudentsHandler from "./api/admin/legacy-students";
 import agentsDeleteHandler from "./api/admin/agents-delete";
 import agentsBackupsHandler from "./api/admin/agents-backups";
+import systemStatusHandler from "./api/admin/system-status";
 
 dotenv.config();
 
@@ -218,10 +219,12 @@ async function startServer() {
   app.post("/api/agents/configurable", configurableAgentHandler);
   app.get("/api/admin/legacy-students", legacyStudentsHandler);
   app.post("/api/admin/legacy-students", legacyStudentsHandler);
+  app.patch("/api/admin/legacy-students", legacyStudentsHandler);
   app.post("/api/admin/agents-delete", agentsDeleteHandler);
   app.delete("/api/admin/agents-delete", agentsDeleteHandler);
   app.get("/api/admin/agents-backups", agentsBackupsHandler);
   app.post("/api/admin/agents-backups", agentsBackupsHandler);
+  app.get("/api/admin/system-status", systemStatusHandler);
 
   app.post("/api/webhooks/kiwify", async (req, res) => {
     const webhookToken = process.env.KIWIFY_WEBHOOK_TOKEN;

@@ -25,6 +25,7 @@ const pageTitles: Record<string, string> = {
     '/shop-vip': 'Loja VIP',
   '/admin/notices': 'Gerenciar Avisos',
   '/admin/students': 'Gerenciar Alunos',
+  '/admin/status': 'Status do Sistema',
 };
 
 const AppLayout: React.FC = () => {

@@ -313,8 +313,66 @@ const importLegacyStudents = async (req: any, res: any, serviceSupabase: any) =>
   });
 };
 
+const activateStudentNow = async (req: any, res: any, serviceSupabase: any) => {
+  const email = normalizeEmail(req.body?.email);
+
+  if (!email.includes('@')) {
+    return res.status(400).json({ error: 'Informe um e-mail valido para liberar.' });
+  }
+
+  const now = new Date();
+  const { error: purchaseError } = await serviceSupabase
+    .from('kiwify_purchases')
+    .upsert(
+      {
+        email,
+        kiwify_order_id: `manual-release-${email}`,
+        product_id: 'manual_admin_release',
+        purchase_status: 'active',
+        paid_at: now.toISOString(),
+        release_at: now.toISOString(),
+        raw_payload: {
+          source: 'admin_manual_release',
+          email,
+        },
+        updated_at: now.toISOString(),
+      },
+      { onConflict: 'email' }
+    );
+
+  if (purchaseError) {
+    console.error('Manual release purchase error:', purchaseError);
+    return res.status(500).json({ error: 'Erro ao registrar liberacao manual.' });
+  }
+
+  const { data: updatedProfiles, error: profileError } = await serviceSupabase
+    .from('profiles')
+    .update({
+      access_status: 'active',
+      approved_at: now.toISOString(),
+    })
+    .eq('email', email)
+    .eq('role', 'student')
+    .select('id, email, full_name, access_status, approved_at');
+
+  if (profileError) {
+    console.error('Manual release profile error:', profileError);
+    return res.status(500).json({ error: 'Erro ao liberar perfil do aluno.' });
+  }
+
+  return res.status(200).json({
+    ok: true,
+    email,
+    updated_profiles: updatedProfiles?.length || 0,
+    profile: updatedProfiles?.[0] || null,
+    note: updatedProfiles?.length
+      ? 'Aluno liberado na Central.'
+      : 'Compra marcada como ativa. O aluno precisa criar login na Central com esse e-mail.',
+  });
+};
+
 export default async function handler(req: any, res: any) {
-  if (!['GET', 'POST'].includes(req.method)) {
+  if (!['GET', 'POST', 'PATCH'].includes(req.method)) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -332,6 +390,10 @@ export default async function handler(req: any, res: any) {
 
   if (req.method === 'GET') {
     return diagnoseEmail(req, res, serviceSupabase);
+  }
+
+  if (req.method === 'PATCH') {
+    return activateStudentNow(req, res, serviceSupabase);
   }
 
   return importLegacyStudents(req, res, serviceSupabase);

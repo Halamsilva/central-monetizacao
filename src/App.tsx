@@ -38,6 +38,7 @@ const Admin = lazy(() => import('./pages/Admin'));
 const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AdminNotices = lazy(() => import('./pages/AdminNotices'));
 const AdminStudents = lazy(() => import('./pages/AdminStudents'));
+const AdminStatus = lazy(() => import('./pages/AdminStatus'));
 
 const routeTitles: Record<string, string> = {
   '/login': 'Entrar',
@@ -71,6 +72,7 @@ const routeTitles: Record<string, string> = {
   '/admin/agents': 'Gerenciar Agentes',
   '/admin/notices': 'Gerenciar Avisos',
   '/admin/students': 'Gerenciar Alunos',
+  '/admin/status': 'Status do Sistema',
 };
 
 const TitleManager = () => {
@@ -241,6 +243,14 @@ export default function App() {
                 element={
                   <AdminRoute>
                     <AdminStudents />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="admin/status"
+                element={
+                  <AdminRoute>
+                    <AdminStatus />
                   </AdminRoute>
                 }
               />

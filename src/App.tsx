@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Notices = lazy(() => import('./pages/Notices'));
 const Agents = lazy(() => import('./pages/Agents'));
 const ViralPrompts = lazy(() => import('./pages/ViralPrompts'));
+const RadarTikTokShop = lazy(() => import('./pages/RadarTikTokShop'));
 const TikTokShop = lazy(() => import('./pages/TikTokShop'));
 const TikTokShopPersuasivo = lazy(() => import('./pages/TikTokShopPersuasivo'));
 const Facebook = lazy(() => import('./pages/Facebook'));
@@ -48,6 +49,7 @@ const routeTitles: Record<string, string> = {
   '/notices': 'Novidades',
   '/agents': 'Agentes IA',
   '/viral-prompts': 'Prompts Virais',
+  '/radar-tiktok-shop': 'Radar TikTok Shop',
   '/tiktok-shop': 'TikTok Shop',
   '/tiktok-shop-persuasivo': 'TikTok Shop Persuasivo',
   '/facebook': 'Facebook',
@@ -189,6 +191,7 @@ export default function App() {
               <Route path="notices" element={<Notices />} />
               <Route path="agents" element={<Agents />} />
               <Route path="viral-prompts" element={<ViralPrompts />} />
+              <Route path="radar-tiktok-shop" element={<RadarTikTokShop />} />
               <Route path="tiktok-shop" element={<TikTokShop />} />
               <Route path="tiktok-shop-persuasivo" element={<TikTokShopPersuasivo />} />
               <Route path="facebook" element={<Facebook />} />

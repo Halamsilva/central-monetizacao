@@ -139,6 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const socialToolsMenu: MenuItem[] = [
     { title: 'Prompts Virais', icon: Zap, path: '/viral-prompts' },
+    { title: 'Radar TikTok Shop', icon: Activity, path: '/radar-tiktok-shop' },
     { title: 'TikTok Shop', icon: ShoppingBag, path: '/tiktok-shop' },
     { title: 'TikTok Persuasivo', icon: ShoppingBag, path: '/tiktok-shop-persuasivo' },
     { title: 'Facebook', icon: Facebook, path: '/facebook' },

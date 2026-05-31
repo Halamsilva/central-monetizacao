@@ -12,6 +12,7 @@ const pageTitles: Record<string, string> = {
   '/updates': 'Atualizações',
   '/agents': 'Agentes IA',
   '/viral-prompts': 'Prompts Virais',
+  '/radar-tiktok-shop': 'Radar TikTok Shop',
   '/tiktok-shop': 'TikTok Shop',
   '/facebook': 'Facebook',
   '/youtube-shorts': 'YouTube Shorts',

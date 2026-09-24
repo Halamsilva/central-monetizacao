@@ -3,21 +3,19 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
-import { createClient } from "@supabase/supabase-js";
+import { createServiceClient, isFirebaseAdminConfigured } from './api/_firebase.js';
 import { handleRegistrationEmail, sendAccessEmail } from "./api/_emails";
-import povAgentHandler from "./server-agents/pov";
-import tiktokShopPersuasivoHandler from "./server-agents/tiktok-shop-persuasivo";
-import revisorVeo3Handler from "./server-agents/revisor-veo-3";
 import meninaDaRocaHandler from "./server-agents/menina-da-roca";
-import remixVideoHandler from "./server-agents/remix-video";
-import transformacaoVideosHandler from "./server-agents/transformacao-videos";
-import narracaoHandler from "./server-agents/narracao";
-import geradorImagensHandler from "./server-agents/gerador-imagens";
 import configurableAgentHandler from "./server-agents/configurable-agent";
 import legacyStudentsHandler from "./api/admin/legacy-students";
 import agentsDeleteHandler from "./api/admin/agents-delete";
 import agentsBackupsHandler from "./api/admin/agents-backups";
 import systemStatusHandler from "./api/admin/system-status";
+import aiAccountsLinkHandler from "./api/ai-accounts-link";
+import aiAccountsSettingsHandler from "./api/admin/ai-accounts-settings";
+import aiAccountsAccessHandler from "./api/ai-accounts-access";
+import adminAIAccountsAccessHandler from "./api/admin/ai-accounts-access";
+import { getActiveGeminiApiKey } from "./server-agents/gemini-key.js";
 
 dotenv.config();
 
@@ -148,18 +146,7 @@ const isAllowedKiwifyProduct = (product: { id: string; name: string }) => {
   return candidates.some((candidate) => allowed.includes(candidate));
 };
 
-const getServiceSupabase = () => {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceKey) {
-    return null;
-  }
-
-  return createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-};
+const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
 
 async function startServer() {
   const app = express();
@@ -173,7 +160,7 @@ async function startServer() {
   app.post("/api/ai/generate", async (req, res) => {
     try {
       const { prompt, systemInstruction } = req.body;
-      const apiKey = process.env.GEMINI_API_KEY;
+      const apiKey = await getActiveGeminiApiKey();
 
       if (!apiKey) {
         return res.status(500).json({ error: "GEMINI_API_KEY is not configured" });
@@ -208,14 +195,7 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  app.post("/api/agents/pov", povAgentHandler);
-  app.post("/api/agents/tiktok-shop-persuasivo", tiktokShopPersuasivoHandler);
-  app.post("/api/agents/revisor-veo-3", revisorVeo3Handler);
   app.post("/api/agents/menina-da-roca", meninaDaRocaHandler);
-  app.post("/api/agents/remix-video", remixVideoHandler);
-  app.post("/api/agents/transformacao-videos", transformacaoVideosHandler);
-  app.post("/api/agents/narracao", narracaoHandler);
-  app.post("/api/agents/gerador-imagens", geradorImagensHandler);
   app.post("/api/agents/configurable", configurableAgentHandler);
   app.get("/api/admin/legacy-students", legacyStudentsHandler);
   app.post("/api/admin/legacy-students", legacyStudentsHandler);
@@ -225,6 +205,12 @@ async function startServer() {
   app.get("/api/admin/agents-backups", agentsBackupsHandler);
   app.post("/api/admin/agents-backups", agentsBackupsHandler);
   app.get("/api/admin/system-status", systemStatusHandler);
+  app.post("/api/ai-accounts-link", aiAccountsLinkHandler);
+  app.get("/api/ai-accounts-access", aiAccountsAccessHandler);
+  app.get("/api/admin/ai-accounts-settings", aiAccountsSettingsHandler);
+  app.patch("/api/admin/ai-accounts-settings", aiAccountsSettingsHandler);
+  app.get("/api/admin/ai-accounts-access", adminAIAccountsAccessHandler);
+  app.patch("/api/admin/ai-accounts-access", adminAIAccountsAccessHandler);
 
   app.post("/api/webhooks/kiwify", async (req, res) => {
     const webhookToken = process.env.KIWIFY_WEBHOOK_TOKEN;

@@ -1,25 +1,4 @@
-import { Notice, Agent, Download, Update } from './supabase';
-
-export const MOCK_NOTICES: Notice[] = [
-  {
-    id: '1',
-    title: 'Bem-vindo à Nova Central!',
-    content: 'Estamos felizes em anunciar a nova Central Monetização. Aqui você encontrará tudo o que precisa para escalar suas redes sociais.',
-    is_pinned: true,
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    title: 'Nova atualização do TikTok Shop',
-    content: 'O TikTok Shop acaba de mudar as regras de comissionamento. Confira as novas estratégias na aba Atualizações.',
-    is_pinned: false,
-    is_published: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-];
+import { Agent } from './supabase';
 
 export const MOCK_AGENTS: Agent[] = [
   {
@@ -57,34 +36,3 @@ export const MOCK_AGENTS: Agent[] = [
   }
 ];
 
-export const MOCK_DOWNLOADS: Download[] = [
-  {
-    id: '1',
-    title: 'Checklist: Vídeo Viral',
-    description: 'O passo a passo definitivo para não esquecer nada na hora de postar.',
-    file_url: '#',
-    category: 'Materiais',
-    is_published: true,
-    created_at: new Date().toISOString()
-  },
-  {
-    id: '2',
-    title: 'Template de Roteiro VSL',
-    description: 'Template editável para suas cartas de vendas em vídeo.',
-    file_url: '#',
-    category: 'Templates',
-    is_published: true,
-    created_at: new Date().toISOString()
-  }
-];
-
-export const MOCK_UPDATES: Update[] = [
-  {
-    id: '1',
-    title: 'Versão 2.0 da Plataforma',
-    content: 'Adicionamos a biblioteca de agentes IA e novos prompts virais.',
-    version: '2.0.0',
-    is_published: true,
-    created_at: new Date().toISOString()
-  }
-];

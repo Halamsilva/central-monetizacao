@@ -141,7 +141,7 @@ const AdminNotices: React.FC = () => {
 
             const { error: uploadError } = await supabase.storage
                 .from('uploads')
-                .upload(filePath, file);
+                .upload(filePath, file, { cacheControl: '31536000' });
 
             if (uploadError) throw uploadError;
 

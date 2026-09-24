@@ -280,7 +280,16 @@ const Novelinhas: React.FC = () => {
         }),
       });
 
-      const payload = await response.json();
+      const rawPayload = await response.text();
+      let payload: { text?: string; error?: string } = {};
+
+      try {
+        payload = rawPayload ? JSON.parse(rawPayload) : {};
+      } catch {
+        payload = {
+          error: rawPayload || 'O servidor respondeu em um formato inesperado. Tente novamente.',
+        };
+      }
 
       if (!response.ok) {
         throw new Error(payload.error || 'Não foi possível gerar os prompts.');

@@ -9,6 +9,11 @@ coverage/
 
 .vercel
 .env*.local
+.migration-private/
+*service-account*.json
+*firebase-adminsdk*.json
 .flow-browser-profile/
 .flow-config.json
 flow-failure-*.png
+
+.vercel

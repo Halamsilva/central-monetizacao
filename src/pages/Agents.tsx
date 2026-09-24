@@ -21,6 +21,7 @@ import {
   markAgentUsed,
   toggleFavoriteAgent,
 } from '../lib/agentActivity';
+import { canLoadExternalMedia } from '../lib/media';
 
 interface Agent {
   id: string;
@@ -29,7 +30,7 @@ interface Agent {
   image: string;
   category: string;
   agent_link: string;
-  prompt: string;
+  prompt?: string;
   featured: boolean;
   is_published?: boolean;
   created_at?: string;
@@ -52,7 +53,7 @@ const formatCategoryLabel = (category?: string) => {
 const AgentImage = ({ src, alt }: { src?: string; alt: string }) => {
   const [failed, setFailed] = useState(false);
 
-  if (!src || failed) {
+  if (!canLoadExternalMedia(src) || failed) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-slate-950">
         <Bot size={24} className="text-white sm:h-10 sm:w-10" />
@@ -64,6 +65,8 @@ const AgentImage = ({ src, alt }: { src?: string; alt: string }) => {
     <img
       src={src}
       alt={alt}
+      loading="lazy"
+      decoding="async"
       onError={() => setFailed(true)}
       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
     />
@@ -112,7 +115,7 @@ const Agents = () => {
 
       const { data, error } = await supabase
         .from('agents')
-        .select('*')
+        .select('id, title, description, image, category, agent_link, featured, is_published, created_at')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -260,10 +263,32 @@ const Agents = () => {
     showSuccessMessage('Prompt copiado com sucesso.');
   };
 
-  const openPrompt = (agent: Agent) => {
+  const openPrompt = async (agent: Agent) => {
     setRecentIds(markAgentUsed(user?.id, agent.id).map((item) => item.id));
-    setSelectedPrompt(agent.prompt);
     setSelectedPromptTitle(agent.title);
+
+    if (agent.prompt) {
+      setSelectedPrompt(agent.prompt);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('agents')
+      .select('prompt')
+      .eq('id', agent.id)
+      .maybeSingle();
+
+    if (error || !data?.prompt) {
+      showSuccessMessage('Este agente não possui um prompt disponível.');
+      return;
+    }
+
+    setAgents((current) =>
+      current.map((item) =>
+        item.id === agent.id ? { ...item, prompt: data.prompt } : item
+      )
+    );
+    setSelectedPrompt(data.prompt);
   };
 
   const toggleFavorite = (agent: Agent) => {
@@ -346,6 +371,30 @@ const Agents = () => {
         <p className="mt-2 max-w-3xl text-xs leading-relaxed text-slate-500 sm:mt-3 sm:text-lg">
           Biblioteca premium de agentes, prompts e automações para acelerar sua criação de conteúdo.
         </p>
+      </div>
+
+      <div className="mb-4 grid gap-3 sm:mb-8 lg:grid-cols-3">
+        {[
+          {
+            title: '1. Escolha o agente',
+            text: 'Use a busca ou os filtros para achar a ferramenta certa para o seu objetivo.',
+          },
+          {
+            title: '2. Preencha com detalhes',
+            text: 'Quanto melhor a ideia, produto ou roteiro, melhor fica o resultado final.',
+          },
+          {
+            title: '3. Copie e execute',
+            text: 'Cole o resultado no Veo, editor ou rede social indicada pela ferramenta.',
+          },
+        ].map((item) => (
+          <div key={item.title} className="rounded-3xl border border-blue-100 bg-blue-50 p-4">
+            <h2 className="text-sm font-black text-slate-900">{item.title}</h2>
+            <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600 sm:text-sm">
+              {item.text}
+            </p>
+          </div>
+        ))}
       </div>
 
       <div className="mb-4 rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm sm:mb-8 sm:p-5">
@@ -628,26 +677,13 @@ const Agents = () => {
                     </a>
                   )}
 
-                  {agent.prompt && (
-                    <div className="grid grid-cols-[28px_1fr] gap-1.5 sm:grid-cols-[auto_1fr] sm:gap-3">
-                      <button
-                        onClick={() => copyPrompt(agent.prompt)}
-                        className="flex h-8 w-7 items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition-all hover:bg-slate-100 sm:h-12 sm:w-12 sm:rounded-2xl"
-                        title="Copiar prompt"
-                        aria-label={`Copiar prompt de ${agent.title}`}
-                      >
-                        <Copy size={12} className="sm:h-[18px] sm:w-[18px]" />
-                      </button>
-
-                      <button
-                        onClick={() => openPrompt(agent)}
-                        aria-label={`Ver prompt de ${agent.title}`}
-                        className="h-8 rounded-xl border border-slate-200 px-1 text-[9px] font-black text-slate-700 transition-all hover:bg-slate-100 sm:h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
-                      >
-                        Ver prompt
-                      </button>
-                    </div>
-                  )}
+                  <button
+                    onClick={() => openPrompt(agent)}
+                    aria-label={`Ver prompt de ${agent.title}`}
+                    className="h-8 rounded-xl border border-slate-200 px-1 text-[9px] font-black text-slate-700 transition-all hover:bg-slate-100 sm:h-12 sm:rounded-2xl sm:px-4 sm:text-sm"
+                  >
+                    Ver prompt
+                  </button>
                 </div>
               </div>
             </motion.div>

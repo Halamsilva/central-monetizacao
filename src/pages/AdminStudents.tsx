@@ -12,6 +12,7 @@ import {
     Search,
     Filter,
     MailSearch,
+    Sparkles,
 } from 'lucide-react';
 
 import { supabase, UserProfile } from '../lib/supabase';
@@ -19,6 +20,7 @@ import { supabase, UserProfile } from '../lib/supabase';
 const AdminStudents: React.FC = () => {
     const csvInputRef = useRef<HTMLInputElement>(null);
     const [students, setStudents] = useState<UserProfile[]>([]);
+    const [aiAccountsAccess, setAiAccountsAccess] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [legacyStudents, setLegacyStudents] = useState('');
@@ -56,31 +58,119 @@ const AdminStudents: React.FC = () => {
 
         setMessage(null);
         setStudents(data || []);
+        await loadAIAccountsEntitlements();
+    };
+
+    const loadAIAccountsEntitlements = async () => {
+        try {
+            const { data } = await supabase.auth.getSession();
+            const token = data.session?.access_token;
+
+            if (!token) return;
+
+            const response = await fetch('/api/admin/ai-accounts-access', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                setAiAccountsAccess(result.entitlements || {});
+            }
+        } catch (err) {
+            console.error('Erro ao carregar acessos IA ilimitado:', err);
+        }
     };
 
     const updateStudentStatus = async (
-        studentId: string,
+        student: UserProfile,
         status: 'active' | 'pending' | 'blocked'
     ) => {
+        const studentId = student.id;
         setUpdatingId(studentId);
 
-        const { error } = await supabase
-            .from('profiles')
-            .update({
-                access_status: status,
-            })
-            .eq('id', studentId);
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+
+        if (!token) {
+            setUpdatingId(null);
+            setMessage({ type: 'error', text: 'Faca login novamente para atualizar o aluno.' });
+            return;
+        }
+
+        const response = await fetch('/api/admin/legacy-students', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ email: student.email, status }),
+        });
+
+        const result = await response.json().catch(() => ({}));
 
         setUpdatingId(null);
 
-        if (error) {
-            console.error(error);
-            setMessage({ type: 'error', text: 'Erro ao atualizar acesso do aluno.' });
+        if (!response.ok) {
+            setMessage({
+                type: 'error',
+                text: result.error || 'Erro ao atualizar acesso do aluno.',
+            });
             return;
         }
 
         await loadStudents();
         setMessage({ type: 'success', text: 'Acesso do aluno atualizado.' });
+    };
+
+    const updateAIAccountsAccess = async (
+        studentId: string,
+        enabled: boolean
+    ) => {
+        setUpdatingId(studentId);
+
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+
+        if (!token) {
+            setUpdatingId(null);
+            setMessage({ type: 'error', text: 'Faca login novamente para atualizar esse acesso.' });
+            return;
+        }
+
+        const response = await fetch('/api/admin/ai-accounts-access', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ studentId, enabled }),
+        });
+
+        const result = await response.json().catch(() => ({}));
+
+        setUpdatingId(null);
+
+        if (!response.ok) {
+            setMessage({
+                type: 'error',
+                text: result.error || 'Erro ao atualizar o acesso de Contas de IA ilimitado.',
+            });
+            return;
+        }
+
+        setAiAccountsAccess((current) => ({
+            ...current,
+            [studentId]: enabled,
+        }));
+        setMessage({
+            type: 'success',
+            text: enabled
+                ? 'Contas de IA ilimitado liberado para o aluno.'
+                : 'Contas de IA ilimitado removido do aluno.',
+        });
     };
 
     const sendLegacyImport = async (payload: { text?: string; entries?: Array<{ email: string; paidAt?: string }> }) => {
@@ -760,6 +850,13 @@ const AdminStudents: React.FC = () => {
                                         </h3>
 
                                         {getStatusBadge(student.access_status)}
+
+                                        {aiAccountsAccess[student.id] && (
+                                            <span className="inline-flex items-center gap-2 rounded-full bg-violet-100 px-3 py-1 text-xs font-bold uppercase text-violet-700">
+                                                <Sparkles size={13} />
+                                                IA ilimitado
+                                            </span>
+                                        )}
                                     </div>
 
                                     <p className="mt-1 text-sm text-slate-500">
@@ -774,7 +871,7 @@ const AdminStudents: React.FC = () => {
 
                                 <div className="flex flex-wrap gap-3">
                                     <button
-                                        onClick={() => updateStudentStatus(student.id, 'active')}
+                                        onClick={() => updateStudentStatus(student, 'active')}
                                         disabled={updatingId === student.id}
                                         className="inline-flex h-11 items-center gap-2 rounded-2xl bg-emerald-500 px-4 text-sm font-bold text-white transition hover:bg-emerald-600 disabled:opacity-60"
                                     >
@@ -783,7 +880,7 @@ const AdminStudents: React.FC = () => {
                                     </button>
 
                                     <button
-                                        onClick={() => updateStudentStatus(student.id, 'pending')}
+                                        onClick={() => updateStudentStatus(student, 'pending')}
                                         disabled={updatingId === student.id}
                                         className="inline-flex h-11 items-center gap-2 rounded-2xl bg-amber-500 px-4 text-sm font-bold text-white transition hover:bg-amber-600 disabled:opacity-60"
                                     >
@@ -792,12 +889,25 @@ const AdminStudents: React.FC = () => {
                                     </button>
 
                                     <button
-                                        onClick={() => updateStudentStatus(student.id, 'blocked')}
+                                        onClick={() => updateStudentStatus(student, 'blocked')}
                                         disabled={updatingId === student.id}
                                         className="inline-flex h-11 items-center gap-2 rounded-2xl bg-red-500 px-4 text-sm font-bold text-white transition hover:bg-red-600 disabled:opacity-60"
                                     >
                                         <UserX size={17} />
                                         Bloquear
+                                    </button>
+
+                                    <button
+                                        onClick={() => updateAIAccountsAccess(student.id, !aiAccountsAccess[student.id])}
+                                        disabled={updatingId === student.id}
+                                        className={`inline-flex h-11 items-center gap-2 rounded-2xl px-4 text-sm font-bold transition disabled:opacity-60 ${
+                                            aiAccountsAccess[student.id]
+                                                ? 'bg-violet-100 text-violet-700 hover:bg-violet-200'
+                                                : 'bg-violet-600 text-white hover:bg-violet-700'
+                                        }`}
+                                    >
+                                        <Sparkles size={17} />
+                                        {aiAccountsAccess[student.id] ? 'Remover IA ilimitado' : 'Liberar IA ilimitado'}
                                     </button>
                                 </div>
                             </motion.div>

@@ -4,6 +4,21 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { motion } from 'motion/react';
 import { User, Mail, Lock, ArrowRight, Loader2, AlertCircle, ShieldCheck } from 'lucide-react';
 
+const getFriendlyRegisterError = (err: any) => {
+  const message = String(err?.message || err || '');
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes('already registered') || normalized.includes('already exists') || normalized.includes('email-already-in-use')) {
+    return 'Este e-mail já possui um novo acesso. Use “Esqueceu?” na tela de login para criar outra senha.';
+  }
+
+  if (normalized.includes('rate limit') || normalized.includes('too many requests')) {
+    return 'Muitas tentativas seguidas. Aguarde alguns minutos e tente novamente.';
+  }
+
+  return message || 'Erro ao criar conta. Tente novamente.';
+};
+
 const Register: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -27,7 +42,7 @@ const Register: React.FC = () => {
 
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
+        email: email.trim().toLowerCase(),
         password,
         options: {
           data: { full_name: name }
@@ -37,14 +52,6 @@ const Register: React.FC = () => {
       if (signUpError) throw signUpError;
       
       if (data.user) {
-        // Create profile in our table
-        await supabase.from('users_profile').insert({
-          id: data.user.id,
-          email: email,
-          full_name: name,
-          is_admin: false
-        });
-
         const sessionToken =
           data.session?.access_token ||
           (await supabase.auth.getSession()).data.session?.access_token;
@@ -56,7 +63,7 @@ const Register: React.FC = () => {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${sessionToken}`,
             },
-            body: JSON.stringify({ email, name }),
+            body: JSON.stringify({ email: email.trim().toLowerCase(), name }),
           }).catch((emailError) => {
             console.error('Erro ao enviar e-mail de cadastro:', emailError);
           });
@@ -65,7 +72,7 @@ const Register: React.FC = () => {
       
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Erro ao criar conta. Tente novamente.');
+      setError(getFriendlyRegisterError(err));
     } finally {
       setLoading(false);
     }

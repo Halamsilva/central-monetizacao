@@ -1,15 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient, isFirebaseAdminConfigured, isVerifiedOwner } from '../_firebase.js';
 
-const getServiceSupabase = () => {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceKey) return null;
-
-  return createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-};
+const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
 
 const checkAdminAccess = async (serviceSupabase: any, token?: string) => {
   if (!token) {
@@ -35,7 +26,7 @@ const checkAdminAccess = async (serviceSupabase: any, token?: string) => {
     return { ok: false as const, status: 500, error: 'Nao foi possivel conferir permissao de admin.' };
   }
 
-  if (!profile || profile.role !== 'admin' || profile.access_status === 'blocked') {
+  if (!isVerifiedOwner(user) || !profile || profile.role !== 'admin' || profile.access_status === 'blocked') {
     return { ok: false as const, status: 403, error: 'Apenas administradores podem ver o status.' };
   }
 
@@ -56,8 +47,140 @@ const checkTable = async (serviceSupabase: any, table: string) => {
   };
 };
 
+const cleanApiKey = (value: unknown) => String(value || '').trim();
+
+const maskGeminiApiKey = (value: unknown) => {
+  const apiKey = cleanApiKey(value);
+  if (!apiKey) return '';
+
+  if (apiKey.length <= 10) return `${apiKey.slice(0, 2)}...${apiKey.slice(-2)}`;
+
+  return `${apiKey.slice(0, 6)}...${apiKey.slice(-4)}`;
+};
+
+const isMissingSettingsTable = (error: any) =>
+  ['PGRST205', '42P01'].includes(error?.code) ||
+  String(error?.message || '').includes('app_settings');
+
+const readFallbackSetting = async (serviceSupabase: any, key: string) => {
+  const { data, error } = await serviceSupabase
+    .from('agents')
+    .select('prompt')
+    .eq('category', '__system')
+    .eq('title', `__app_setting:${key}`)
+    .maybeSingle();
+
+  if (error || !data?.prompt) return null;
+
+  try {
+    return JSON.parse(data.prompt);
+  } catch {
+    return null;
+  }
+};
+
+const writeFallbackSetting = async (serviceSupabase: any, key: string, value: Record<string, any>) => {
+  const payload = {
+    title: `__app_setting:${key}`,
+    description: 'Internal platform setting. Do not publish.',
+    image: '',
+    category: '__system',
+    agent_link: '',
+    prompt: JSON.stringify(value),
+    featured: false,
+    is_published: false,
+  };
+
+  const { data: existing } = await serviceSupabase
+    .from('agents')
+    .select('id')
+    .eq('category', '__system')
+    .eq('title', `__app_setting:${key}`)
+    .maybeSingle();
+
+  if (existing?.id) {
+    return serviceSupabase
+      .from('agents')
+      .update(payload)
+      .eq('id', existing.id);
+  }
+
+  return serviceSupabase
+    .from('agents')
+    .insert(payload);
+};
+
+const deleteFallbackSetting = async (serviceSupabase: any, key: string) =>
+  serviceSupabase
+    .from('agents')
+    .delete()
+    .eq('category', '__system')
+    .eq('title', `__app_setting:${key}`);
+
+const readAppSetting = async (serviceSupabase: any, key: string) => {
+  const { data, error } = await serviceSupabase
+    .from('app_settings')
+    .select('value')
+    .eq('key', key)
+    .maybeSingle();
+
+  if (!error) return data?.value || null;
+  if (isMissingSettingsTable(error)) return readFallbackSetting(serviceSupabase, key);
+
+  return null;
+};
+
+const writeAppSetting = async (serviceSupabase: any, key: string, value: Record<string, any>) => {
+  const { error } = await serviceSupabase
+    .from('app_settings')
+    .upsert(
+      {
+        key,
+        value,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'key' }
+    );
+
+  if (!error) return { error: null };
+  if (isMissingSettingsTable(error)) return writeFallbackSetting(serviceSupabase, key, value);
+
+  return { error };
+};
+
+const getStoredGeminiApiKey = async (serviceSupabase: any) => {
+  const value = await readAppSetting(serviceSupabase, 'gemini_api_key');
+  return cleanApiKey(value?.apiKey);
+};
+
+const getGeminiSettings = async (serviceSupabase: any) => {
+  const storedGeminiKey = await getStoredGeminiApiKey(serviceSupabase);
+  const fallbackGeminiKey = process.env.GEMINI_API_KEY || '';
+  const activeGeminiKey = storedGeminiKey || fallbackGeminiKey;
+
+  return {
+    configured: Boolean(activeGeminiKey),
+    usingStoredKey: Boolean(storedGeminiKey),
+    maskedKey: maskGeminiApiKey(activeGeminiKey),
+    fallbackConfigured: Boolean(fallbackGeminiKey),
+    detail: activeGeminiKey
+      ? `${storedGeminiKey ? 'Chave do painel admin' : 'Chave da Vercel'} configurada (${maskGeminiApiKey(activeGeminiKey)})`
+      : 'API key ausente',
+  };
+};
+
+const getMenuSettings = async (serviceSupabase: any) => {
+  const value = await readAppSetting(serviceSupabase, 'menu_visibility');
+
+  return {
+    hiddenTabs: Array.isArray(value?.hiddenTabs)
+      ? value.hiddenTabs.filter((item: unknown) => typeof item === 'string')
+      : [],
+  };
+};
+
 export default async function handler(req: any, res: any) {
-  if (req.method !== 'GET') {
+  if (!['GET', 'PATCH', 'DELETE'].includes(req.method)) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -78,28 +201,84 @@ export default async function handler(req: any, res: any) {
     return res.status(adminCheck.status).json({ error: adminCheck.error });
   }
 
+  if (req.method === 'PATCH') {
+    if (Array.isArray(req.body?.hiddenTabs)) {
+      const hiddenTabs = req.body.hiddenTabs
+        .filter((item: unknown) => typeof item === 'string')
+        .map((item: string) => item.trim())
+        .filter(Boolean);
+
+      const { error } = await writeAppSetting(serviceSupabase, 'menu_visibility', {
+        hiddenTabs,
+        updatedAt: new Date().toISOString(),
+      });
+
+      if (error) {
+        return res.status(500).json({
+          error: 'Nao foi possivel salvar a visibilidade das abas.',
+          detail: error.message || null,
+          code: error.code || null,
+        });
+      }
+
+      return res.status(200).json({
+        ok: true,
+        menuSettings: await getMenuSettings(serviceSupabase),
+      });
+    }
+
+    const apiKey = String(req.body?.apiKey || '').trim();
+
+    if (!apiKey) {
+      return res.status(400).json({ error: 'Cole uma chave de API antes de salvar.' });
+    }
+
+    if (apiKey.length < 20) {
+      return res.status(400).json({ error: 'Essa chave parece curta demais. Confira e tente novamente.' });
+    }
+
+    const { error } = await writeAppSetting(serviceSupabase, 'gemini_api_key', {
+      apiKey,
+      updatedAt: new Date().toISOString(),
+    });
+
+    if (error) {
+      return res.status(500).json({
+        error: 'Nao foi possivel salvar a chave. Confira se a tabela app_settings existe.',
+        detail: error.message || null,
+        code: error.code || null,
+      });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      geminiSettings: await getGeminiSettings(serviceSupabase),
+    });
+  }
+
+  if (req.method === 'DELETE') {
+    const { error } = await serviceSupabase.from('app_settings').delete().eq('key', 'gemini_api_key');
+    if (error && isMissingSettingsTable(error)) {
+      await deleteFallbackSetting(serviceSupabase, 'gemini_api_key');
+    } else {
+      await deleteFallbackSetting(serviceSupabase, 'gemini_api_key');
+    }
+
+    return res.status(200).json({
+      ok: true,
+      geminiSettings: await getGeminiSettings(serviceSupabase),
+    });
+  }
+
   const tables = await Promise.all([
     checkTable(serviceSupabase, 'profiles'),
     checkTable(serviceSupabase, 'agents'),
     checkTable(serviceSupabase, 'kiwify_purchases'),
-    checkTable(serviceSupabase, 'generation_jobs'),
-    checkTable(serviceSupabase, 'generation_worker_status'),
     checkTable(serviceSupabase, 'agent_deleted_backups'),
   ]);
 
-  const workerStatus = tables.find((table) => table.table === 'generation_worker_status');
-  let flowWorker = null;
-
-  if (workerStatus?.ok) {
-    const { data } = await serviceSupabase
-      .from('generation_worker_status')
-      .select('status, message, online_until, updated_at, flow_project_url')
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    flowWorker = data || null;
-  }
+  const geminiSettings = await getGeminiSettings(serviceSupabase);
+  const menuSettings = await getMenuSettings(serviceSupabase);
 
   return res.status(200).json({
     ok: true,
@@ -120,17 +299,13 @@ export default async function handler(req: any, res: any) {
         detail: process.env.RESEND_API_KEY ? 'API key configurada' : 'API key ausente',
       },
       gemini: {
-        ok: Boolean(process.env.GEMINI_API_KEY),
+        ok: geminiSettings.configured,
         label: 'Gemini',
-        detail: process.env.GEMINI_API_KEY ? 'API key configurada' : 'API key ausente',
-      },
-      flowWorker: {
-        ok: Boolean(flowWorker && ['online', 'working'].includes(flowWorker.status)),
-        label: 'Worker Flow/Veo',
-        detail: flowWorker?.message || flowWorker?.status || 'Sem status recente',
-        data: flowWorker,
+        detail: geminiSettings.detail,
       },
     },
+    geminiSettings,
+    menuSettings,
     tables,
   });
 }

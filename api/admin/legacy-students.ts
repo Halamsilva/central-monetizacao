@@ -1,11 +1,11 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient, isFirebaseAdminConfigured, isVerifiedOwner } from '../_firebase.js';
 
 type ImportEntry = {
   email: string;
   paidAt?: string;
 };
 
-type KiwifyAccessStatus = 'pending' | 'active';
+type KiwifyAccessStatus = 'pending' | 'active' | 'blocked';
 
 const normalizeEmail = (email?: unknown) =>
   typeof email === 'string' ? email.trim().toLowerCase() : '';
@@ -16,16 +16,7 @@ const addDays = (date: Date, days: number) => {
   return nextDate;
 };
 
-const getServiceSupabase = () => {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceKey) return null;
-
-  return createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-};
+const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
 
 const checkAdminAccess = async (serviceSupabase: any, token?: string) => {
   if (!token) {
@@ -51,7 +42,7 @@ const checkAdminAccess = async (serviceSupabase: any, token?: string) => {
     return { ok: false as const, status: 500, error: 'Nao foi possivel conferir permissao de admin.' };
   }
 
-  if (adminProfile?.role !== 'admin' || adminProfile?.access_status === 'blocked') {
+  if (!isVerifiedOwner(user) || adminProfile?.role !== 'admin' || adminProfile?.access_status === 'blocked') {
     return { ok: false as const, status: 403, error: 'Apenas administradores podem importar ou diagnosticar alunos.' };
   }
 
@@ -125,6 +116,29 @@ const parsePaidAt = (value: string | undefined, releaseDelayDays: number) => {
 const getEmailFromQuery = (req: any) => {
   const value = req.query?.email;
   return normalizeEmail(Array.isArray(value) ? value[0] : value);
+};
+
+const savePurchaseByEmail = async (serviceSupabase: any, payload: Record<string, unknown>) => {
+  const email = normalizeEmail(payload.email);
+
+  const { data: existingPurchase, error: lookupError } = await serviceSupabase
+    .from('kiwify_purchases')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (lookupError) return { error: lookupError };
+
+  if (existingPurchase?.id) {
+    return serviceSupabase
+      .from('kiwify_purchases')
+      .update({ ...payload, email })
+      .eq('id', existingPurchase.id);
+  }
+
+  return serviceSupabase
+    .from('kiwify_purchases')
+    .insert({ ...payload, email });
 };
 
 const getDiagnosis = (profile: any, purchases: any[]) => {
@@ -257,25 +271,20 @@ const importLegacyStudents = async (req: any, res: any, serviceSupabase: any) =>
     if (status === 'active') activeCount += 1;
     if (status === 'pending') pendingCount += 1;
 
-    const { error: purchaseError } = await serviceSupabase
-      .from('kiwify_purchases')
-      .upsert(
-        {
-          email: entry.email,
-          kiwify_order_id: `legacy-${entry.email}`,
-          product_id: 'legacy_import',
-          purchase_status: status,
-          paid_at: paidAt.toISOString(),
-          release_at: releaseAt.toISOString(),
-          raw_payload: {
-            source: 'admin_legacy_import',
-            email: entry.email,
-            paid_at: paidAt.toISOString(),
-          },
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'email' }
-      );
+    const { error: purchaseError } = await savePurchaseByEmail(serviceSupabase, {
+      email: entry.email,
+      kiwify_order_id: `legacy-${entry.email}`,
+      product_id: 'legacy_import',
+      purchase_status: status,
+      paid_at: paidAt.toISOString(),
+      release_at: releaseAt.toISOString(),
+      raw_payload: {
+        source: 'admin_legacy_import',
+        email: entry.email,
+        paid_at: paidAt.toISOString(),
+      },
+      updated_at: new Date().toISOString(),
+    });
 
     if (purchaseError) {
       console.error('Legacy purchase import error:', purchaseError);
@@ -313,61 +322,65 @@ const importLegacyStudents = async (req: any, res: any, serviceSupabase: any) =>
   });
 };
 
-const activateStudentNow = async (req: any, res: any, serviceSupabase: any) => {
+const updateStudentAccess = async (req: any, res: any, serviceSupabase: any) => {
   const email = normalizeEmail(req.body?.email);
+  const status = String(req.body?.status || 'active') as KiwifyAccessStatus;
+
+  if (!['active', 'pending', 'blocked'].includes(status)) {
+    return res.status(400).json({ error: 'Status invalido para o aluno.' });
+  }
 
   if (!email.includes('@')) {
-    return res.status(400).json({ error: 'Informe um e-mail valido para liberar.' });
+    return res.status(400).json({ error: 'Informe um e-mail valido para atualizar.' });
   }
 
   const now = new Date();
-  const { error: purchaseError } = await serviceSupabase
-    .from('kiwify_purchases')
-    .upsert(
-      {
-        email,
-        kiwify_order_id: `manual-release-${email}`,
-        product_id: 'manual_admin_release',
-        purchase_status: 'active',
-        paid_at: now.toISOString(),
-        release_at: now.toISOString(),
-        raw_payload: {
-          source: 'admin_manual_release',
-          email,
-        },
-        updated_at: now.toISOString(),
+  const { error: purchaseError } = await savePurchaseByEmail(serviceSupabase, {
+    email,
+    kiwify_order_id: `manual-${status}-${email}`,
+    product_id: 'manual_admin_status',
+    purchase_status: status,
+    paid_at: now.toISOString(),
+    release_at: now.toISOString(),
+    raw_payload: {
+      source: 'admin_student_status',
+      email,
+      status,
       },
-      { onConflict: 'email' }
-    );
+    updated_at: now.toISOString(),
+  });
 
   if (purchaseError) {
-    console.error('Manual release purchase error:', purchaseError);
-    return res.status(500).json({ error: 'Erro ao registrar liberacao manual.' });
+    console.error('Manual status purchase error:', purchaseError);
+    return res.status(500).json({ error: 'Erro ao registrar atualizacao manual.' });
   }
 
   const { data: updatedProfiles, error: profileError } = await serviceSupabase
     .from('profiles')
     .update({
-      access_status: 'active',
-      approved_at: now.toISOString(),
+      access_status: status,
+      approved_at: status === 'active' ? now.toISOString() : null,
     })
     .eq('email', email)
     .eq('role', 'student')
     .select('id, email, full_name, access_status, approved_at');
 
   if (profileError) {
-    console.error('Manual release profile error:', profileError);
-    return res.status(500).json({ error: 'Erro ao liberar perfil do aluno.' });
+    console.error('Manual status profile error:', profileError);
+    return res.status(500).json({ error: 'Erro ao atualizar perfil do aluno.' });
   }
+
+  const statusLabel = status === 'active' ? 'liberado' : status === 'blocked' ? 'bloqueado' : 'marcado como pendente';
 
   return res.status(200).json({
     ok: true,
     email,
+    status,
     updated_profiles: updatedProfiles?.length || 0,
     profile: updatedProfiles?.[0] || null,
     note: updatedProfiles?.length
-      ? 'Aluno liberado na Central.'
-      : 'Compra marcada como ativa. O aluno precisa criar login na Central com esse e-mail.',
+      ? `Aluno ${statusLabel} na Central.`
+      : `Compra ${statusLabel}. O aluno precisa criar login na Central com esse e-mail.`,
   });
 };
 
@@ -393,7 +406,7 @@ export default async function handler(req: any, res: any) {
   }
 
   if (req.method === 'PATCH') {
-    return activateStudentNow(req, res, serviceSupabase);
+    return updateStudentAccess(req, res, serviceSupabase);
   }
 
   return importLegacyStudents(req, res, serviceSupabase);

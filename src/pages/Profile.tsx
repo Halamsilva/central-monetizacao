@@ -68,6 +68,7 @@ const Profile: React.FC = () => {
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, {
+          cacheControl: '31536000',
           upsert: true,
         });
 

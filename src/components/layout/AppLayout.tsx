@@ -8,8 +8,8 @@ import { supabase } from '../../lib/supabase';
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
+  '/comece-aqui': 'Comece Aqui',
   '/notices': 'Novidades',
-  '/updates': 'Atualizações',
   '/agents': 'Agentes IA',
   '/viral-prompts': 'Prompts Virais',
   '/radar-tiktok-shop': 'Radar TikTok Shop',
@@ -17,13 +17,15 @@ const pageTitles: Record<string, string> = {
   '/facebook': 'Facebook',
   '/youtube-shorts': 'YouTube Shorts',
   '/tools-ia': 'Ferramentas IA',
-  '/novelinhas': 'Novelinhas',
+  '/novelinhas': 'Fábrica de Novelinhas',
+  '/menina-da-roca': 'Menina da Roça',
+  '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
+  '/shop-vip': 'Loja VIP',
   '/profile': 'Perfil',
   '/settings': 'Configurações',
   '/admin': 'Painel Admin',
   '/admin/agents': 'Gerenciar Agentes',
-    '/shop-vip': 'Loja VIP',
   '/admin/notices': 'Gerenciar Avisos',
   '/admin/students': 'Gerenciar Alunos',
   '/admin/status': 'Status do Sistema',
@@ -232,6 +234,7 @@ const AppLayout: React.FC = () => {
       <Sidebar
         isOpen={sidebarOpen}
         toggle={() => setSidebarOpen((prev) => !prev)}
+        unreadCount={visibleUnreadCount}
       />
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
@@ -308,3 +311,4 @@ const AppLayout: React.FC = () => {
 };
 
 export default AppLayout;
+

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient, isFirebaseAdminConfigured } from './_firebase.js';
 import { sendAccessEmail } from './_emails.js';
 
 type KiwifyAccessStatus = 'pending' | 'active' | 'blocked';
@@ -128,18 +128,7 @@ const isAllowedKiwifyProduct = (product: { id: string; name: string }) => {
   return candidates.some((candidate) => allowed.includes(candidate));
 };
 
-const getServiceSupabase = () => {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceKey) {
-    return null;
-  }
-
-  return createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-};
+const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
 
 export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   const webhookToken = process.env.KIWIFY_WEBHOOK_TOKEN;

@@ -14,12 +14,16 @@ import {
   ArrowRight,
   Heart,
   Clock3,
+  BookOpen,
+  Film,
+  Target,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
 import { fetchNoticeFeed, type NoticeFeedItem } from '../lib/notices';
 import { useAuth } from '../context/AuthContext';
 import { getFavoriteAgentIds, getRecentAgentIds, markAgentUsed } from '../lib/agentActivity';
+import { canLoadExternalMedia } from '../lib/media';
 
 interface Agent {
   id: string;
@@ -28,7 +32,6 @@ interface Agent {
   image: string;
   category: string;
   agent_link: string;
-  prompt: string;
   featured: boolean;
   is_published?: boolean;
 }
@@ -56,10 +59,41 @@ const categories = [
   },
 ];
 
+const learningPaths = [
+  {
+    title: 'Comece Aqui',
+    description: 'Veja a ordem certa para usar a plataforma sem se perder.',
+    icon: Target,
+    link: '/comece-aqui',
+    accent: 'bg-blue-600',
+  },
+  {
+    title: 'TikTok Shop',
+    description: 'Pesquise produtos, gere ganchos e scripts de venda.',
+    icon: ShoppingBag,
+    link: '/radar-tiktok-shop',
+    accent: 'bg-orange-500',
+  },
+  {
+    title: 'Videos com IA',
+    description: 'Crie cenas, revise prompts e prepare videos para publicar.',
+    icon: Film,
+    link: '/novelinhas',
+    accent: 'bg-slate-950',
+  },
+  {
+    title: 'Conteudo rapido',
+    description: 'Use prompts virais para redes sociais e Shorts.',
+    icon: BookOpen,
+    link: '/viral-prompts',
+    accent: 'bg-emerald-600',
+  },
+];
+
 const AgentImage = ({ src, alt }: { src?: string; alt: string }) => {
   const [failed, setFailed] = useState(false);
 
-  if (!src || failed) {
+  if (!canLoadExternalMedia(src) || failed) {
     return (
       <div className="flex h-full items-center justify-center bg-slate-100">
         <Bot className="text-slate-400" size={24} />
@@ -71,11 +105,15 @@ const AgentImage = ({ src, alt }: { src?: string; alt: string }) => {
     <img
       src={src}
       alt={alt}
+      loading="lazy"
+      decoding="async"
       onError={() => setFailed(true)}
       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
     />
   );
 };
+
+const isInternalAgentLink = (link?: string) => link?.startsWith('/');
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -92,7 +130,7 @@ const Dashboard: React.FC = () => {
       const [agentsResult, noticesResult] = await Promise.all([
         supabase
           .from('agents')
-          .select('*')
+          .select('id, title, description, image, category, agent_link, featured, is_published, created_at')
           .order('featured', { ascending: false })
           .order('created_at', { ascending: false })
           .limit(24),
@@ -157,13 +195,59 @@ const Dashboard: React.FC = () => {
           </p>
 
           <Link
-            to="/agents"
+            to="/comece-aqui"
             className="mt-5 inline-flex h-11 items-center justify-center rounded-2xl bg-blue-600 px-5 text-sm font-black text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700"
           >
-            Explorar Agora
+            Começar agora
           </Link>
         </div>
       </motion.section>
+
+      <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-wide text-slate-900">
+              <Target size={16} className="text-blue-600" />
+              Trilhas recomendadas
+            </h3>
+            <p className="mt-0.5 text-xs font-medium text-slate-500">
+              Caminhos prontos para gerar resultado mais rapido.
+            </p>
+          </div>
+
+          <Link
+            to="/comece-aqui"
+            className="inline-flex h-9 shrink-0 items-center justify-center gap-1 rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-700 transition hover:bg-blue-600 hover:text-white"
+          >
+            Ver guia
+            <ArrowRight size={13} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
+          {learningPaths.map((path) => {
+            const Icon = path.icon;
+
+            return (
+              <Link
+                key={path.title}
+                to={path.link}
+                className="group rounded-2xl border border-slate-100 bg-slate-50 p-3 transition hover:border-blue-200 hover:bg-blue-50"
+              >
+                <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-2xl text-white ${path.accent}`}>
+                  <Icon size={18} />
+                </div>
+                <h4 className="text-sm font-black text-slate-900 group-hover:text-blue-700">
+                  {path.title}
+                </h4>
+                <p className="mt-1 line-clamp-2 text-[11px] font-medium leading-relaxed text-slate-500">
+                  {path.description}
+                </p>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
 
       {latestNotices.length > 0 && (
         <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
@@ -236,11 +320,11 @@ const Dashboard: React.FC = () => {
 
               <div className="grid gap-2">
                 {recentAgents.map((agent) => (
-                  <a
+                  <Link
                     key={agent.id}
-                    href={agent.agent_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    to={agent.agent_link}
+                    target={isInternalAgentLink(agent.agent_link) ? undefined : '_blank'}
+                    rel={isInternalAgentLink(agent.agent_link) ? undefined : 'noopener noreferrer'}
                     onClick={() => markAgentUsed(user?.id, agent.id)}
                     className="rounded-2xl border border-slate-100 bg-slate-50 p-3 transition hover:border-blue-200 hover:bg-blue-50"
                   >
@@ -250,7 +334,7 @@ const Dashboard: React.FC = () => {
                     <p className="mt-1 text-[10px] font-bold uppercase text-slate-400">
                       {agent.category}
                     </p>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -271,11 +355,11 @@ const Dashboard: React.FC = () => {
 
               <div className="grid gap-2">
                 {favoriteAgents.map((agent) => (
-                  <a
+                  <Link
                     key={agent.id}
-                    href={agent.agent_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    to={agent.agent_link}
+                    target={isInternalAgentLink(agent.agent_link) ? undefined : '_blank'}
+                    rel={isInternalAgentLink(agent.agent_link) ? undefined : 'noopener noreferrer'}
                     onClick={() => markAgentUsed(user?.id, agent.id)}
                     className="rounded-2xl border border-rose-100 bg-rose-50 p-3 transition hover:border-rose-200 hover:bg-rose-100"
                   >
@@ -285,7 +369,7 @@ const Dashboard: React.FC = () => {
                     <p className="mt-1 text-[10px] font-bold uppercase text-rose-500">
                       {agent.category}
                     </p>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -383,17 +467,17 @@ const Dashboard: React.FC = () => {
                     {agent.description}
                   </p>
 
-                  <a
-                    href={agent.agent_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Link
+                    to={agent.agent_link}
+                    target={isInternalAgentLink(agent.agent_link) ? undefined : '_blank'}
+                    rel={isInternalAgentLink(agent.agent_link) ? undefined : 'noopener noreferrer'}
                     onClick={() => markAgentUsed(user?.id, agent.id)}
-                    aria-label={`Abrir ferramenta externa ${agent.title}`}
+                    aria-label={`Abrir ferramenta ${agent.title}`}
                     className="mt-2 flex h-9 w-full items-center justify-center gap-1 rounded-2xl bg-slate-950 text-[10px] font-black text-white transition hover:bg-blue-600"
                   >
                     <ExternalLink size={12} />
                     Abrir ferramenta
-                  </a>
+                  </Link>
                 </div>
               </motion.article>
             ))}

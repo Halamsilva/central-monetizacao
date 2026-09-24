@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isSupabaseConfigured, firebaseAuth } from '../lib/supabase';
+import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
 import { motion } from 'motion/react';
 import {
   Mail,
@@ -13,6 +14,25 @@ import {
   EyeOff,
 } from 'lucide-react';
 
+const getFriendlyRecoveryError = (err: any) => {
+  const message = String(err?.message || err || '');
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes('rate limit') || normalized.includes('too many requests')) {
+    return 'Muitos e-mails foram solicitados em pouco tempo. Aguarde alguns minutos e tente novamente.';
+  }
+
+  if (
+    normalized.includes('expired') ||
+    normalized.includes('invalid') ||
+    normalized.includes('otp')
+  ) {
+    return 'Este link expirou ou já foi utilizado. Solicite um novo link de recuperação.';
+  }
+
+  return message || 'Não foi possível concluir a recuperação da senha.';
+};
+
 const Recovery: React.FC = () => {
   const navigate = useNavigate();
 
@@ -23,6 +43,7 @@ const Recovery: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [checkingLink, setCheckingLink] = useState(true);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [recoveryCode, setRecoveryCode] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -31,28 +52,41 @@ const Recovery: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+
+    const finishCheck = (hasRecoverySession: boolean) => {
+      if (!mounted) return;
+      if (hasRecoverySession) setError(null);
+      setIsPasswordRecovery(hasRecoverySession);
+      setCheckingLink(false);
+    };
+
     const checkRecoverySession = async () => {
       try {
-        const hash = window.location.hash;
-        const search = window.location.search;
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('oobCode');
+        const mode = params.get('mode');
 
-        const hasRecoveryType =
-          hash.includes('type=recovery') || search.includes('type=recovery');
-
-        const hasAccessToken =
-          hash.includes('access_token') || search.includes('access_token');
-
-        if (hasRecoveryType || hasAccessToken) {
-          setIsPasswordRecovery(true);
+        if (!code || mode !== 'resetPassword') {
+          finishCheck(false);
+          return;
         }
-      } catch (err) {
+
+        await verifyPasswordResetCode(firebaseAuth, code);
+        if (mounted) setRecoveryCode(code);
+        finishCheck(true);
+      } catch (err: any) {
         console.error(err);
-      } finally {
-        setCheckingLink(false);
+        if (mounted) setError(getFriendlyRecoveryError(err));
+        finishCheck(false);
       }
     };
 
     checkRecoverySession();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleSendRecoveryEmail = async (e: React.FormEvent) => {
@@ -73,7 +107,7 @@ const Recovery: React.FC = () => {
 
     try {
       const { error: resetError } =
-        await supabase.auth.resetPasswordForEmail(email, {
+        await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
           redirectTo: `${window.location.origin}/recovery`,
         });
 
@@ -83,9 +117,7 @@ const Recovery: React.FC = () => {
         'Se este e-mail estiver cadastrado, você receberá um link em alguns instantes.'
       );
     } catch (err: any) {
-      setError(
-        err.message || 'Erro ao enviar e-mail. Verifique o endereço digitado.'
-      );
+      setError(getFriendlyRecoveryError(err));
     } finally {
       setLoading(false);
     }
@@ -110,23 +142,19 @@ const Recovery: React.FC = () => {
     }
 
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
-      });
+      if (!recoveryCode) {
+        throw new Error('Este link expirou ou já foi utilizado. Solicite um novo link de recuperação.');
+      }
 
-      if (updateError) throw updateError;
+      await confirmPasswordReset(firebaseAuth, recoveryCode, newPassword);
 
       setSuccessMessage('Senha atualizada com sucesso.');
 
       setTimeout(async () => {
-        await supabase.auth.signOut();
         navigate('/login', { replace: true });
       }, 1800);
     } catch (err: any) {
-      setError(
-        err.message ||
-        'Não foi possível atualizar a senha. Solicite um novo link.'
-      );
+      setError(getFriendlyRecoveryError(err));
     } finally {
       setLoading(false);
     }

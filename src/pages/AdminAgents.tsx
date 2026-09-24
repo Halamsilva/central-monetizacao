@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
     Plus,
     Trash2,
-    Upload,
     Pencil,
     Loader2,
     RefreshCw,
@@ -149,7 +148,6 @@ const getAgentQuality = (agent: Agent) => {
 const AdminAgents = () => {
     const [agents, setAgents] = useState<Agent[]>([]);
     const [formData, setFormData] = useState(getInitialForm);
-    const [uploading, setUploading] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isLoadingAgents, setIsLoadingAgents] = useState(true);
     const [isSavingAgent, setIsSavingAgent] = useState(false);
@@ -225,7 +223,7 @@ const AdminAgents = () => {
         setPublishStatusAvailable(
             Boolean(data?.some((agent) => 'is_published' in agent))
         );
-        setAgents(data || []);
+        setAgents((data || []).filter((agent) => agent.category !== '__system'));
         setIsLoadingAgents(false);
     };
 
@@ -329,46 +327,16 @@ const AdminAgents = () => {
         );
     };
 
-    const handleImageUpload = async (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const file = e.target.files?.[0];
-
-        if (!file) return;
-
-        try {
-            setUploading(true);
-
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}.${fileExt}`;
-
-            const { error } = await supabase.storage
-                .from('agent-images')
-                .upload(fileName, file);
-
-            if (error) {
-                console.error(error);
-                showErrorMessage('Erro ao enviar imagem.');
+    const handleCreateOrUpdate = async () => {
+        if (formData.image.trim()) {
+            try {
+                const imageUrl = new URL(formData.image.trim());
+                if (imageUrl.protocol !== 'https:' || imageUrl.username || imageUrl.password) throw new Error();
+            } catch {
+                showErrorMessage('Informe um link HTTPS valido para a imagem.');
                 return;
             }
-
-            const {
-                data: { publicUrl },
-            } = supabase.storage
-                .from('agent-images')
-                .getPublicUrl(fileName);
-
-            updateField('image', publicUrl);
-            showSuccessMessage('Imagem enviada com sucesso.');
-        } catch (err) {
-            console.error(err);
-            showErrorMessage('Erro no upload da imagem.');
-        } finally {
-            setUploading(false);
         }
-    };
-
-    const handleCreateOrUpdate = async () => {
         if (!formData.title.trim()) {
             showErrorMessage('Digite o título do agente.');
             return;
@@ -944,15 +912,17 @@ const AdminAgents = () => {
                 </div>
 
                 <div className="mt-4">
-                    <label className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-                        <Upload size={16} />
-                        Upload da Imagem
+                    <label htmlFor="agent-image-url" className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                        <Link size={16} />
+                        Link da imagem
                     </label>
 
                     <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
+                        id="agent-image-url"
+                        type="url"
+                        placeholder="https://exemplo.com/imagem.webp"
+                        value={formData.image}
+                        onChange={(e) => updateField('image', e.target.value)}
                         className="w-full rounded-xl border border-slate-200 px-4 py-3"
                     />
 
@@ -963,12 +933,6 @@ const AdminAgents = () => {
                         </p>
                     )}
 
-                    {uploading && (
-                        <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-blue-600">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Enviando imagem...
-                        </p>
-                    )}
 
                     {formData.image && (
                         <img
@@ -1006,9 +970,12 @@ const AdminAgents = () => {
                 </label>
 
                 {isConfigurableAgent && (
-                    <p className="mt-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">
-                        O link sera criado automaticamente dentro do site. O campo Prompt vira o prompt mestre do agente.
-                    </p>
+                    <div className="mt-2 rounded-xl bg-blue-50 px-3 py-3 text-xs font-semibold leading-relaxed text-blue-700">
+                        <p>O link sera criado automaticamente dentro do site. O campo Prompt vira o prompt mestre do agente.</p>
+                        <p className="mt-1 text-blue-600">
+                            Escreva o que o agente deve fazer, o formato da resposta e as regras que ele deve seguir. O aluno so preenche produto, objetivo, estilo e imagem opcional.
+                        </p>
+                    </div>
                 )}
 
                 <div className="mt-4">
@@ -1018,17 +985,21 @@ const AdminAgents = () => {
                         onChange={(e) =>
                             updateField('description', e.target.value)
                         }
-                        maxLength={240}
-                        className="h-28 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                        maxLength={3000}
+                        className="h-40 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                     />
 
                     <p className="mt-1 text-right text-xs font-medium text-slate-400">
-                        {formData.description.length}/240
+                        {formData.description.length}/3000
                     </p>
                 </div>
 
                 <textarea
-                    placeholder="Prompt"
+                    placeholder={
+                        isConfigurableAgent
+                            ? 'Prompt mestre do agente. Ex: Voce e especialista em criar roteiros UGC para TikTok Shop. Gere 5 roteiros naturais, com gancho forte, fala humana e CTA para o carrinho...'
+                            : 'Prompt'
+                    }
                     value={formData.prompt}
                     onChange={(e) =>
                         updateField('prompt', e.target.value)
@@ -1071,7 +1042,7 @@ const AdminAgents = () => {
                 <div className="mt-6 flex flex-wrap gap-4">
                     <button
                         onClick={handleCreateOrUpdate}
-                        disabled={isSavingAgent || uploading}
+                        disabled={isSavingAgent}
                         className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
                     >
                         {isSavingAgent ? (

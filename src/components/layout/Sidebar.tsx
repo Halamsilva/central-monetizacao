@@ -11,7 +11,6 @@ import {
   Wrench,
   BookOpen,
   Camera,
-  Film,
   Download,
   User,
   Settings,
@@ -21,9 +20,6 @@ import {
   Users,
   Activity,
   LogOut,
-  Hammer,
-  Mic2,
-  Image,
   X,
 } from 'lucide-react';
 
@@ -33,6 +29,7 @@ import { supabase } from '../../lib/supabase';
 interface SidebarProps {
   isOpen?: boolean;
   toggle?: () => void;
+  unreadCount?: number;
 }
 
 type MenuItem = {
@@ -45,58 +42,41 @@ type MenuItem = {
 const Sidebar: React.FC<SidebarProps> = ({
   isOpen = true,
   toggle,
+  unreadCount = 0,
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { profile, isAdmin, signOut } = useAuth();
 
   const [avatarFailed, setAvatarFailed] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [hiddenTabs, setHiddenTabs] = useState<string[]>([]);
   const visibleUnreadCount = location.pathname === '/notices' ? 0 : unreadCount;
-  const audioUrl = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-600.wav';
 
   useEffect(() => {
-    const fetchNotificationCount = async () => {
-      const { count, error } = await supabase
-        .from('notifications')
-        .select('*', { count: 'exact', head: true });
+    const loadHiddenTabs = async () => {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
 
-      if (!error && count !== null) {
-        setUnreadCount(count);
+      if (!token) return;
+
+      try {
+        const response = await fetch('/api/ai-accounts-access', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const payload = await response.json().catch(() => ({}));
+
+        if (response.ok && Array.isArray(payload.hiddenTabs)) {
+          setHiddenTabs(payload.hiddenTabs);
+        }
+      } catch {
+        setHiddenTabs([]);
       }
     };
 
-    fetchNotificationCount();
-
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications' },
-        () => {
-          setUnreadCount((prev) => prev + 1);
-
-          try {
-            const audio = new Audio(audioUrl);
-            audio.volume = 0.5;
-            audio.play();
-          } catch {
-            console.log('Navegador bloqueou o som automatico ate o usuario clicar na tela.');
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    loadHiddenTabs();
   }, []);
-
-  useEffect(() => {
-    if (location.pathname === '/notices') {
-      setUnreadCount(0);
-    }
-  }, [location.pathname]);
 
   const userInitial =
     profile?.full_name?.charAt(0)?.toUpperCase() || 'U';
@@ -117,6 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const mainMenu: MenuItem[] = [
     { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+    { title: 'Comece Aqui', icon: BookOpen, path: '/comece-aqui' },
     { title: 'Novidades', icon: Bell, path: '/notices', badge: true },
   ];
 
@@ -127,29 +108,20 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const videoToolsMenu: MenuItem[] = [
-    { title: 'Gerar Videos', icon: Film, path: '/gerar-videos' },
-    { title: 'Editor em Massa', icon: Film, path: '/editor-massa-videos' },
-    { title: 'Revisor Veo 3', icon: Film, path: '/revisor-veo-3' },
     { title: 'Fábrica de Novelinhas', icon: BookOpen, path: '/novelinhas' },
-    { title: 'POV Vendas', icon: Camera, path: '/pov' },
-    { title: 'Menina da Roca', icon: Camera, path: '/menina-da-roca' },
-    { title: 'Remix Video', icon: Film, path: '/remix-video' },
-    { title: 'Transformacao Videos', icon: Hammer, path: '/transformacao-videos' },
+    { title: 'Menina da Roça', icon: Camera, path: '/menina-da-roca' },
   ];
 
   const socialToolsMenu: MenuItem[] = [
     { title: 'Prompts Virais', icon: Zap, path: '/viral-prompts' },
     { title: 'Radar TikTok Shop', icon: Activity, path: '/radar-tiktok-shop' },
     { title: 'TikTok Shop', icon: ShoppingBag, path: '/tiktok-shop' },
-    { title: 'TikTok Persuasivo', icon: ShoppingBag, path: '/tiktok-shop-persuasivo' },
     { title: 'Facebook', icon: Facebook, path: '/facebook' },
     { title: 'YouTube e Shorts', icon: Youtube, path: '/youtube-shorts' },
   ];
 
   const utilityMenu: MenuItem[] = [
     { title: 'Ferramentas IA', icon: Wrench, path: '/tools-ia' },
-    { title: 'Narracao IA', icon: Mic2, path: '/narracao' },
-    { title: 'Gerador Imagens', icon: Image, path: '/gerador-imagens' },
     { title: 'Tutoriais', icon: Youtube, path: '/tutoriais' },
   ];
 
@@ -198,16 +170,25 @@ const Sidebar: React.FC<SidebarProps> = ({
     );
   };
 
-  const renderSection = (title: string, items: MenuItem[]) => (
-    <div>
-      <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
-        {title}
-      </p>
-      <div className="space-y-2">
-        {items.map(renderMenuItem)}
+  const filterHiddenItems = (items: MenuItem[]) =>
+    items.filter((item) => !hiddenTabs.includes(item.path));
+
+  const renderSection = (title: string, items: MenuItem[]) => {
+    const visibleItems = filterHiddenItems(items);
+
+    if (!visibleItems.length) return null;
+
+    return (
+      <div>
+        <p className="mb-3 px-2 text-xs font-black uppercase tracking-widest text-slate-400">
+          {title}
+        </p>
+        <div className="space-y-2">
+          {visibleItems.map(renderMenuItem)}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <aside
@@ -243,7 +224,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <nav className="custom-scrollbar flex-1 space-y-6 overflow-y-auto px-4 py-5">
         <div className="space-y-2">
-          {mainMenu.map(renderMenuItem)}
+          {filterHiddenItems(mainMenu).map(renderMenuItem)}
         </div>
 
         {renderSection('Estratégias', primaryStrategyMenu)}
@@ -262,6 +243,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <img
                 src={profile?.avatar_url || ''}
                 alt={profile?.full_name || 'Usuário'}
+                decoding="async"
                 onError={() => setAvatarFailed(true)}
                 className="h-full w-full object-cover"
               />
@@ -294,3 +276,4 @@ const Sidebar: React.FC<SidebarProps> = ({
 };
 
 export default Sidebar;
+

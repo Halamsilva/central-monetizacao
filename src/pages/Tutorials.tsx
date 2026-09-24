@@ -209,7 +209,10 @@ const Tutorials: React.FC = () => {
             </label>
             <label>
               <span className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Link do video</span>
-              <input value={formData.video_url} onChange={(event) => updateField('video_url', event.target.value)} className="field" placeholder="YouTube, Vimeo ou link direto" />
+              <input value={formData.video_url} onChange={(event) => updateField('video_url', event.target.value)} className="field" placeholder="Cole link do YouTube nao listado (recomendado)" />
+              <p className="mt-1 text-[11px] font-bold text-slate-500">
+                Recomendado: suba o video como nao listado no YouTube para nao gastar Supabase.
+              </p>
             </label>
           </div>
 

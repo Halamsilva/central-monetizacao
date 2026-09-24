@@ -3,20 +3,40 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { motion } from 'motion/react';
 import {
-  Chrome,
   Mail,
   Lock,
   ArrowRight,
   Loader2,
   AlertCircle,
   ShieldCheck,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
+
+const getFriendlyAuthError = (err: any) => {
+  const message = String(err?.message || err || '');
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes('invalid-credential') || normalized.includes('invalid login credentials')) {
+    return 'E-mail ou senha incorretos. Se este for seu primeiro acesso no sistema novo, use “Esqueceu?” para definir sua senha.';
+  }
+
+  if (normalized.includes('email not confirmed')) {
+    return 'Confirme seu e-mail antes de entrar na plataforma.';
+  }
+
+  if (normalized.includes('too many requests') || normalized.includes('rate limit')) {
+    return 'Muitas tentativas seguidas. Aguarde alguns minutos e tente novamente.';
+  }
+
+  return message || 'Erro ao fazer login. Verifique suas credenciais.';
+};
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
@@ -38,7 +58,7 @@ const Login: React.FC = () => {
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
 
@@ -46,37 +66,12 @@ const Login: React.FC = () => {
 
       navigate('/dashboard');
     } catch (err: any) {
-      setError(
-        err.message || 'Erro ao fazer login. Verifique suas credenciais.'
-      );
+      setError(getFriendlyAuthError(err));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      setGoogleLoading(true);
-      setError(null);
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.origin + '/dashboard',
-        },
-      });
-
-      if (error) throw error;
-    } catch (err: any) {
-      console.error(err);
-
-      setError(
-        err.message || 'Erro ao entrar com Google.'
-      );
-
-      setGoogleLoading(false);
-    }
-  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] p-4">
@@ -159,13 +154,23 @@ const Login: React.FC = () => {
                 />
 
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-4 outline-none transition-all focus:border-blue-500 focus:bg-white"
+                  className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-12 outline-none transition-all focus:border-blue-500 focus:bg-white"
                   placeholder="••••••••"
                 />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(current => !current)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
           </div>
@@ -190,32 +195,21 @@ const Login: React.FC = () => {
           </button>
         </form>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-100"></div>
-          </div>
-
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 font-bold tracking-widest text-gray-400">
-              Ou continue com
-            </span>
+        <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
+          <p className="font-bold">A senha antiga não funciona no sistema novo.</p>
+          <p className="mt-1">
+            Se você já tinha conta, use “Recuperar senha” com o mesmo e-mail
+            da compra para definir uma nova senha. Novos alunos podem se cadastrar.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-3 font-bold">
+            <Link to="/register" className="text-blue-700 hover:underline">
+              Criar novo acesso
+            </Link>
+            <Link to="/recovery" className="text-blue-700 hover:underline">
+              Recuperar senha
+            </Link>
           </div>
         </div>
-
-        <button
-          onClick={handleGoogleLogin}
-          disabled={googleLoading}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white py-3 text-sm font-bold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-70"
-        >
-          {googleLoading ? (
-            <Loader2 className="animate-spin" size={18} />
-          ) : (
-            <>
-              <Chrome size={18} className="text-blue-500" />
-              Login via Google
-            </>
-          )}
-        </button>
 
         <p className="text-center text-sm font-medium text-gray-500">
           Ainda não tem acesso?{' '}

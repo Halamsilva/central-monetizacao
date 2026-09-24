@@ -2,31 +2,25 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
+import { firebaseAuth, isFirebaseConfigured } from './lib/supabase';
+import { reload, sendEmailVerification } from 'firebase/auth';
 
 // Páginas com Lazy Loading
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Recovery = lazy(() => import('./pages/Recovery'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const StartHere = lazy(() => import('./pages/StartHere'));
 const Notices = lazy(() => import('./pages/Notices'));
 const Agents = lazy(() => import('./pages/Agents'));
 const ViralPrompts = lazy(() => import('./pages/ViralPrompts'));
 const RadarTikTokShop = lazy(() => import('./pages/RadarTikTokShop'));
 const TikTokShop = lazy(() => import('./pages/TikTokShop'));
-const TikTokShopPersuasivo = lazy(() => import('./pages/TikTokShopPersuasivo'));
 const Facebook = lazy(() => import('./pages/Facebook'));
 const YouTubeShorts = lazy(() => import('./pages/YouTubeShorts'));
 const ToolsIA = lazy(() => import('./pages/ToolsIA'));
 const Novelinhas = lazy(() => import('./pages/Novelinhas'));
-const Pov = lazy(() => import('./pages/Pov'));
-const RevisorVeo3 = lazy(() => import('./pages/RevisorVeo3'));
 const MeninaDaRoca = lazy(() => import('./pages/MeninaDaRoca'));
-const RemixVideo = lazy(() => import('./pages/RemixVideo'));
-const TransformacaoVideos = lazy(() => import('./pages/TransformacaoVideos'));
-const Narracao = lazy(() => import('./pages/Narracao'));
-const GeradorImagens = lazy(() => import('./pages/GeradorImagens'));
-const GerarVideos = lazy(() => import('./pages/GerarVideos'));
-const EditorMassaVideos = lazy(() => import('./pages/EditorMassaVideos'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
 const Tutorials = lazy(() => import('./pages/Tutorials'));
 const Downloads = lazy(() => import('./pages/Downloads'));
@@ -46,25 +40,17 @@ const routeTitles: Record<string, string> = {
   '/register': 'Cadastro',
   '/recovery': 'Recuperar acesso',
   '/dashboard': 'Dashboard',
+  '/comece-aqui': 'Comece Aqui',
   '/notices': 'Novidades',
   '/agents': 'Agentes IA',
   '/viral-prompts': 'Prompts Virais',
   '/radar-tiktok-shop': 'Radar TikTok Shop',
   '/tiktok-shop': 'TikTok Shop',
-  '/tiktok-shop-persuasivo': 'TikTok Shop Persuasivo',
   '/facebook': 'Facebook',
   '/youtube-shorts': 'YouTube e Shorts',
   '/tools-ia': 'Ferramentas IA',
   '/novelinhas': 'Fábrica de Novelinhas',
-  '/pov': 'POV Vendas',
-  '/revisor-veo-3': 'Revisor Veo 3',
   '/menina-da-roca': 'Menina da Roca',
-  '/remix-video': 'Remix Video',
-  '/transformacao-videos': 'Videos de Transformacao',
-  '/narracao': 'Narracao IA',
-  '/gerador-imagens': 'Gerador de Imagens',
-  '/gerar-videos': 'Gerar Videos',
-  '/editor-massa-videos': 'Editor em Massa',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',
@@ -94,6 +80,47 @@ const LoadingScreen = () => (
     <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
   </div>
 );
+
+const VerifyEmailScreen = () => {
+  const [message, setMessage] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
+
+  const resend = async () => {
+    if (!firebaseAuth.currentUser) return;
+    setBusy(true);
+    try {
+      await sendEmailVerification(firebaseAuth.currentUser);
+      setMessage('Enviamos um novo link de confirmação para seu e-mail.');
+    } catch {
+      setMessage('Não foi possível enviar agora. Aguarde alguns minutos e tente novamente.');
+    } finally { setBusy(false); }
+  };
+
+  const check = async () => {
+    if (!firebaseAuth.currentUser) return;
+    setBusy(true);
+    try {
+      await reload(firebaseAuth.currentUser);
+      if (firebaseAuth.currentUser.emailVerified) window.location.reload();
+      else setMessage('Ainda não recebemos a confirmação. Confira o link no seu e-mail.');
+    } catch { setMessage('Não foi possível conferir agora. Tente novamente.'); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] p-6">
+      <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
+        <h1 className="text-2xl font-bold text-slate-900">Confirme seu e-mail</h1>
+        <p className="mt-3 text-slate-600">Enviamos um link para {firebaseAuth.currentUser?.email}. Confirme o endereço para acessar a plataforma.</p>
+        {message && <p role="status" className="mt-4 text-sm text-slate-700">{message}</p>}
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <button type="button" disabled={busy} onClick={check} className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50">Já confirmei</button>
+          <button type="button" disabled={busy} onClick={resend} className="rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-800 disabled:opacity-50">Reenviar e-mail</button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Tela de Cadastro em Análise
 const PendingAccessScreen = () => (
@@ -129,19 +156,21 @@ const BlockedAccessScreen = () => (
 
 // Protetor de Rotas Privadas (Alunos)
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isAdmin } = useAuth();
 
   if (loading) return <LoadingScreen />;
 
-  if (!user && import.meta.env.VITE_SUPABASE_URL) {
+  if (!user && isFirebaseConfigured) {
     return <Navigate to="/login" replace />;
   }
+
+  if (user && !user.emailVerified) return <VerifyEmailScreen />;
 
   if (profile?.access_status === 'blocked') {
     return <BlockedAccessScreen />;
   }
 
-  if (profile?.role === 'admin') {
+  if (isAdmin) {
     return <>{children}</>;
   }
 
@@ -188,25 +217,17 @@ export default function App() {
             >
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="comece-aqui" element={<StartHere />} />
               <Route path="notices" element={<Notices />} />
               <Route path="agents" element={<Agents />} />
               <Route path="viral-prompts" element={<ViralPrompts />} />
               <Route path="radar-tiktok-shop" element={<RadarTikTokShop />} />
               <Route path="tiktok-shop" element={<TikTokShop />} />
-              <Route path="tiktok-shop-persuasivo" element={<TikTokShopPersuasivo />} />
               <Route path="facebook" element={<Facebook />} />
               <Route path="youtube-shorts" element={<YouTubeShorts />} />
               <Route path="tools-ia" element={<ToolsIA />} />
               <Route path="novelinhas" element={<Novelinhas />} />
-              <Route path="pov" element={<Pov />} />
-              <Route path="revisor-veo-3" element={<RevisorVeo3 />} />
               <Route path="menina-da-roca" element={<MeninaDaRoca />} />
-              <Route path="remix-video" element={<RemixVideo />} />
-              <Route path="transformacao-videos" element={<TransformacaoVideos />} />
-              <Route path="narracao" element={<Narracao />} />
-              <Route path="gerador-imagens" element={<GeradorImagens />} />
-              <Route path="gerar-videos" element={<GerarVideos />} />
-              <Route path="editor-massa-videos" element={<EditorMassaVideos />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

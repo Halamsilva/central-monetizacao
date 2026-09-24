@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { AlertCircle, Bot, Check, Copy, ImagePlus, Loader2, Send, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { parseConfigurableAgent, slugifyAgentTitle, type ConfigurableAgentConfig } from '../lib/configurableAgent';
+import { canLoadExternalMedia } from '../lib/media';
 
 type Agent = {
   id: string;
@@ -20,6 +21,45 @@ const readImage = (file: File) =>
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+
+const resizeImage = async (file: File) => {
+  const dataUrl = await readImage(file);
+  const imageElement = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const nextImage = new Image();
+    nextImage.onload = () => resolve(nextImage);
+    nextImage.onerror = reject;
+    nextImage.src = dataUrl;
+  });
+
+  const maxSide = 1280;
+  const scale = Math.min(1, maxSide / Math.max(imageElement.width, imageElement.height));
+  const width = Math.max(1, Math.round(imageElement.width * scale));
+  const height = Math.max(1, Math.round(imageElement.height * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d');
+
+  if (!context) return dataUrl;
+
+  context.drawImage(imageElement, 0, 0, width, height);
+  return canvas.toDataURL('image/jpeg', 0.82);
+};
+
+const parseResponse = async (response: Response) => {
+  const contentType = response.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json')) {
+    return response.json().catch(() => ({}));
+  }
+
+  const text = await response.text().catch(() => '');
+  return {
+    error: text.trim()
+      ? 'O servidor respondeu com erro temporario. Tente novamente em alguns instantes.'
+      : 'Nao consegui gerar agora. Tente novamente em alguns instantes.',
+  };
+};
 
 const ConfigurableAgent: React.FC = () => {
   const { slug = '' } = useParams();
@@ -89,7 +129,12 @@ const ConfigurableAgent: React.FC = () => {
       setError('Envie uma imagem valida.');
       return;
     }
-    setImage(await readImage(file));
+    try {
+      setError('');
+      setImage(await resizeImage(file));
+    } catch {
+      setError('Nao foi possivel preparar a imagem. Tente outra foto.');
+    }
   };
 
   const generate = async () => {
@@ -118,11 +163,11 @@ const ConfigurableAgent: React.FC = () => {
         }),
       });
 
-      const payload = await response.json();
+      const payload = await parseResponse(response);
       if (!response.ok) throw new Error(payload.error || 'Erro ao gerar resposta.');
-      setResult(payload.text || '');
+      setResult(payload.text || 'Nao veio texto na resposta. Tente gerar novamente.');
     } catch (err: any) {
-      setError(err.message || 'Erro ao gerar resposta.');
+      setError(err.message || 'Nao consegui gerar agora. Tente novamente.');
     } finally {
       setGenerating(false);
     }
@@ -162,11 +207,13 @@ const ConfigurableAgent: React.FC = () => {
               Agente interno configuravel
             </div>
             <h1 className="text-3xl font-black text-slate-900">{agent.title}</h1>
-            <p className="mt-2 max-w-2xl text-sm font-semibold leading-relaxed text-slate-500">
+            <p className="mt-2 max-w-3xl whitespace-pre-wrap text-sm font-semibold leading-relaxed text-slate-500">
               {agent.description || 'Preencha os campos abaixo para gerar o resultado.'}
             </p>
           </div>
-          {agent.image && <img src={agent.image} alt="" className="h-24 w-40 rounded-2xl object-cover" />}
+          {canLoadExternalMedia(agent.image) && (
+            <img src={agent.image} alt="" className="h-24 w-40 rounded-2xl object-cover" />
+          )}
         </div>
       </section>
 

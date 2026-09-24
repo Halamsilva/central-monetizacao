@@ -1,15 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient, isFirebaseAdminConfigured, isVerifiedOwner } from '../_firebase.js';
 
-const getServiceSupabase = () => {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceKey) return null;
-
-  return createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-};
+const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
 
 const checkAdminAccess = async (serviceSupabase: any, token?: string) => {
   if (!token) {
@@ -35,7 +26,7 @@ const checkAdminAccess = async (serviceSupabase: any, token?: string) => {
     return { ok: false as const, status: 500, error: 'Nao foi possivel conferir permissao de admin.' };
   }
 
-  if (!profile || profile.role !== 'admin' || profile.access_status === 'blocked') {
+  if (!isVerifiedOwner(user) || !profile || profile.role !== 'admin' || profile.access_status === 'blocked') {
     return { ok: false as const, status: 403, error: 'Apenas administradores podem excluir agentes.' };
   }
 

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient, isFirebaseAdminConfigured } from './_firebase.js';
 
 type EmailKind = 'registration' | 'purchase_pending' | 'access_released';
 
@@ -35,18 +35,7 @@ const formatDate = (value?: string | null) => {
   }).format(date);
 };
 
-const getServiceSupabase = () => {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceKey) {
-    return null;
-  }
-
-  return createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-};
+const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
 
 const baseEmailHtml = (title: string, preview: string, body: string) => `
   <!doctype html>

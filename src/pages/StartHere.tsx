@@ -25,7 +25,6 @@ const learningPaths = [
     bg: 'bg-orange-50',
     border: 'border-orange-100',
     steps: [
-      { label: 'Pesquisar produto no Radar', path: '/radar-tiktok-shop' },
       { label: 'Criar ganchos de venda', path: '/tiktok-shop' },
     ],
   },

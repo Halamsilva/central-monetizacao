@@ -71,7 +71,7 @@ const learningPaths = [
     title: 'TikTok Shop',
     description: 'Pesquise produtos, gere ganchos e scripts de venda.',
     icon: ShoppingBag,
-    link: '/radar-tiktok-shop',
+    link: '/tiktok-shop',
     accent: 'bg-orange-500',
   },
   {

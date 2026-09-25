@@ -123,6 +123,8 @@ const Notices: React.FC = () => {
         thumbnail_url: null,
         is_pinned: formData.is_pinned,
         is_highlighted: formData.is_highlighted,
+        is_published: true,
+        created_at: new Date().toISOString(),
       };
 
       const { error } = await supabase

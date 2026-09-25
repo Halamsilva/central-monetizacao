@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /recovery
+Disallow: /dashboard
+Disallow: /admin
+
+Sitemap: https://halamsilva.com.br/sitemap.xml

@@ -7,9 +7,6 @@ export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   return {
     plugins: [react(), tailwindcss()],
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
@@ -27,7 +24,7 @@ export default defineConfig(({mode}) => {
         output: {
           manualChunks: {
             react: ['react', 'react-dom', 'react-router-dom'],
-            supabase: ['@supabase/supabase-js'],
+            firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
             motion: ['motion'],
             icons: ['lucide-react'],
           },

@@ -78,7 +78,7 @@ const learningPaths = [
     title: 'Videos com IA',
     description: 'Crie cenas, revise prompts e prepare videos para publicar.',
     icon: Film,
-    link: '/novelinhas',
+    link: '/menina-da-roca',
     accent: 'bg-slate-950',
   },
   {

@@ -37,7 +37,7 @@ const learningPaths = [
     bg: 'bg-blue-50',
     border: 'border-blue-100',
     steps: [
-      { label: 'Criar roteiro em cenas', path: '/novelinhas' },
+      { label: 'Criar vídeos com IA', path: '/menina-da-roca' },
       { label: 'Baixar materiais prontos', path: '/downloads' },
     ],
   },

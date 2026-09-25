@@ -1,10 +1,8 @@
 import meninaDaRocaHandler from '../server-agents/menina-da-roca.js';
-import novelinhasHandler from '../server-agents/novelinhas.js';
 import configurableAgentHandler from '../server-agents/configurable-agent.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
-  novelinhas: novelinhasHandler,
   configurable: configurableAgentHandler,
 };
 

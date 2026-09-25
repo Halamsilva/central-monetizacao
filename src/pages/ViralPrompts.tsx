@@ -197,7 +197,7 @@ const ViralPrompts: React.FC = () => {
       console.error(err);
       setMessage({
         type: 'error',
-        text: 'Erro ao salvar prompt. Verifique as permissões no Supabase.',
+        text: 'Erro ao salvar prompt. Verifique as permissões.',
       });
     } finally {
       setSaving(false);

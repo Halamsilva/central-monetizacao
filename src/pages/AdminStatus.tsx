@@ -50,7 +50,6 @@ const removableTabs = [
   { title: 'Agentes IA', path: '/agents', section: 'Estratégias' },
   { title: 'Loja VIP', path: '/shop-vip', section: 'Estratégias' },
   { title: 'Downloads', path: '/downloads', section: 'Estratégias' },
-  { title: 'Fábrica de Novelinhas', path: '/novelinhas', section: 'Vídeos' },
   { title: 'Menina da Roça', path: '/menina-da-roca', section: 'Vídeos' },
   { title: 'Prompts Virais', path: '/viral-prompts', section: 'Redes Sociais' },
   { title: 'Radar TikTok Shop', path: '/radar-tiktok-shop', section: 'Redes Sociais' },
@@ -70,11 +69,11 @@ const serviceIcons: Record<string, React.ElementType> = {
 
 const friendlyAdminError = (message: string) => {
   if (/exceed_cached_egress_quota|restricted due to|spend caps|egress/i.test(message)) {
-    return 'O Supabase bloqueou temporariamente o projeto por limite de trafego de arquivos. O caminho gratis e usar YouTube para aulas e evitar MP4 pesado direto no Supabase.';
+    return 'O servidor bloqueou temporariamente o projeto por limite de trafego de arquivos. O caminho gratis e usar YouTube para aulas e evitar MP4 pesado.';
   }
 
   if (/Failed to fetch|NetworkError/i.test(message)) {
-    return 'Nao consegui falar com o servidor agora. Recarregue em alguns segundos e confira se o Supabase/Vercel estao respondendo.';
+    return 'Nao consegui falar com o servidor agora. Recarregue em alguns segundos e confira se o servidor e o Firebase estao respondendo.';
   }
 
   return message;
@@ -254,7 +253,7 @@ const AdminStatus: React.FC = () => {
         <div>
           <h1 className="text-3xl font-black text-slate-900">Status do sistema</h1>
           <p className="mt-2 text-slate-500">
-            Confira rapidamente se Supabase, Kiwify, e-mail e agentes IA estao prontos.
+            Confira rapidamente se banco de dados, Kiwify, e-mail e agentes IA estao prontos.
           </p>
         </div>
 
@@ -291,7 +290,7 @@ const AdminStatus: React.FC = () => {
         <>
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-6 rounded-2xl border border-orange-200 bg-orange-50 p-4 text-sm font-semibold leading-relaxed text-orange-800">
-              Para manter no gratis: use YouTube nao listado para videos de aula e evite colocar MP4 pesado direto no Supabase.
+              Para manter no gratis: use YouTube nao listado para videos de aula e evite colocar MP4 pesado direto no servidor.
             </div>
 
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

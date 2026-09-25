@@ -17,8 +17,9 @@ import {
   Shield,
   Boxes,
   Megaphone,
-  Users,
+Users,
   Activity,
+  FileText,
   LogOut,
   X,
 } from 'lucide-react';
@@ -108,7 +109,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const videoToolsMenu: MenuItem[] = [
-    { title: 'Fábrica de Novelinhas', icon: BookOpen, path: '/novelinhas' },
     { title: 'Menina da Roça', icon: Camera, path: '/menina-da-roca' },
   ];
 
@@ -135,7 +135,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Gerenciar Agentes', icon: Boxes, path: '/admin/agents' },
     { title: 'Gerenciar Avisos', icon: Megaphone, path: '/admin/notices' },
     { title: 'Gerenciar Alunos', icon: Users, path: '/admin/students' },
-    { title: 'Status do Sistema', icon: Activity, path: '/admin/status' },
+{ title: 'Status do Sistema', icon: Activity, path: '/admin/status' },
+    { title: 'Gerenciar Blog', icon: FileText, path: '/admin/blog' },
   ];
 
   const renderMenuItem = (item: MenuItem) => {

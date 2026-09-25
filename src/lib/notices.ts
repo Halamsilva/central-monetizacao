@@ -24,18 +24,20 @@ export const fetchNoticeFeed = async (limit?: number): Promise<NoticeFeedItem[]>
     .from('notifications')
     .select('*');
 
-  const formattedAuto: NoticeFeedItem[] = (autoError ? [] : autoNotifications || []).map((noti: any) => ({
-    id: noti.id,
-    title: noti.title,
-    content: noti.message,
-    link: '/agents',
-    is_pinned: false,
-    is_highlighted: true,
-    thumbnail_url: null,
-    banner_url: null,
-    created_at: noti.created_at,
-    is_automated: true,
-  }));
+  const formattedAuto: NoticeFeedItem[] = (autoError ? [] : autoNotifications || [])
+    .filter((noti: any) => noti.type !== 'notice')
+    .map((noti: any) => ({
+      id: noti.id,
+      title: noti.title,
+      content: noti.message,
+      link: '/agents',
+      is_pinned: false,
+      is_highlighted: true,
+      thumbnail_url: null,
+      banner_url: null,
+      created_at: noti.created_at,
+      is_automated: true,
+    }));
 
   const allNotices: NoticeFeedItem[] = [...(manualAnnouncements || []), ...formattedAuto];
 

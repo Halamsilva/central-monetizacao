@@ -200,6 +200,8 @@ const AdminNotices: React.FC = () => {
                 link: normalizeLink(formData.link),
                 is_pinned: formData.is_pinned,
                 is_highlighted: formData.is_highlighted,
+                is_published: true,
+                created_at: new Date().toISOString(),
             };
 
             if (editingId) {
@@ -234,7 +236,7 @@ const AdminNotices: React.FC = () => {
 
             setMessage({
                 type: 'error',
-                text: 'Erro ao salvar aviso. Verifique se a coluna link existe no Supabase.',
+                text: 'Erro ao salvar aviso. Tente novamente.',
             });
         } finally {
             setSaving(false);

@@ -75,7 +75,7 @@ class FirebaseQuery implements PromiseLike<QueryResult> {
   private operation: 'select' | 'insert' | 'update' | 'delete' = 'select';
   private payload: any = null;
   private filters: Filter[] = [];
-  private sort?: { field: string; ascending: boolean };
+  private sorts: { field: string; ascending: boolean }[] = [];
   private maxRows?: number;
   private one?: 'single' | 'maybeSingle';
   private columns = '*';
@@ -96,7 +96,7 @@ class FirebaseQuery implements PromiseLike<QueryResult> {
   eq(field: string, value: unknown) { this.filters.push({ field, value, neq: false }); return this; }
   neq(field: string, value: unknown) { this.filters.push({ field, value, neq: true }); return this; }
   order(field: string, options?: { ascending?: boolean }) {
-    this.sort = { field, ascending: options?.ascending !== false }; return this;
+    this.sorts.push({ field, ascending: options?.ascending !== false }); return this;
   }
   limit(value: number) { this.maxRows = value; return this; }
   single() { this.one = 'single'; return this; }
@@ -132,15 +132,20 @@ class FirebaseQuery implements PromiseLike<QueryResult> {
       || effectiveFilters.find(filter => filter.field !== 'id' && !filter.neq);
     const constraints: QueryConstraint[] = serverFilter
       ? [where(serverFilter.field, '==', serverFilter.value)] : [];
-    if (this.maxRows !== undefined && !this.sort && effectiveFilters.length <= (serverFilter ? 1 : 0)) {
+    if (this.maxRows !== undefined && this.sorts.length === 0 && effectiveFilters.length <= (serverFilter ? 1 : 0)) {
       constraints.push(firestoreLimit(this.maxRows));
     }
     const snapshot = await getDocs(query(collection(firestore, this.table), ...constraints));
     let rows = snapshot.docs.map(item => normalize({ id: item.id, ...item.data() }))
       .filter(row => effectiveFilters.every(({ field, value, neq }) => neq ? row[field] !== value : row[field] === value));
-    if (this.sort) {
-      const { field, ascending } = this.sort;
-      rows.sort((a, b) => (a[field] === b[field] ? 0 : a[field] > b[field] ? 1 : -1) * (ascending ? 1 : -1));
+    if (this.sorts.length) {
+      rows.sort((a, b) => {
+        for (const { field, ascending } of this.sorts) {
+          if (a[field] === b[field]) continue;
+          return (a[field] > b[field] ? 1 : -1) * (ascending ? 1 : -1);
+        }
+        return 0;
+      });
     }
     if (this.maxRows !== undefined) rows = rows.slice(0, this.maxRows);
     return rows;

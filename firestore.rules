@@ -55,6 +55,11 @@ service cloud.firestore {
       allow write: if owner();
     }
 
+    match /blog_posts/{postId} {
+      allow read: if resource.data.is_published == true;
+      allow write: if owner();
+    }
+
     match /{document=**} {
       allow read, write: if owner();
     }

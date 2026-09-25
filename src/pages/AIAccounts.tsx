@@ -256,7 +256,7 @@ const AIAccounts: React.FC = () => {
                   className="mt-3 h-12 w-full rounded-2xl border border-violet-200 bg-white px-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-violet-500 focus:ring-4 focus:ring-violet-100 dark:border-white/10 dark:bg-black dark:text-white dark:focus:ring-violet-500/20"
                 />
                 <p className="mt-2 text-xs font-semibold text-violet-700/70 dark:text-violet-200/70">
-                  Use YouTube nao listado para tocar o video sem gastar a cota do Supabase.
+                  Use YouTube nao listado para tocar o video sem gastar banda.
                 </p>
               </div>
             </div>

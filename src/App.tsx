@@ -19,7 +19,7 @@ const TikTokShop = lazy(() => import('./pages/TikTokShop'));
 const Facebook = lazy(() => import('./pages/Facebook'));
 const YouTubeShorts = lazy(() => import('./pages/YouTubeShorts'));
 const ToolsIA = lazy(() => import('./pages/ToolsIA'));
-const Novelinhas = lazy(() => import('./pages/Novelinhas'));
+
 const MeninaDaRoca = lazy(() => import('./pages/MeninaDaRoca'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
 const Tutorials = lazy(() => import('./pages/Tutorials'));
@@ -34,6 +34,7 @@ const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AdminNotices = lazy(() => import('./pages/AdminNotices'));
 const AdminStudents = lazy(() => import('./pages/AdminStudents'));
 const AdminStatus = lazy(() => import('./pages/AdminStatus'));
+const AdminBlog = lazy(() => import('./pages/AdminBlog'));
 
 const routeTitles: Record<string, string> = {
   '/login': 'Entrar',
@@ -49,7 +50,6 @@ const routeTitles: Record<string, string> = {
   '/facebook': 'Facebook',
   '/youtube-shorts': 'YouTube e Shorts',
   '/tools-ia': 'Ferramentas IA',
-  '/novelinhas': 'Fábrica de Novelinhas',
   '/menina-da-roca': 'Menina da Roca',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
@@ -61,6 +61,7 @@ const routeTitles: Record<string, string> = {
   '/admin/notices': 'Gerenciar Avisos',
   '/admin/students': 'Gerenciar Alunos',
   '/admin/status': 'Status do Sistema',
+  '/admin/blog': 'Gerenciar Blog',
 };
 
 const TitleManager = () => {
@@ -226,7 +227,6 @@ export default function App() {
               <Route path="facebook" element={<Facebook />} />
               <Route path="youtube-shorts" element={<YouTubeShorts />} />
               <Route path="tools-ia" element={<ToolsIA />} />
-              <Route path="novelinhas" element={<Novelinhas />} />
               <Route path="menina-da-roca" element={<MeninaDaRoca />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
@@ -270,11 +270,19 @@ export default function App() {
                   </AdminRoute>
                 }
               />
-              <Route
+<Route
                 path="admin/status"
                 element={
                   <AdminRoute>
                     <AdminStatus />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="admin/blog"
+                element={
+                  <AdminRoute>
+                    <AdminBlog />
                   </AdminRoute>
                 }
               />

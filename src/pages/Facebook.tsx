@@ -281,7 +281,7 @@ const FacebookPage: React.FC = () => {
       console.error(err);
       setMessage({
         type: 'error',
-        text: 'Erro ao salvar conteúdo. Verifique as permissões no Supabase.',
+        text: 'Erro ao salvar conteúdo. Verifique as permissões.',
       });
     } finally {
       setSaving(false);

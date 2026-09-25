@@ -74,7 +74,7 @@ const Profile: React.FC = () => {
 
       if (uploadError) {
         console.error(uploadError);
-        showError('Erro ao enviar foto. Verifique o bucket avatars no Supabase.');
+        showError('Erro ao enviar foto. Tente novamente.');
         return;
       }
 

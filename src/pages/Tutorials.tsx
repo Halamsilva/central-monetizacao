@@ -106,7 +106,7 @@ const Tutorials: React.FC = () => {
 
   const saveTutorial = async () => {
     if (setupMissing) {
-      setMessage({ type: 'error', text: 'Crie a tabela de tutoriais no Supabase antes de publicar.' });
+      setMessage({ type: 'error', text: 'Nao foi possivel salvar. Tente novamente mais tarde.' });
       return;
     }
 
@@ -136,7 +136,7 @@ const Tutorials: React.FC = () => {
       setSetupMissing(isMissingTable);
       setMessage({
         type: 'error',
-        text: isMissingTable ? 'Crie a tabela de tutoriais no Supabase antes de publicar.' : 'Erro ao salvar tutorial.',
+        text: isMissingTable ? 'Nao foi possivel salvar. Tente novamente mais tarde.' : 'Erro ao salvar tutorial.',
       });
     } finally {
       setSaving(false);
@@ -184,9 +184,9 @@ const Tutorials: React.FC = () => {
 
       {setupMissing && (
         <section className="rounded-[24px] border border-amber-200 bg-amber-50 p-5 shadow-sm sm:p-6">
-          <h2 className="text-xl font-black text-amber-950">Configuração pendente no Supabase</h2>
+          <h2 className="text-xl font-black text-amber-950">Configuração pendente</h2>
           <p className="mt-2 text-sm font-semibold leading-relaxed text-amber-800">
-            A aba ja esta criada, mas falta rodar o arquivo <span className="font-black">supabase-tutorials.sql</span> no SQL Editor do Supabase para salvar os videos.
+            Nao foi possivel carregar a lista de tutoriais. Tente novamente mais tarde.
           </p>
         </section>
       )}
@@ -211,7 +211,7 @@ const Tutorials: React.FC = () => {
               <span className="mb-2 block text-xs font-black uppercase tracking-wide text-slate-500">Link do video</span>
               <input value={formData.video_url} onChange={(event) => updateField('video_url', event.target.value)} className="field" placeholder="Cole link do YouTube nao listado (recomendado)" />
               <p className="mt-1 text-[11px] font-bold text-slate-500">
-                Recomendado: suba o video como nao listado no YouTube para nao gastar Supabase.
+                Recomendado: suba o video como nao listado no YouTube para nao gastar banda.
               </p>
             </label>
           </div>

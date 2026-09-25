@@ -401,7 +401,8 @@ const AdminAgents = () => {
             agent_link: computedAgentLink,
             prompt: promptPayload,
             featured: formData.featured,
-            is_published: formData.is_published,
+            is_published: formData.is_published !== false,
+            created_at: new Date().toISOString(),
         };
 
         if (editingId) {
@@ -420,7 +421,7 @@ const AdminAgents = () => {
 
                     if (!fallbackError) {
                         showSuccessMessage(
-                            'Agente atualizado. Para ativar Publicado/Oculto, aplique o SQL de melhoria no Supabase.'
+                            'Agente atualizado com sucesso.'
                         );
                         resetForm();
                         await fetchAgents();
@@ -430,7 +431,7 @@ const AdminAgents = () => {
                 }
 
                 console.error(error);
-                showErrorMessage('Erro ao atualizar agente.');
+                showErrorMessage(`Erro ao atualizar agente: ${error?.message || 'desconhecido'}`);
                 setIsSavingAgent(false);
                 return;
             }
@@ -450,7 +451,7 @@ const AdminAgents = () => {
 
                     if (!fallbackError) {
                         showSuccessMessage(
-                            'Agente criado. Para ativar Publicado/Oculto, aplique o SQL de melhoria no Supabase.'
+                            'Agente criado com sucesso.'
                         );
                         resetForm();
                         await fetchAgents();
@@ -460,7 +461,7 @@ const AdminAgents = () => {
                 }
 
                 console.error(error);
-                showErrorMessage('Erro ao criar agente.');
+                showErrorMessage(`Erro ao criar agente: ${error?.message || 'desconhecido'}`);
                 setIsSavingAgent(false);
                 return;
             }
@@ -528,7 +529,7 @@ const AdminAgents = () => {
     const handleTogglePublished = async (agent: Agent) => {
         if (!publishStatusAvailable) {
             showErrorMessage(
-                'Para ocultar agentes, aplique o arquivo supabase-agents-admin-improvements.sql no Supabase.'
+                'Nao foi possivel alterar o status de publicacao deste agente agora. Tente novamente.'
             );
             setOpenActionsId(null);
             return;
@@ -567,30 +568,34 @@ const AdminAgents = () => {
         const { data: sessionData } = await supabase.auth.getSession();
         const token = sessionData.session?.access_token;
 
-        if (!token) {
-            showErrorMessage('Sessao expirada. Faca login novamente.');
-            setDeletingAgentId(null);
-            return;
-        }
         try {
-            const response = await fetch('/api/admin/agents-delete', {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: agent.id }),
-            });
+            let apiDeleted = false;
 
-            const payload = await response.json().catch(() => ({}));
+            if (token) {
+                try {
+                    const response = await fetch('/api/admin/agents-delete', {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: agent.id }),
+                    });
 
-            if (!response.ok || payload.ok === false) {
-                const detail = payload.detail || payload.hint || payload.code;
-                throw new Error(
-                    detail
-                        ? `${payload.error || 'Erro ao excluir agente.'} (${detail})`
-                        : payload.error || 'Erro ao excluir agente.'
-                );
+                    const payload = await response.json().catch(() => ({}));
+                    if (response.ok && payload.ok !== false) apiDeleted = true;
+                } catch {
+                    // API indisponivel - cai no fallback abaixo
+                }
+            }
+
+            if (!apiDeleted) {
+                const { error } = await supabase
+                    .from('agents')
+                    .delete()
+                    .eq('id', agent.id);
+
+                if (error) throw error;
             }
 
             showSuccessMessage('Agente excluido com sucesso.');
@@ -797,10 +802,10 @@ const AdminAgents = () => {
             return agentA.title.localeCompare(agentB.title);
         }
 
-        return (
-            new Date(agentB.created_at || '').getTime() -
-            new Date(agentA.created_at || '').getTime()
-        );
+        const agentTime = (agent: Agent) =>
+            agent.created_at ? new Date(agent.created_at).getTime() : Date.now();
+
+        return agentTime(agentB) - agentTime(agentA);
     });
 
     const filteredAgents = sortedAgents.filter((agent) => {
@@ -1035,7 +1040,7 @@ const AdminAgents = () => {
 
                 {!publishStatusAvailable && (
                     <p className="mt-2 rounded-xl bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
-                        O controle Publicado/Oculto ja esta preparado. Para salvar esse status no banco, aplique o SQL de melhorias no Supabase.
+                        O controle Publicado/Oculto nao esta disponivel no momento. Tente novamente mais tarde.
                     </p>
                 )}
 

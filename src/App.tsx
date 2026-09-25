@@ -33,7 +33,6 @@ const Admin = lazy(() => import('./pages/Admin'));
 const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AdminNotices = lazy(() => import('./pages/AdminNotices'));
 const AdminStudents = lazy(() => import('./pages/AdminStudents'));
-const AdminStatus = lazy(() => import('./pages/AdminStatus'));
 const AdminBlog = lazy(() => import('./pages/AdminBlog'));
 
 const routeTitles: Record<string, string> = {
@@ -60,7 +59,6 @@ const routeTitles: Record<string, string> = {
   '/admin/agents': 'Gerenciar Agentes',
   '/admin/notices': 'Gerenciar Avisos',
   '/admin/students': 'Gerenciar Alunos',
-  '/admin/status': 'Status do Sistema',
   '/admin/blog': 'Gerenciar Blog',
 };
 
@@ -267,14 +265,6 @@ export default function App() {
                 element={
                   <AdminRoute>
                     <AdminStudents />
-                  </AdminRoute>
-                }
-              />
-<Route
-                path="admin/status"
-                element={
-                  <AdminRoute>
-                    <AdminStatus />
                   </AdminRoute>
                 }
               />

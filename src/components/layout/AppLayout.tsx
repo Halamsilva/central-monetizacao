@@ -27,7 +27,6 @@ const pageTitles: Record<string, string> = {
   '/admin/agents': 'Gerenciar Agentes',
   '/admin/notices': 'Gerenciar Avisos',
   '/admin/students': 'Gerenciar Alunos',
-  '/admin/status': 'Status do Sistema',
 };
 
 const AppLayout: React.FC = () => {

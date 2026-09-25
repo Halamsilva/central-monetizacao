@@ -135,7 +135,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Gerenciar Agentes', icon: Boxes, path: '/admin/agents' },
     { title: 'Gerenciar Avisos', icon: Megaphone, path: '/admin/notices' },
     { title: 'Gerenciar Alunos', icon: Users, path: '/admin/students' },
-{ title: 'Status do Sistema', icon: Activity, path: '/admin/status' },
     { title: 'Gerenciar Blog', icon: FileText, path: '/admin/blog' },
   ];
 

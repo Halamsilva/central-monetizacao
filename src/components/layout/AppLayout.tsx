@@ -298,7 +298,7 @@ const AppLayout: React.FC = () => {
 
         <footer className="hidden h-8 shrink-0 items-center justify-between border-t border-slate-200 bg-slate-100 px-6 text-[9px] font-medium text-slate-500 sm:flex dark:border-zinc-800 dark:bg-black dark:text-zinc-400">
           <span>
-            Status do Sistema: <span className="text-green-600">Online</span>
+            Central Monetização
           </span>
 
           <span>© {currentYear} Central Monetização</span>

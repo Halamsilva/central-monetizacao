@@ -336,6 +336,14 @@ const Recovery: React.FC = () => {
               </div>
             </div>
 
+            <div className="flex gap-3 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm leading-relaxed text-amber-900">
+              <AlertCircle className="mt-0.5 shrink-0 text-amber-500" size={18} />
+              <p className="font-semibold">
+                Não achou o e-mail? Confira a caixa de <strong>spam</strong> (ou lixo
+                eletrônico) e marque como “não é spam” para receber os próximos.
+              </p>
+            </div>
+
             <button
               type="submit"
               disabled={loading}

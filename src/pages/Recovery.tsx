@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase, isSupabaseConfigured, firebaseAuth } from '../lib/supabase';
+import { isSupabaseConfigured, firebaseAuth } from '../lib/supabase';
 import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
 import { motion } from 'motion/react';
 import {
@@ -115,15 +115,18 @@ const Recovery: React.FC = () => {
     }
 
     try {
-      const { error: resetError } =
-        await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-          redirectTo: `${window.location.origin}/recovery`,
-        });
+      const response = await fetch('/api/auth/password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
 
-      if (resetError) throw resetError;
+      if (!response.ok) {
+        throw new Error('Não foi possível enviar o e-mail de recuperação. Tente novamente.');
+      }
 
       setSuccessMessage(
-        'Se este e-mail estiver cadastrado, você receberá um link em alguns instantes.'
+        'Se este e-mail estiver cadastrado, você receberá um link em alguns instantes. Confira também a caixa de spam.'
       );
     } catch (err: any) {
       setError(getFriendlyRecoveryError(err));

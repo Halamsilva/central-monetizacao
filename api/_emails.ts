@@ -1,16 +1,18 @@
-import { createServiceClient, isFirebaseAdminConfigured } from './_firebase.js';
+import { getAuth } from 'firebase-admin/auth';
+import { createServiceClient, isFirebaseAdminConfigured, getAdminApp } from './_firebase.js';
 
-type EmailKind = 'registration' | 'purchase_pending' | 'access_released';
+type EmailKind = 'registration' | 'purchase_pending' | 'access_released' | 'password_reset';
 
 type SendAccessEmailInput = {
   to: string;
   name?: string | null;
   releaseAt?: string | null;
   idempotencyKey?: string;
+  resetUrl?: string | null;
 };
 
 const appName = 'Central Monetizacao';
-const appUrl = process.env.APP_URL || 'https://app.halamsilva.com.br';
+const appUrl = (process.env.APP_URL || 'https://www.halamsilva.com.br').replace(/\/+$/, '');
 
 const normalizeEmail = (email?: unknown) =>
   typeof email === 'string' ? email.trim().toLowerCase() : '';
@@ -37,7 +39,11 @@ const formatDate = (value?: string | null) => {
 
 const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
 
-const baseEmailHtml = (title: string, preview: string, body: string) => `
+const platformCta = `<p style="margin:28px 0 0;">
+                    <a href="${appUrl}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;border-radius:12px;padding:12px 18px;font-weight:700;">Abrir plataforma</a>
+                  </p>`;
+
+const baseEmailHtml = (title: string, preview: string, body: string, ctaHtml: string = platformCta) => `
   <!doctype html>
   <html>
     <head>
@@ -60,9 +66,7 @@ const baseEmailHtml = (title: string, preview: string, body: string) => `
               <tr>
                 <td style="padding:8px 28px 28px;font-size:16px;line-height:1.65;color:#334155;">
                   ${body}
-                  <p style="margin:28px 0 0;">
-                    <a href="${appUrl}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;border-radius:12px;padding:12px 18px;font-weight:700;">Abrir plataforma</a>
-                  </p>
+                  ${ctaHtml}
                 </td>
               </tr>
             </table>
@@ -104,6 +108,26 @@ const buildEmail = (kind: EmailKind, input: SendAccessEmailInput) => {
           ${releaseDate ? `<p><strong>Previsao de liberacao:</strong> ${escapeHtml(releaseDate)}.</p>` : ''}
           <p>Quando o prazo terminar, entre na plataforma com este mesmo e-mail para ativar o acesso.</p>
         `
+      ),
+    };
+  }
+
+  if (kind === 'password_reset') {
+    const resetUrl = input.resetUrl || appUrl;
+
+    return {
+      subject: 'Redefinir sua senha - Central Monetizacao',
+      html: baseEmailHtml(
+        'Redefinir senha',
+        'Recebemos um pedido para redefinir sua senha.',
+        `
+          <p>Oi, ${firstName}. Recebemos um pedido para redefinir a senha da sua conta.</p>
+          <p>Clique no botao abaixo para criar uma nova senha. Este link e valido por 1 hora.</p>
+          <p>Se voce nao pediu isso, pode ignorar este e-mail: sua senha continua a mesma.</p>
+        `,
+        `<p style="margin:28px 0 0;">
+          <a href="${escapeHtml(resetUrl)}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;border-radius:12px;padding:12px 18px;font-weight:700;">Criar nova senha</a>
+        </p>`
       ),
     };
   }
@@ -160,6 +184,35 @@ export const sendAccessEmail = async (kind: EmailKind, input: SendAccessEmailInp
   }
 
   return { ok: true };
+};
+
+export const sendPasswordResetEmail = async (email: string) => {
+  const to = normalizeEmail(email);
+  if (!to) return { ok: false, skipped: true, reason: 'missing_email' };
+
+  if (!isFirebaseAdminConfigured()) {
+    console.warn('Firebase Admin nao configurado. Nao foi possivel gerar o link de recuperacao.');
+    return { ok: false, skipped: true, reason: 'missing_admin' };
+  }
+
+  let resetLink: string;
+  try {
+    resetLink = await getAuth(getAdminApp()).generatePasswordResetLink(to, {
+      url: `${appUrl}/recovery`,
+    });
+  } catch (error: any) {
+    if (String(error?.code || '').includes('user-not-found')) {
+      return { ok: true, skipped: true, reason: 'user_not_found' };
+    }
+    throw error;
+  }
+
+  const oobCode = new URL(resetLink).searchParams.get('oobCode');
+  const directUrl = oobCode
+    ? `${appUrl}/recovery?mode=resetPassword&oobCode=${encodeURIComponent(oobCode)}`
+    : resetLink;
+
+  return sendAccessEmail('password_reset', { to, resetUrl: directUrl });
 };
 
 export const handleRegistrationEmail = async (authorization: string | undefined, body: any) => {

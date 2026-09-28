@@ -5,6 +5,7 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { createServiceClient, isFirebaseAdminConfigured } from './api/_firebase.js';
 import { handleRegistrationEmail, sendAccessEmail } from "./api/_emails";
+import passwordResetHandler from "./api/auth/password-reset";
 import meninaDaRocaHandler from "./server-agents/menina-da-roca";
 import configurableAgentHandler from "./server-agents/configurable-agent";
 import legacyStudentsHandler from "./api/admin/legacy-students";
@@ -460,6 +461,8 @@ async function startServer() {
     const result = await handleRegistrationEmail(req.header("authorization"), req.body);
     return res.status(result.status).json(result.body);
   });
+
+  app.post("/api/auth/password-reset", passwordResetHandler);
 
   if (!isProd) {
     const vite = await createViteServer({

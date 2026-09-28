@@ -4,8 +4,8 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { createServiceClient, isFirebaseAdminConfigured } from './api/_firebase.js';
-import { handleRegistrationEmail, sendAccessEmail } from "./api/_emails";
-import passwordResetHandler from "./api/auth/password-reset";
+import { sendAccessEmail } from "./api/_emails";
+import { handleEmailRoute } from "./api/_emailsRouter";
 import meninaDaRocaHandler from "./server-agents/menina-da-roca";
 import configurableAgentHandler from "./server-agents/configurable-agent";
 import legacyStudentsHandler from "./api/admin/legacy-students";
@@ -457,12 +457,8 @@ async function startServer() {
     });
   });
 
-  app.post("/api/emails/registration", async (req, res) => {
-    const result = await handleRegistrationEmail(req.header("authorization"), req.body);
-    return res.status(result.status).json(result.body);
-  });
-
-  app.post("/api/auth/password-reset", passwordResetHandler);
+  app.post("/api/emails/registration", (req, res) => handleEmailRoute("registration", req, res));
+  app.post("/api/emails/password-reset", (req, res) => handleEmailRoute("password-reset", req, res));
 
   if (!isProd) {
     const vite = await createViteServer({

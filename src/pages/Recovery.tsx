@@ -115,7 +115,7 @@ const Recovery: React.FC = () => {
     }
 
     try {
-      const response = await fetch('/api/auth/password-reset', {
+      const response = await fetch('/api/emails/password-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim().toLowerCase() }),

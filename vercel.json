@@ -5,6 +5,14 @@
             "destination": "/api/agents-router?agent=:agent"
         },
         {
+            "source": "/api/emails/registration",
+            "destination": "/api/emails-handler?action=registration"
+        },
+        {
+            "source": "/api/emails/password-reset",
+            "destination": "/api/emails-handler?action=password-reset"
+        },
+        {
             "source": "/",
             "destination": "/agents/home.html"
         },

@@ -199,6 +199,28 @@ class FirebaseQuery implements PromiseLike<QueryResult> {
   ): PromiseLike<TResult1 | TResult2> { return this.execute().then(fulfilled, rejected); }
 }
 
+const isNetworkError = (error: any) => {
+  const text = `${error?.code || ''} ${error?.message || ''}`.toLowerCase();
+  return text.includes('network-request-failed')
+    || text.includes('network error')
+    || text.includes('failed to fetch')
+    || text.includes('auth/timeout');
+};
+
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const runWithNetworkRetry = async <T extends { error: any }>(
+  operation: () => Promise<T>,
+  attempts = 3,
+): Promise<T> => {
+  let result = await operation();
+  for (let attempt = 1; attempt < attempts && isNetworkError(result.error); attempt++) {
+    await wait(attempt * 800);
+    result = await operation();
+  }
+  return result;
+};
+
 const auth = {
   async getSession() {
     try {
@@ -212,19 +234,23 @@ const auth = {
     return { data: { subscription: { unsubscribe } } };
   },
   async signInWithPassword({ email, password }: { email: string; password: string }) {
-    try {
-      const result = await signInWithEmailAndPassword(firebaseAuth, email, password);
-      return { data: { user: toUser(result.user), session: await toSession(result.user) }, error: null };
-    } catch (error) { return { data: { user: null, session: null }, error: makeError(error) }; }
+    return runWithNetworkRetry(async () => {
+      try {
+        const result = await signInWithEmailAndPassword(firebaseAuth, email, password);
+        return { data: { user: toUser(result.user), session: await toSession(result.user) }, error: null };
+      } catch (error) { return { data: { user: null, session: null }, error: makeError(error) }; }
+    });
   },
   async signUp({ email, password, options }: { email: string; password: string; options?: { data?: { full_name?: string } } }) {
-    try {
-      const result = await createUserWithEmailAndPassword(firebaseAuth, email, password);
-      if (options?.data?.full_name) await updateProfile(result.user, { displayName: options.data.full_name });
-      try { await sendEmailVerification(result.user); }
-      catch (error) { console.error('Nao foi possivel enviar verificacao:', error); }
-      return { data: { user: toUser(result.user), session: await toSession(result.user) }, error: null };
-    } catch (error) { return { data: { user: null, session: null }, error: makeError(error) }; }
+    return runWithNetworkRetry(async () => {
+      try {
+        const result = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+        if (options?.data?.full_name) await updateProfile(result.user, { displayName: options.data.full_name });
+        try { await sendEmailVerification(result.user); }
+        catch (error) { console.error('Nao foi possivel enviar verificacao:', error); }
+        return { data: { user: toUser(result.user), session: await toSession(result.user) }, error: null };
+      } catch (error) { return { data: { user: null, session: null }, error: makeError(error) }; }
+    });
   },
   async signInWithOAuth({ provider }: { provider: string; options?: any }) {
     if (provider !== 'google') return { data: null, error: makeError('Provedor nao configurado.') };
@@ -232,11 +258,13 @@ const auth = {
     catch (error) { return { data: null, error: makeError(error) }; }
   },
   async resetPasswordForEmail(email: string, options?: { redirectTo?: string }) {
-    try {
-      void options;
-      await sendPasswordResetEmail(firebaseAuth, email);
-      return { data: {}, error: null };
-    } catch (error) { return { data: null, error: makeError(error) }; }
+    return runWithNetworkRetry(async () => {
+      try {
+        void options;
+        await sendPasswordResetEmail(firebaseAuth, email);
+        return { data: {}, error: null };
+      } catch (error) { return { data: null, error: makeError(error) }; }
+    });
   },
   async updateUser({ password }: { password: string }) {
     try {

@@ -16,6 +16,15 @@ const getFriendlyRegisterError = (err: any) => {
     return 'Muitas tentativas seguidas. Aguarde alguns minutos e tente novamente.';
   }
 
+  if (
+    normalized.includes('network-request-failed') ||
+    normalized.includes('network error') ||
+    normalized.includes('failed to fetch') ||
+    normalized.includes('auth/timeout')
+  ) {
+    return 'Não conseguimos conectar ao serviço de cadastro. Verifique sua internet e tente novamente. Se persistir, desative bloqueadores de anúncios (uBlock, Brave, AdGuard) ou use outro navegador/rede.';
+  }
+
   return message || 'Erro ao criar conta. Tente novamente.';
 };
 

@@ -23,6 +23,15 @@ const getFriendlyRecoveryError = (err: any) => {
   }
 
   if (
+    normalized.includes('network-request-failed') ||
+    normalized.includes('network error') ||
+    normalized.includes('failed to fetch') ||
+    normalized.includes('auth/timeout')
+  ) {
+    return 'Não conseguimos conectar ao serviço. Verifique sua internet e tente novamente. Se persistir, desative bloqueadores de anúncios (uBlock, Brave, AdGuard) ou use outro navegador/rede.';
+  }
+
+  if (
     normalized.includes('expired') ||
     normalized.includes('invalid') ||
     normalized.includes('otp')

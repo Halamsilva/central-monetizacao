@@ -162,17 +162,24 @@ Contraste comovente entre a ostentação superficial e a riqueza de coração do
       'Superação': `O TEMA OBRIGATÓRIO É 'SUPERAÇÃO' ✨.
 Trajetória heroica de superação contra todas as probabilidades através do amor, perseverança e trabalho.`,
 
-      'Gordos': `O TEMA OBRIGATÓRIO É 'GORDOS (PERSONAGENS ACIMA DO PESO)' 🍔.
-Neste tema, TODOS os personagens da história DEVEM ser obrigatoriamente pessoas gordas / acima do peso (obesas), brasileiras e reais, com forte presença física.
+      'Gordos': `O TEMA OBRIGATÓRIO É 'GORDOS (PERSONAGENS EXTREMAMENTE OBESOS)' 🍔.
+Neste tema, ABSOLUTAMENTE TODOS os personagens da história DEVEM ser EXTREMAMENTE OBESOS (obesidade mórbida), brasileiros e reais, com forte presença física.
 
 DIRETRIZ MÁXIMA DE APARÊNCIA FÍSICA (REGRA INVIOLÁVEL):
-- CADA personagem (protagonista, vilão, familiares, amigos, vizinhos e figurantes recorrentes) DEVE ser descrito como uma pessoa claramente acima do peso / obesa, com corpo volumoso, rosto cheio de bochechas fartas, pescoço curto, braços e pernas grossos, barriga saliente e dobras de pele naturais.
-- A aparência gorda é uma característica FIXA e IMUTÁVEL de todos os personagens e DEVE ser repetida de forma idêntica no PROMPT 00 (Ficha de Personagens) e em [Subject & Character Consistency] de TODAS as cenas, para manter consistência absoluta entre os takes.
-- É TERMINANTEMENTE PROIBIDO emagrecer os personagens no meio da história, trocar o biótipo ou usar descrições vagas como "corpo normal", "físico padrão" ou "magro". Use sempre termos físicos concretos (peso aparente, silhueta volumosa, dobras de pele, etc.).
+- CADA personagem — sem NENHUMA exceção (protagonista, vilão, vítima, familiares, amigos, vizinhos, colegas, crianças, idosos, médicos, atendentes e QUAISQUER figurantes ao fundo) — DEVE ser uma pessoa EXTREMAMENTE obesa, com aparência de 150kg a 300kg.
+- Corpo: barriga enorme e caída, braços e pernas muito grossos, ombros largos, silhueta gigantesca que ocupa boa parte do quadro, dobras de pele profundas no pescoço e no abdômen, rosto extremamente redondo e cheio, papada (queixo duplo) bem marcada.
+
+DESCRITOR FÍSICO OBRIGATÓRIO (repita estes termos, em inglês, nos prompts visuais): "extremely obese, morbidly obese body, massive 200kg+ weight, enormous hanging belly, very thick heavy arms and legs, broad shoulders, extremely round full face, huge double chin, deep skin folds on neck and abdomen, heavy body presence, wide silhouette occupying the frame".
+
+REGRAS ANTI-MAGREZA (VIOLAR É PROIBIDO):
+- É TERMINANTEMENTE PROIBIDO gerar qualquer personagem magro, em forma, atlético, "corpo normal", "average build", "slim" ou "fit".
+- O peso extremo é FIXO e IMUTÁVEL: NUNCA emagreça os personagens do primeiro ao último take. A MESMA silhueta obesa gigantesca DEVE aparecer IDÊNTICA no PROMPT 00 (Ficha de Personagens) e em [Subject & Character Consistency] de TODAS as cenas.
+- Em CADA cena, o bloco [Subject & Character Consistency] e o PROMPT 00 DEVEM repetir palavra por palavra o DESCRITOR FÍSICO OBRIGATÓRIO acima para cada personagem.
+- Em CADA cena, inclua no [Negative Prompt]: "thin, slim, skinny, fit body, athletic build, average weight, normal body, muscular, toned".
 
 DIRETRIZ NARRATIVA (O PESO É CONTEXTO, NÃO A PIADA):
-- A história NÃO deve girar em torno de dieta ou emagrecimento. O peso é apenas o contexto físico real dos personagens.
-- Conte dramas humanos reais, viciantes e emocionantes: traição, injustiça, humilhação, amor verdadeiro, reviravolta e superação, exatamente como uma novelinha normal, mas com TODOS os personagens gordos.
+- A história NÃO deve girar em torno de dieta ou emagrecimento. O peso extremo é apenas a aparência física de TODOS os personagens.
+- Conte dramas humanos reais, viciantes e emocionantes: traição, injustiça, humilhação, amor verdadeiro, reviravolta e superação, exatamente como uma novelinha normal, mas com TODOS os personagens extremamente obesos.
 - Os personagens vencem pelo caráter, pelo coração e pelas escolhas — NUNCA trate o peso como piada humilhante. No máximo, humor leve, carinhoso e respeitoso.`,
     };
 
@@ -248,6 +255,25 @@ DIRETRIZ NARRATIVA (O PESO É CONTEXTO, NÃO A PIADA):
     const numScenes = Math.min(60, Math.max(4, Number(scenes) || 6));
     const isContinuing = Boolean(previousStory && previousStory.trim().length > 0);
 
+    const extremeWeightDirective =
+      theme === 'Gordos'
+        ? `
+################################################################
+REGRA SUPREMA E INEGOCIÁVEL DE PESO EXTREMO (TEMA 'GORDOS'):
+################################################################
+É OBRIGATÓRIO que TODOS os personagens — SEM NENHUMA EXCEÇÃO (protagonista, vilão, vítima, familiares, amigos, vizinhos, colegas, crianças, idosos, médicos, atendentes e QUAISQUER figurantes ao fundo) — sejam EXTREMAMENTE OBESOS (obesidade mórbida / extremely obese / morbidly obese), com aparência de 150kg a 300kg.
+
+DESCRITOR FÍSICO OBRIGATÓRIO (repita EXATAMENTE estes termos, em inglês, nos prompts visuais de CADA personagem):
+"extremely obese, morbidly obese body, massive 200kg+ weight, enormous hanging belly, very thick heavy arms and legs, broad shoulders, extremely round full face, huge double chin, deep skin folds on neck and abdomen, heavy body presence, wide silhouette occupying the frame".
+
+REGRAS ANTI-MAGREZA (VIOLAR É PROIBIDO):
+- É TERMINANTEMENTE PROIBIDO gerar qualquer personagem magro, em forma, atlético, "corpo normal", "average build", "slim" ou "fit".
+- O peso extremo é FIXO e IMUTÁVEL: NUNCA emagreça os personagens. A MESMA silhueta obesa gigantesca DEVE aparecer IDÊNTICA no PROMPT 00 e em [Subject & Character Consistency] de TODAS as cenas, repetindo palavra por palavra o DESCRITOR FÍSICO OBRIGATÓRIO.
+- Em CADA cena, adicione ao [Negative Prompt]: "thin, slim, skinny, fit body, athletic build, average weight, normal body, muscular, toned".
+################################################################
+`
+        : '';
+
     const promptInstructions = `
 Você é o mais consagrado diretor cinematográfico e roteirista de novelinhas curtas dramáticas ultra-virais para redes sociais (Kwai, TikTok, Instagram Reels, YouTube Shorts).
 Você cria descrições de cenas completas e prompts visuais ultra-realistas no padrão oficial do SEEDANCE 2.5 (ByteDance / Dreamina / CapCut) e GOOGLE FLOW.
@@ -272,6 +298,7 @@ ${themeDirective}
 ATENÇÃO: É ESTRITAMENTE PROIBIDO DESVIAR DO TEMA '${theme}'! 
 Toda a trama, personagens principais e locações DEVEM ser 100% fiéis ao tema '${theme}'.
 ${context ? `Contexto opcional do criador (deve ser totalmente adaptado para ocorrer DENTRO do tema '${theme}'): "${context}"` : ''}
+${extremeWeightDirective}
 
 PARÂMETROS DA PRODUÇÃO:
 - Tema Selecionado: ${theme}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, Loader2, ChefHat, ArrowRight, Lightbulb, AlertCircle } from 'lucide-react';
 import { MasterRecipe, DetailedIngredient, DetailedStep } from '../data/recipes';
 import { supabase } from '../../../lib/supabase';
+import { describeHttpError } from '../../../lib/httpError';
 
 interface AiRecipeGeneratorProps {
   onRecipeGenerated: (recipe: MasterRecipe) => void;
@@ -47,7 +48,7 @@ export const AiRecipeGenerator: React.FC<AiRecipeGeneratorProps> = ({
       });
 
       if (!response.ok) {
-        throw new Error('Servidor indisponível ou limite de IA atingido. Ativando receita express.');
+        throw new Error(await describeHttpError(response));
       }
 
       const data = await response.json();

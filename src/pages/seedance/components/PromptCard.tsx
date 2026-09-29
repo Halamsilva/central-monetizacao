@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ScenePrompt } from "../types";
 import { supabase } from '../../../lib/supabase';
+import { describeHttpError } from '../../../lib/httpError';
 import { Copy, Check, MessageSquare, Video, HelpCircle, Layers, RefreshCw, Sparkles, Sliders, Pencil, X } from "lucide-react";
 
 interface PromptCardProps {
@@ -83,8 +84,7 @@ ${prompt.restricoesNegativas}`;
         const adjusted = await response.json();
         onAdjust(adjusted);
       } else {
-        const errData = await response.json().catch(() => ({}));
-        setAdjustError(errData.error || "Erro temporário ao ajustar. Tente novamente.");
+        setAdjustError(await describeHttpError(response, "Erro temporario ao ajustar. Tente novamente."));
         setTimeout(() => setAdjustError(null), 4000);
       }
     } catch (err: any) {

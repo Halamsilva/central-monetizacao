@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { describeHttpError } from '../lib/httpError';
 import { useAuth } from '../context/AuthContext';
 
 const SMALL_LIMIT = 3.2 * 1024 * 1024;
@@ -216,8 +217,9 @@ const ClonagemVideo: React.FC = () => {
         body: JSON.stringify(body),
       });
 
+      if (!response.ok) throw new Error(await describeHttpError(response));
+
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.error || 'Nao consegui analisar o video.');
       if (!payload.result) throw new Error('A IA nao retornou o resultado.');
 
       setResult(payload.result);

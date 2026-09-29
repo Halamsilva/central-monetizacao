@@ -12,6 +12,7 @@ import { GuideModal } from './components/GuideModal';
 import { HistoryDrawer } from './components/HistoryDrawer';
 import { GeneratedResult, ScenePrompt, ProductAnalysis } from './types';
 import { supabase } from '../../lib/supabase';
+import { describeHttpError } from '../../lib/httpError';
 import {
   Sparkles,
   Copy,
@@ -98,8 +99,7 @@ export default function App() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Erro HTTP ${response.status} na requisição`);
+        throw new Error(await describeHttpError(response));
       }
 
       const resData = await response.json();

@@ -35,6 +35,7 @@ import {
   X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { describeHttpError } from '../lib/httpError';
 
 const themes = [
   { label: 'Racismo', icon: '✊' },
@@ -710,7 +711,7 @@ const Novelinhas: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Falha ao gerar novas ideias');
+        throw new Error(await describeHttpError(response, 'Falha ao gerar novas ideias.'));
       }
 
       const data = await response.json();
@@ -862,7 +863,7 @@ const Novelinhas: React.FC = () => {
       }
 
       if (!response.ok) {
-        throw new Error(payload.error || 'Não foi possível gerar os prompts.');
+        throw new Error(`${payload.error || 'Nao foi possivel gerar os prompts.'} (HTTP ${response.status})`);
       }
 
       const nextText = payload.text || '';

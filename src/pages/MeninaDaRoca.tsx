@@ -27,6 +27,7 @@ import {
   GeneratedPrompt 
 } from "../roca-types";
 import { supabase } from "../lib/supabase";
+import { describeHttpError } from "../lib/httpError";
 
 export default function App() {
   // State variables
@@ -530,14 +531,7 @@ export default function App() {
       });
 
       if (!response.ok) {
-        let errMsg = "Erro ao analisar a imagem.";
-        try {
-          const errData = await response.json();
-          if (errData && errData.error) {
-            errMsg = errData.error;
-          }
-        } catch (e) {}
-        throw new Error(errMsg);
+        throw new Error(await describeHttpError(response, "Erro ao analisar a imagem."));
       }
 
       const data = await response.json();
@@ -587,20 +581,7 @@ export default function App() {
       });
 
       if (!response.ok) {
-        let errMsg = "Resposta inválida do servidor.";
-        try {
-          const errData = await response.json();
-          if (errData && errData.error) {
-            errMsg = errData.error;
-          }
-        } catch (e) {
-          if (response.status === 413) {
-            errMsg = "A imagem enviada é muito grande. Reajuste ou use outra imagem.";
-          } else {
-            errMsg = `Erro HTTP ${response.status} do servidor.`;
-          }
-        }
-        throw new Error(`${errMsg} Verifique as configurações ou a chave nos Secrets.`);
+        throw new Error(await describeHttpError(response, "Resposta invalida do servidor."));
       }
 
       const data = await response.json();

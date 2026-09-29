@@ -21,6 +21,7 @@ import {
 import { SAMPLE_PRODUCTS } from '../data/sampleProducts';
 import { SampleProduct, ProductDiagnostic } from '../types';
 import { supabase } from '../../../lib/supabase';
+import { describeHttpError } from '../../../lib/httpError';
 
 interface ImageUploaderProps {
   onGenerate: (data: {
@@ -151,7 +152,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       });
 
       if (!res.ok) {
-        throw new Error('Falha na resposta da análise.');
+        throw new Error(await describeHttpError(res));
       }
 
       const data: ProductDiagnostic = await res.json();

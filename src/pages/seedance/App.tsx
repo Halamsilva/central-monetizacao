@@ -29,6 +29,7 @@ import PromptCard from "./components/PromptCard";
 import SubconsciousRadar, { PSYCHOLOGICAL_TARGETS } from "./components/SubconsciousRadar";
 import { PromptGenerationResponse, ScenePrompt } from "./types";
 import { supabase } from '../../lib/supabase';
+import { describeHttpError } from '../../lib/httpError';
 
 const VIDEO_TYPES = [
   { value: "", label: "✨ Automático (Melhor Adequação)" },
@@ -133,8 +134,7 @@ export default function App() {
       });
 
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || "Erro ao conectar com o gerador.");
+        throw new Error(await describeHttpError(response, "Erro ao conectar com o gerador."));
       }
 
       const data = await response.json();
@@ -184,14 +184,7 @@ export default function App() {
       });
 
       if (!response.ok) {
-        let errMessage = "Falha ao executar o comando de edição.";
-        try {
-          const errData = await response.json();
-          if (errData?.error) errMessage = errData.error;
-        } catch {
-          // fallback
-        }
-        throw new Error(errMessage);
+        throw new Error(await describeHttpError(response, "Falha ao executar o comando de edição."));
       }
 
       const data = await response.json();

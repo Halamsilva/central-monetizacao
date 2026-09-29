@@ -4,6 +4,7 @@ import { AlertCircle, Bot, Check, Copy, ImagePlus, KeyRound, Loader2, Send, Spar
 import { supabase } from '../lib/supabase';
 import { parseConfigurableAgent, type ConfigurableAgentConfig } from '../lib/configurableAgent';
 import { canLoadExternalMedia } from '../lib/media';
+import { describeHttpError } from '../lib/httpError';
 
 type Agent = {
   id: string;
@@ -188,8 +189,9 @@ const ConfigurableAgent: React.FC = () => {
         }),
       });
 
+      if (!response.ok) throw new Error(await describeHttpError(response, 'Erro ao gerar resposta.'));
+
       const payload = await parseResponse(response);
-      if (!response.ok) throw new Error(payload.error || 'Erro ao gerar resposta.');
       setResult(payload.text || 'Nao veio texto na resposta. Tente gerar novamente.');
     } catch (err: any) {
       setError(err.message || 'Nao consegui gerar agora. Tente novamente.');
@@ -225,8 +227,9 @@ const ConfigurableAgent: React.FC = () => {
         }),
       });
 
+      if (!response.ok) throw new Error(await describeHttpError(response, 'Erro ao ajustar o resultado.'));
+
       const payload = await parseResponse(response);
-      if (!response.ok) throw new Error(payload.error || 'Erro ao ajustar o resultado.');
       setResult(payload.text || result);
       setAdjustment('');
     } catch (err: any) {

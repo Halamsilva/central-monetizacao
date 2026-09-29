@@ -161,6 +161,19 @@ Contraste comovente entre a ostentação superficial e a riqueza de coração do
 
       'Superação': `O TEMA OBRIGATÓRIO É 'SUPERAÇÃO' ✨.
 Trajetória heroica de superação contra todas as probabilidades através do amor, perseverança e trabalho.`,
+
+      'Gordos': `O TEMA OBRIGATÓRIO É 'GORDOS (PERSONAGENS ACIMA DO PESO)' 🍔.
+Neste tema, TODOS os personagens da história DEVEM ser obrigatoriamente pessoas gordas / acima do peso (obesas), brasileiras e reais, com forte presença física.
+
+DIRETRIZ MÁXIMA DE APARÊNCIA FÍSICA (REGRA INVIOLÁVEL):
+- CADA personagem (protagonista, vilão, familiares, amigos, vizinhos e figurantes recorrentes) DEVE ser descrito como uma pessoa claramente acima do peso / obesa, com corpo volumoso, rosto cheio de bochechas fartas, pescoço curto, braços e pernas grossos, barriga saliente e dobras de pele naturais.
+- A aparência gorda é uma característica FIXA e IMUTÁVEL de todos os personagens e DEVE ser repetida de forma idêntica no PROMPT 00 (Ficha de Personagens) e em [Subject & Character Consistency] de TODAS as cenas, para manter consistência absoluta entre os takes.
+- É TERMINANTEMENTE PROIBIDO emagrecer os personagens no meio da história, trocar o biótipo ou usar descrições vagas como "corpo normal", "físico padrão" ou "magro". Use sempre termos físicos concretos (peso aparente, silhueta volumosa, dobras de pele, etc.).
+
+DIRETRIZ NARRATIVA (O PESO É CONTEXTO, NÃO A PIADA):
+- A história NÃO deve girar em torno de dieta ou emagrecimento. O peso é apenas o contexto físico real dos personagens.
+- Conte dramas humanos reais, viciantes e emocionantes: traição, injustiça, humilhação, amor verdadeiro, reviravolta e superação, exatamente como uma novelinha normal, mas com TODOS os personagens gordos.
+- Os personagens vencem pelo caráter, pelo coração e pelas escolhas — NUNCA trate o peso como piada humilhante. No máximo, humor leve, carinhoso e respeitoso.`,
     };
 
     const themeDirective =

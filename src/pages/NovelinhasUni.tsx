@@ -556,17 +556,21 @@ const visualOnlyText = (text: string) =>
     .replace(/^\s*(?:INSTRUÇÕES VISUAIS\s*\([^)]*\)|INSTRUÇÕES VISUAIS|INSTRUÇÃO VISUAL|VISUAL INSTRUCTIONS)[^\n:]*:\s*\n?/gim, '')
     .trim();
 
-const loadHistory = (): HistoryItem[] => {
+const loadHistory = (key: string): HistoryItem[] => {
   try {
-    return JSON.parse(localStorage.getItem(historyKey) || '[]');
+    return JSON.parse(localStorage.getItem(key) || '[]');
   } catch {
-    localStorage.removeItem(historyKey);
+    localStorage.removeItem(key);
     return [];
   }
 };
 
-const Novelinhas: React.FC = () => {
-  const [theme, setTheme] = useState('Dramas Emocionantes');
+interface NovelinhasProps {
+  lockedTheme?: string;
+}
+
+const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
+  const [theme, setTheme] = useState(lockedTheme || 'Dramas Emocionantes');
   const [customThemeTitle, setCustomThemeTitle] = useState('');
   const [country, setCountry] = useState('Brasil');
   const [tone, setTone] = useState(tones[0]);
@@ -586,7 +590,10 @@ const Novelinhas: React.FC = () => {
   const [isGeneratingIdeas, setIsGeneratingIdeas] = useState(false);
   const [ideaToast, setIdeaToast] = useState('');
 
-  const effectiveTheme = theme === 'Outro' ? customThemeTitle.trim() || 'Tema personalizado' : theme;
+  const effectiveTheme = lockedTheme || (theme === 'Outro' ? customThemeTitle.trim() || 'Tema personalizado' : theme);
+  const visibleThemes = lockedTheme ? [{ label: lockedTheme, icon: '🍔' }] : themes;
+  const draftKey = lockedTheme ? `novelinhas-generator-draft-${lockedTheme.toLowerCase()}` : 'novelinhas-generator-draft';
+  const historyKey = lockedTheme ? `novelinhas-generator-history-${lockedTheme.toLowerCase()}` : 'novelinhas-generator-history';
   const canGenerate = useMemo(
     () => !loading && (theme !== 'Outro' || customThemeTitle.trim().length > 2),
     [customThemeTitle, loading, theme],
@@ -618,7 +625,7 @@ const Novelinhas: React.FC = () => {
   };
 
   useEffect(() => {
-    setHistory(loadHistory());
+    setHistory(loadHistory(historyKey));
 
     try {
       const savedDraft = localStorage.getItem(draftKey);
@@ -626,7 +633,7 @@ const Novelinhas: React.FC = () => {
 
       const draft = JSON.parse(savedDraft);
 
-      if (typeof draft.theme === 'string') setTheme(draft.theme);
+      if (!lockedTheme && typeof draft.theme === 'string') setTheme(draft.theme);
       if (typeof draft.customThemeTitle === 'string') setCustomThemeTitle(draft.customThemeTitle);
       if (typeof draft.country === 'string') setCountry(draft.country === 'EUA' ? 'Estados Unidos' : draft.country);
       if (typeof draft.tone === 'string') setTone(draft.tone);
@@ -1015,7 +1022,7 @@ const Novelinhas: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {themes.map((item) => (
+              {visibleThemes.map((item) => (
                 <button
                   key={item.label}
                   type="button"

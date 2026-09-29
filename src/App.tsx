@@ -30,7 +30,6 @@ const AvatarScale = lazy(() => import('./pages/AvatarScale'));
 const ReceitasEbook = lazy(() => import('./pages/receitasEbook/App'));
 const Encapsulados = lazy(() => import('./pages/encapsulados/App'));
 const RadarTikTokShop = lazy(() => import('./pages/RadarTikTokShop'));
-const NovelinhasGordos = lazy(() => import('./pages/novelinhasGordos/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -288,7 +287,7 @@ export default function App() {
               <Route path="receitas-ebook" element={<AdminRoute><ReceitasEbook /></AdminRoute>} />
               <Route path="encapsulados" element={<AdminRoute><Encapsulados /></AdminRoute>} />
               <Route path="radar-tiktok-shop" element={<AdminRoute><RadarTikTokShop /></AdminRoute>} />
-              <Route path="novelinhas-gordos" element={<AdminRoute><NovelinhasGordos /></AdminRoute>} />
+              <Route path="novelinhas-gordos" element={<AdminRoute><NovelinhasUni lockedTheme="Gordos" /></AdminRoute>} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

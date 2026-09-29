@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { Menu, Bell, Clock, Moon, ShieldAlert, Sun } from 'lucide-react';
+import { Menu, Bell, Clock, Moon, ShieldAlert, Sun, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/support';
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
@@ -173,12 +174,24 @@ const AppLayout: React.FC = () => {
               e o prazo de 7 dias.
             </p>
 
-            <button
-              onClick={signOut}
-              className="mt-6 rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-800"
-            >
-              Sair da conta
-            </button>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <button
+                onClick={signOut}
+                className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition hover:bg-slate-800"
+              >
+                Sair da conta
+              </button>
+
+              <a
+                href={whatsappLink(WHATSAPP_DEFAULT_MESSAGE)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#25D366] px-6 py-3 text-sm font-bold text-white transition hover:brightness-105"
+              >
+                <MessageCircle size={18} />
+                Falar no WhatsApp
+              </a>
+            </div>
           </div>
         </div>
       );
@@ -303,6 +316,17 @@ const AppLayout: React.FC = () => {
           <span>© {currentYear} Central Monetização</span>
         </footer>
       </div>
+
+      <a
+        href={whatsappLink(WHATSAPP_DEFAULT_MESSAGE)}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Falar no WhatsApp"
+        title="Falar no WhatsApp"
+        className="fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg shadow-black/25 transition hover:scale-105"
+      >
+        <MessageCircle size={26} />
+      </a>
     </div>
   );
 };

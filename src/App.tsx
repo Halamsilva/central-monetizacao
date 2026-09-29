@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
 import { firebaseAuth, isFirebaseConfigured } from './lib/supabase';
 import { reload, sendEmailVerification } from 'firebase/auth';
+import { MessageCircle } from 'lucide-react';
+import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from './lib/support';
 
 // Páginas com Lazy Loading
 const Login = lazy(() => import('./pages/Login'));
@@ -121,6 +123,18 @@ const VerifyEmailScreen = () => {
           eletrônico) e marque como "não é spam" para receber os próximos.
         </div>
 
+        <a
+          href={whatsappLink(
+            'Ola! Fiz meu cadastro na Central Monetizacao e nao achei o e-mail de verificacao. Pode me ajudar?'
+          )}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] text-sm font-bold text-white transition hover:brightness-105"
+        >
+          <MessageCircle size={18} />
+          Falar com o suporte no WhatsApp
+        </a>
+
         {message && <p role="status" className="mt-4 text-sm text-slate-700">{message}</p>}
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button type="button" disabled={busy} onClick={check} className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50">Já confirmei</button>
@@ -149,6 +163,15 @@ const PendingAccessScreen = () => (
         className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white transition hover:bg-blue-700"
       >
         Quero só o acesso à plataforma (assinar)
+      </a>
+      <a
+        href={whatsappLink(WHATSAPP_DEFAULT_MESSAGE)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] text-sm font-bold text-white transition hover:brightness-105"
+      >
+        <MessageCircle size={18} />
+        Falar no WhatsApp
       </a>
     </div>
   </div>

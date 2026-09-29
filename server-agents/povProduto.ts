@@ -100,19 +100,24 @@ desconto,
 promoção,
 frete
 ou qualquer característica não verificável.
-Descreva somente aquilo que é visualmente observável.
+Descreva somente aquilo que é visualmente observável ou que está no título informado pelo usuário.
+EXCEÇÃO: é permitido (e esperado) falar dos BENEFÍCIOS naturais que aquele tipo de produto entrega no dia a dia (ex.: pratos de vidro deixam a mesa mais bonita, recebem elogios, são práticos de servir). Não invente números, garantias, preço, promoção ou tecnologia.
 
 ==================================================
-RELAÇÃO ENTRE FALA E MOVIMENTO
+FOCO DAS FALAS: BENEFÍCIOS DO PRODUTO (NÃO A MÃO)
 ==================================================
-Primeiro determine o que será mostrado fisicamente.
-Depois escreva uma fala compatível com essa ação.
-A fala e a mão devem parecer parte do mesmo acontecimento.
-Se a mão toca uma costura: a fala deve comentar aquela costura específica.
-Se o dedo acompanha uma borda ou sola: a fala deve estar relacionada àquela região.
-Se existe botão, encaixe, abertura, tampa, fecho, textura, sola, costura, controle, alça ou outra característica visível:
-o agente constrói a fala naturalmente ao redor desse elemento.
-Não faça a pessoa falar sobre uma região enquanto a mão demonstra outra.
+As falas NÃO devem narrar o que a pessoa faz com as mãos, e NÃO devem dizer que o produto "está na mão".
+O foco da fala é o PRODUTO e os seus BENEFÍCIOS REAIS para quem compra:
+- O que é o produto (use o que a imagem mostra + o título/nome que o usuário informou);
+- Para que serve e o que ele resolve ou melhora no dia a dia;
+- A sensação e o resultado de usar (ex.: deixa a mesa mais bonita, dá mais praticidade, receber elogios dos convidados);
+- Por que vale a pena ter.
+
+EXEMPLO DE ESTILO (siga essa linha):
+Produto "Kit com 6 pratos de vidro":
+"Esse kit de prato vem 6 pratos de vidro bem resistente, que vai deixar a sua mesa bem mais bonita na hora de servir a comida para as suas visitas, e você vai receber muitos elogios."
+
+Use o título informado pelo usuário para dizer o que o produto é (quantidade, tipo, material). Fale de benefícios naturais daquele tipo de produto — sem inventar números, garantias, preço ou especificações técnicas que não apareçam.
 
 ==================================================
 TOM DE VOZ: CONVERSA ENTRE AMIGOS (ZERO JARGÕES TÉCNICOS)
@@ -883,13 +888,14 @@ ${visualFocus ? `Detalhe visual de interesse indicado pelo usuário: ${visualFoc
 ${ctaType ? `Tipo de Call to Action (CTA) desejado para a Cena 3: ${ctaType}` : 'Tipo de CTA para a Cena 3: Padrão TikTok Shop ("carrinho laranja").'}
 
 ATENÇÃO CRÍTICA PARA AS FALAS:
+- FOCO OBRIGATÓRIO EM BENEFÍCIOS: cada fala deve falar do PRODUTO e dos seus BENEFÍCIOS (o que ele é, para que serve e o que melhora no dia a dia). Identifique o produto pela imagem + pelo nome/título informado pelo usuário. Ex.: "Esse kit de prato vem 6 pratos de vidro bem resistente, que vai deixar sua mesa bem mais bonita e você vai receber muitos elogios."
+- PROIBIDO DIZER QUE ESTÁ NA MÃO: NUNCA diga que o produto "está na mão" nem narre o movimento das mãos ("passando a mão", "segurando aqui", "tocando"). As falas falam do produto e dos benefícios, não da sua ação.
 - TOM DE VOZ OBRIGATÓRIO: Fale EXATAMENTE como se estivesse conversando com um amigo e recomendando um produto que você comprou e curtiu demais ("Cara", "Mano", "Sério, você não tem noção", "O que eu mais curti...", "Vale muito a pena").
 - PROIBIDO USAR PARTES TÉCNICAS: NUNCA use termos técnicos de engenharia/catálogo (nada de "mesh", "circumaural", "pesponto", "cânula", "polímero", "vulcanizado"). Fale do benefício real e do sentimento prático no dia a dia.
-- PROIBIDO NARRAR A PRÓPRIA MÃO: NUNCA diga "passando a mão", "deslizando o dedo", "tocando aqui". O vídeo já mostra as mãos.
-- PROIBIDO FALAR DE CORES: Zero menção a cores nas falas.
-- PROMPT 1: Caminhando com o produto na mão em direção à mesa (~9s) com POV câmera na testa, passos sutis e mão direita segurando o produto à frente.
-- PROMPT 2: Na bancada demonstrando a peça e tirando objeções como amigo (~9s).
-- PROMPT 3: Na bancada com recomendação sincera + CTA curto pro carrinho laranja (~9s).
+- LIMITE DE TEMPO (OBRIGATÓRIO): cada fala no MÁXIMO 9 segundos (~18 a 26 palavras). NUNCA ultrapasse 9 segundos.
+- PROMPT 1: Gancho sobre o benefício principal do produto (~9s). A pessoa caminha em POV (câmera na testa), mas a FALA fala do produto, não da mão.
+- PROMPT 2: Um segundo benefício/uso no dia a dia e quebra de objeção como amigo (~9s).
+- PROMPT 3: Benefício final (custo-benefício/utilidade) + CTA curto pro carrinho laranja (~9s).
 - Cada prompt deve estar completo e autossuficiente em inglês para gerador de vídeo, com descrição minuciosa do produto visualmente identificado, câmera de ação na testa, braço direito no canto inferior direito, e a fala exata em português brasileiro incluída no prompt e no campo de fala.`;
 
         const response = await ai.models.generateContent({
@@ -949,7 +955,7 @@ ATENÇÃO CRÍTICA PARA AS FALAS:
                       },
                       spokenDialogue: {
                         type: Type.STRING,
-                        description: 'A fala em Português do Brasil de aproximadamente 9 segundos, condizente com o produto e sem repetição'
+                        description: 'A fala em Português do Brasil com MAXIMO de 9 segundos (~18 a 26 palavras), focada nos BENEFICIOS do produto (o que ele e, para que serve e o que melhora no dia a dia), sem narrar a mao e sem repeticao'
                       },
                       visualInteraction: {
                         type: Type.STRING,

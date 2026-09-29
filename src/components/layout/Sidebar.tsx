@@ -14,6 +14,7 @@ import {
   Download,
   FileVideo,
   Film,
+  ChefHat,
   User,
   Settings,
   Shield,
@@ -116,6 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       ? [
           { title: 'Clonagem de Vídeo', icon: FileVideo, path: '/clonagem-video' },
           { title: 'Novelinhas Universal', icon: Film, path: '/novelinhas' },
+          { title: 'Mestre 30s', icon: ChefHat, path: '/mestre-30s' },
         ]
       : []),
   ];

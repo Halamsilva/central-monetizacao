@@ -353,7 +353,7 @@ const Notices: React.FC = () => {
             Histórico de novidades
           </h2>
           <p className="text-xs font-medium text-slate-500 sm:text-sm">
-            Tudo que também aparece resumido na Dashboard fica salvo aqui.
+            Todas as novidades e avisos da plataforma ficam salvos aqui.
           </p>
         </div>
 

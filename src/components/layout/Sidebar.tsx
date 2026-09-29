@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard,
   Bell,
   Bot,
   Zap,
@@ -103,7 +102,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const mainMenu: MenuItem[] = [
-    { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { title: 'Comece Aqui', icon: BookOpen, path: '/comece-aqui' },
     { title: 'Novidades', icon: Bell, path: '/notices', badge: true },
   ];

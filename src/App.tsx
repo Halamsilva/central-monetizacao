@@ -12,7 +12,6 @@ import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from './lib/support';
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Recovery = lazy(() => import('./pages/Recovery'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
 const StartHere = lazy(() => import('./pages/StartHere'));
 const Notices = lazy(() => import('./pages/Notices'));
 const Agents = lazy(() => import('./pages/Agents'));
@@ -50,7 +49,6 @@ const routeTitles: Record<string, string> = {
   '/login': 'Entrar',
   '/register': 'Cadastro',
   '/recovery': 'Recuperar acesso',
-  '/dashboard': 'Dashboard',
   '/comece-aqui': 'Comece Aqui',
   '/notices': 'Novidades',
   '/agents': 'Agentes IA',
@@ -237,7 +235,7 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   if (loading) return <LoadingScreen />;
 
   if (!isAdmin || profile?.access_status === 'blocked') {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/agents" replace />;
   }
 
   return <>{children}</>;
@@ -266,8 +264,7 @@ export default function App() {
                 </PrivateRoute>
               }
             >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
+              <Route index element={<Navigate to="/agents" replace />} />
               <Route path="comece-aqui" element={<StartHere />} />
               <Route path="notices" element={<Notices />} />
               <Route path="agents" element={<Agents />} />
@@ -344,7 +341,7 @@ export default function App() {
             </Route>
 
             {/* Redirecionamento de Rotas Inexistentes */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/agents" replace />} />
           </Routes>
         </Suspense>
 

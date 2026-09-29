@@ -8,7 +8,6 @@ import { supabase } from '../../lib/supabase';
 import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/support';
 
 const pageTitles: Record<string, string> = {
-  '/dashboard': 'Dashboard',
   '/comece-aqui': 'Comece Aqui',
   '/notices': 'Novidades',
   '/agents': 'Agentes IA',

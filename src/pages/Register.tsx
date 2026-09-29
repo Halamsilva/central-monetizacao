@@ -44,7 +44,7 @@ const Register: React.FC = () => {
     if (!isSupabaseConfigured) {
       setTimeout(() => {
         setLoading(false);
-        navigate('/dashboard');
+        navigate('/agents');
       }, 1000);
       return;
     }
@@ -79,7 +79,7 @@ const Register: React.FC = () => {
         }
       }
       
-      navigate('/dashboard');
+      navigate('/agents');
     } catch (err: any) {
       setError(getFriendlyRegisterError(err));
     } finally {

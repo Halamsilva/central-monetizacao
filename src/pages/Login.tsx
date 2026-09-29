@@ -59,7 +59,7 @@ const Login: React.FC = () => {
     if (!isSupabaseConfigured) {
       setTimeout(() => {
         setLoading(false);
-        navigate('/dashboard');
+        navigate('/agents');
       }, 1000);
 
       return;
@@ -73,7 +73,7 @@ const Login: React.FC = () => {
 
       if (error) throw error;
 
-      navigate('/dashboard');
+      navigate('/agents');
     } catch (err: any) {
       setError(getFriendlyAuthError(err));
     } finally {

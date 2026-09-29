@@ -267,6 +267,7 @@ PARÂMETROS DA PRODUÇÃO:
 - Emoção Dominante: ${emotion}
 - Diretriz de Textura e Realismo: ${skinDirective}
 - Quantidade exata de cenas: ${numScenes} cenas
+- REGRA ABSOLUTA DE NUMERACAO SEQUENCIAL: entregue EXATAMENTE ${numScenes} cenas, numeradas rigorosamente em sequencia, de "PROMPT CENA 1" ate "PROMPT CENA ${numScenes}", UMA cena por numero, SEM PULAR nenhum numero (é TERMINANTEMENTE PROIBIDO, por exemplo, ir de CENA 3 direto para CENA 8). Cada bloco deve ter o cabecalho "PROMPT CENA N (SEEDANCE 2.5)". Faca a contagem mental: se escreveu a CENA 1, 2 e 3, o proximo bloco e OBRIGATORIAMENTE a CENA 4, e assim por diante, ate a CENA ${numScenes}. Nao repita numeros e nao pule numeros.
 
 ${
   isContinuing

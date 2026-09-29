@@ -401,13 +401,32 @@ Gatilho de Engajamento: [Pergunta instigante para gerar debates no idioma ${curr
 Hashtags Recomendadas: #novelinhas #cenas #dramatiktok #historiasreais #viralvideo #emocionante
 `;
 
-    const { text: generatedText } = await generateWithModelFallback(promptInstructions, req.geminiApiKey);
+    const countScenes = (value: string) => (value.match(/PROMPT\s+CENA\s+\d+/gi) || []).length;
+
+    let generatedText = (await generateWithModelFallback(promptInstructions, req.geminiApiKey)).text || '';
 
     if (!generatedText) {
       throw new Error('Nenhum texto foi gerado pelo modelo.');
     }
 
-    res.json({ text: generatedText });
+    if (countScenes(generatedText) < numScenes) {
+      const retryPrompt = `${promptInstructions}
+
+========================================================================
+CORRECAO OBRIGATORIA
+========================================================================
+A resposta anterior ficou com menos cenas do que o exigido. Gere a historia COMPLETA novamente, com EXATAMENTE ${numScenes} cenas, numeradas de "PROMPT CENA 1" ate "PROMPT CENA ${numScenes}", SEM PULAR NENHUM numero. Nao repita e nao pule numeros de cena.`;
+
+      const retry = await generateWithModelFallback(retryPrompt, req.geminiApiKey);
+      if (retry.text && countScenes(retry.text) >= countScenes(generatedText)) {
+        generatedText = retry.text;
+      }
+    }
+
+    let sceneOrder = 0;
+    const normalizedText = generatedText.replace(/(PROMPT\s+CENA\s+)\d+/gi, (_match, prefix) => `${prefix}${++sceneOrder}`);
+
+    res.json({ text: normalizedText });
   } catch (error: any) {
     console.error('Error generating novelinhas script:', error);
     const errMsg = String(error?.message || '');

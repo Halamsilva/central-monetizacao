@@ -22,6 +22,7 @@ const ToolsIA = lazy(() => import('./pages/ToolsIA'));
 const MeninaDaRoca = lazy(() => import('./pages/MeninaDaRoca'));
 const ClonagemVideo = lazy(() => import('./pages/ClonagemVideo'));
 const Assinar = lazy(() => import('./pages/Assinar'));
+const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
 const Tutorials = lazy(() => import('./pages/Tutorials'));
 const Downloads = lazy(() => import('./pages/Downloads'));
@@ -214,6 +215,7 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/recovery" element={<Recovery />} />
             <Route path="/assinar" element={<Assinar />} />
+            <Route path="/boas-vindas" element={<BoasVindas />} />
 
             {/* Rotas Privadas de Alunos com Layout Base */}
             <Route

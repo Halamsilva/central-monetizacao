@@ -102,7 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const primaryStrategyMenu: MenuItem[] = [
-    { title: 'Agentes IA', icon: Bot, path: '/agents' },
+    ...(isAdmin ? [{ title: 'Agentes IA', icon: Bot, path: '/agents' }] : []),
     { title: 'Loja VIP', icon: ShoppingBag, path: '/shop-vip' },
     { title: 'Downloads', icon: Download, path: '/downloads' },
   ];

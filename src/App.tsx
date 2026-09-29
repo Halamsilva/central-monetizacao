@@ -216,7 +216,7 @@ export default function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="comece-aqui" element={<StartHere />} />
               <Route path="notices" element={<Notices />} />
-              <Route path="agents" element={<Agents />} />
+              <Route path="agents" element={<AdminRoute><Agents /></AdminRoute>} />
               <Route path="viral-prompts" element={<ViralPrompts />} />
               <Route path="tiktok-shop" element={<TikTokShop />} />
               <Route path="facebook" element={<Facebook />} />

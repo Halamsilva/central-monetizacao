@@ -14,6 +14,7 @@ import {
   Lock,
   KeyRound,
   Trash2,
+  ExternalLink,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
@@ -729,17 +730,18 @@ const Settings: React.FC = () => {
         )}
 
         <p className="mt-4 text-xs font-semibold text-slate-400">
-          Pegue sua chave grátis em{' '}
-          <a
-            href="https://aistudio.google.com/app/apikey"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline"
-          >
-            aistudio.google.com/app/apikey
-          </a>
-          . Ela fica guardada só na sua conta.
+          A chave é grátis e fica guardada só na sua conta.
         </p>
+
+        <a
+          href="https://aistudio.google.com/app/apikey"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 text-sm font-black text-slate-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+        >
+          <ExternalLink size={16} />
+          Pegar minha chave do Google AI Studio
+        </a>
 
         {keyMessage && (
           <div

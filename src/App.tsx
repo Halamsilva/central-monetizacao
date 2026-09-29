@@ -12,8 +12,6 @@ import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from './lib/support';
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Recovery = lazy(() => import('./pages/Recovery'));
-const StartHere = lazy(() => import('./pages/StartHere'));
-const Notices = lazy(() => import('./pages/Notices'));
 const Agents = lazy(() => import('./pages/Agents'));
 const ViralPrompts = lazy(() => import('./pages/ViralPrompts'));
 const TikTokShop = lazy(() => import('./pages/TikTokShop'));
@@ -49,8 +47,6 @@ const routeTitles: Record<string, string> = {
   '/login': 'Entrar',
   '/register': 'Cadastro',
   '/recovery': 'Recuperar acesso',
-  '/comece-aqui': 'Comece Aqui',
-  '/notices': 'Novidades',
   '/agents': 'Agentes IA',
   '/viral-prompts': 'Prompts Virais',
   '/tiktok-shop': 'TikTok Shop',
@@ -265,8 +261,6 @@ export default function App() {
               }
             >
               <Route index element={<Navigate to="/agents" replace />} />
-              <Route path="comece-aqui" element={<StartHere />} />
-              <Route path="notices" element={<Notices />} />
               <Route path="agents" element={<Agents />} />
               <Route path="viral-prompts" element={<ViralPrompts />} />
               <Route path="tiktok-shop" element={<TikTokShop />} />

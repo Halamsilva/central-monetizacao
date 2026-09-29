@@ -101,10 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const mainMenu: MenuItem[] = [
-    { title: 'Comece Aqui', icon: BookOpen, path: '/comece-aqui' },
-    { title: 'Novidades', icon: Bell, path: '/notices', badge: true },
-  ];
+  const mainMenu: MenuItem[] = [];
 
   const primaryStrategyMenu: MenuItem[] = [
     { title: 'Agentes IA', icon: Bot, path: '/agents' },

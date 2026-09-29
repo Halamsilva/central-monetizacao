@@ -8,8 +8,6 @@ import { supabase } from '../../lib/supabase';
 import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/support';
 
 const pageTitles: Record<string, string> = {
-  '/comece-aqui': 'Comece Aqui',
-  '/notices': 'Novidades',
   '/agents': 'Agentes IA',
   '/viral-prompts': 'Prompts Virais',
   '/tiktok-shop': 'TikTok Shop',
@@ -271,23 +269,6 @@ const AppLayout: React.FC = () => {
                 {statusBadge.label}
               </span>
             </div>
-
-            <Link
-              to="/notices"
-              className="relative flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-              aria-label={
-                visibleUnreadCount > 0
-                  ? `Abrir notificações, ${visibleUnreadCount} não lidas`
-                  : 'Abrir notificações'
-              }
-            >
-              <Bell size={19} />
-              {visibleUnreadCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-black leading-none text-white ring-2 ring-white">
-                  {visibleUnreadCount > 9 ? '9+' : visibleUnreadCount}
-                </span>
-              )}
-            </Link>
 
             <button
               onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}

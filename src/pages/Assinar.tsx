@@ -38,11 +38,11 @@ const DEFAULT_OFFER: SubscriptionOffer = {
   courseCheckoutUrl: '',
   videoUrl: '',
   benefits: [
-    'Acesso a TODOS os agentes de IA da plataforma',
+    'Mais de 70 agentes de IA prontos para usar',
+    'Agentes para novelinhas, TikTok Shop, Facebook e YouTube',
+    'Agentes para venda de ebook e infoprodutos',
+    'Ferramentas prontas: Clonagem de Vídeo, Menina da Roça e Prompts Virais',
     'Novos agentes adicionados toda semana',
-    'Menina da Roça, Clonagem de Vídeo e Prompts Virais',
-    'Ferramentas prontas para TikTok Shop, Facebook e YouTube',
-    'Atualizações e melhorias contínuas',
     'Acesso pelo seu e-mail, direto no site',
   ],
   checkoutUrl: '',
@@ -144,6 +144,16 @@ const Assinar: React.FC = () => {
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-400 sm:text-lg">
             {offer.subtitle}
           </p>
+
+          <div className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-2 text-[11px] font-black uppercase tracking-wide text-slate-300 sm:text-xs">
+            <span className="rounded-full bg-[#f27d26]/15 px-3 py-1 text-[#f27d26]">
+              +70 agentes de IA
+            </span>
+            <span className="rounded-full bg-white/5 px-3 py-1">Novelinhas</span>
+            <span className="rounded-full bg-white/5 px-3 py-1">Venda de ebook</span>
+            <span className="rounded-full bg-white/5 px-3 py-1">TikTok Shop</span>
+            <span className="rounded-full bg-white/5 px-3 py-1">Novos toda semana</span>
+          </div>
 
           <button
             type="button"

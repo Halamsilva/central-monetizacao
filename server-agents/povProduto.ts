@@ -326,9 +326,9 @@ const PRODUCT_CATALOG: Record<string, ProductConfig> = {
       'O bocal dela é bem lisinho e confortável pra beber direto, além da alça ajudar demais a carregar por aí.',
     ],
     dialoguesScene2: [
-      'A pintura fosca de fora dá uma pegada muito firme que não escorrega da mão nem se estiver suada da academia.',
+      'A pintura fosca de fora dá uma pegada bem firme que não escorrega nem quando está molhada ou suada.',
       'A base assenta macia na mesa sem fazer aquele barulho chato de metal batendo na madeira.',
-      'Por fora ela nunca sua nem molha a mesa, e você não queima nem gela a mão segurando.',
+      'Por fora ela nunca sua nem molha a mesa, e você não queima nem gela a pele ao segurar.',
     ],
     dialoguesScene3: [
       'Eu levo pra todo canto agora, trabalho, treino, carro. Se você curtiu, clica no carrinho laranja pra ver.',
@@ -424,11 +424,11 @@ const PRODUCT_CATALOG: Record<string, ProductConfig> = {
     dialoguesScene2: [
       'A regulagem de força tem vários níveis pra você não espanar nenhum parafuso de móvel ou parede.',
       'A borracha no cabo não deixa a mão escorregar e a carcaça é bruta pra aguentar qualquer tombo na oficina.',
-      'O encaixe da bateria é bem firme, não fica com aquele jogo chato balançando na mão.',
+      'O encaixe da bateria é bem firme, não fica com aquele jogo chato que balança e atrapalha o serviço.',
     ],
     dialoguesScene3: [
       'Resolve qualquer manutenção rápida em casa sem você passar raiva. Confere no carrinho laranja pra garantir a sua.',
-      'Ferramenta boa que não te deixa na mão quando você precisa. Aproveita e clica no carrinho laranja.',
+      'Ferramenta boa que resolve na hora em que você precisa. Aproveita e clica no carrinho laranja.',
       'Agiliza qualquer serviço e vale cada centavo pelo que entrega. Dá uma olhada no carrinho laranja.',
     ],
   },
@@ -449,19 +449,51 @@ const PRODUCT_CATALOG: Record<string, ProductConfig> = {
     ],
     keyFocalPoints: ['Contorno e linhas principais', 'Encaixes e acabamento superficial', 'Estabilidade na mesa'],
     dialoguesScene1: [
-      'Cara, eu peguei esse produto pra testar e de cara já vi que a qualidade é muito boa, tudo bem firme e alinhado.',
-      'Mano, o que mais me chamou atenção foi o acabamento limpo e a presença que essa peça tem na mão.',
-      'Sério, ao vivo supera qualquer foto, você percebe logo no primeiro contato que é um produto diferenciado.',
+      'Cara, esse produto mudou a minha rotina: ele é prático de usar e resolve aquela necessidade do dia a dia sem complicação.',
+      'Mano, o que eu mais gostei foi o quanto ele facilita a vida — você usa uma vez e já sente a diferença no dia a dia.',
+      'Sério, ele surpreende: entrega muito mais do que eu esperava pelo preço e vira aquele item que a gente usa sempre.',
     ],
     dialoguesScene2: [
-      'O material passa uma sensação super resistente e você nota que os encaixes são perfeitos, sem folga nenhuma.',
-      'O acabamento não pega marca de dedo fácil e a estrutura assenta muito firme na mesa sem balançar.',
-      'É muito bem pensado pra durar e aguentar o uso diário sem perder a qualidade.',
+      'Ele é bem pensado pro uso de todo dia: resistente, não dá dor de cabeça e continua ótimo com o tempo.',
+      'Um item que facilita demais a rotina e ainda deixa o seu ambiente mais bonito e organizado.',
+      'Você percebe logo que é de qualidade: faz o que promete e não precisa ficar repondo toda hora.',
     ],
     dialoguesScene3: [
       'Facilitou demais a minha rotina e vale muito a pena ter em casa. Se você gostou, dá uma olhada no carrinho laranja.',
       'Superou muito minhas expectativas e recomendo de olhos fechados. Clica no carrinho laranja pra conferir.',
       'Construção impecável com ótimo custo-benefício. Aproveita e garante o seu no carrinho laranja.',
+    ],
+  },
+  mesa: {
+    category: 'Cozinha, Mesa & Casa',
+    defaultName: 'Jogo de Utensílios',
+    visualDetails: [
+      'Peças com acabamento uniforme e bordas bem definidas',
+      'Superfície lisa e fácil de limpar',
+      'Base estável que assenta firme na mesa',
+      'Conjunto completo e combinando entre si',
+    ],
+    materialsAndColors: ['Material resistente ao uso diário', 'Acabamento liso e fácil de lavar', 'Peças combinando em conjunto'],
+    handInteractions: [
+      'A pessoa caminha em POV apresentando a peça em direção à bancada, destacando o acabamento e o conjunto.',
+      'A mão aproxima a peça da bancada mostrando o brilho e a superfície lisa.',
+      'A mão repousa ao lado da peça sobre a bancada, indicando o conjunto completo.',
+    ],
+    keyFocalPoints: ['Acabamento e brilho da superfície', 'Resistência e facilidade de limpar', 'Conjunto completo'],
+    dialoguesScene1: [
+      'Cara, esse conjunto deixa a mesa com outra cara: é muito mais bonito na hora de servir e ainda é bem resistente pro dia a dia.',
+      'Mano, o que eu mais gostei é que ele é prático de verdade: você usa, lava fácil e fica sempre com aquele brilho de novo.',
+      'Sério, ele muda o visual da mesa inteira e impressiona qualquer visita na hora de servir.',
+    ],
+    dialoguesScene2: [
+      'O material é firme e aguenta a rotina da cozinha sem trincar fácil no uso de todo dia.',
+      'É fácil de limpar e não segura cheiro nem mancha, então continua bonito por muito mais tempo.',
+      'O conjunto vem completo e combinando, então você não precisa ficar caçando peça solta depois.',
+    ],
+    dialoguesScene3: [
+      'Deixa qualquer refeição com cara de especial e você recebe elogio dos convidados. Se você curtiu, dá uma olhada no carrinho laranja.',
+      'Prático, resistente e bonito de verdade. Clica no carrinho laranja pra conferir o conjunto.',
+      'Vale muito a pena pelo que entrega na sua mesa. Aproveita e garante o seu no carrinho laranja.',
     ],
   },
 };
@@ -489,6 +521,9 @@ function selectProductProfile(brand: string, focus: string): ProductConfig {
   }
   if (combined.match(/ferramenta|trena|parafusadeira|furadeira|chave|alicate|martelo|oficina|automotivo/)) {
     return PRODUCT_CATALOG.ferramentas;
+  }
+  if (combined.match(/prato|pratos|panela|panelas|talher|talheres|vasilha|vasilhas|tigela|tigelas|louça|louca|xícara|xicara|jogo de mesa|jantar|utensílio|utensilio/)) {
+    return PRODUCT_CATALOG.mesa;
   }
 
   return PRODUCT_CATALOG.geral;

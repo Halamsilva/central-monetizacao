@@ -35,6 +35,7 @@ const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AdminNotices = lazy(() => import('./pages/AdminNotices'));
 const AdminStudents = lazy(() => import('./pages/AdminStudents'));
 const AdminBlog = lazy(() => import('./pages/AdminBlog'));
+const AdminSubscription = lazy(() => import('./pages/AdminSubscription'));
 
 const routeTitles: Record<string, string> = {
   '/login': 'Entrar',
@@ -51,6 +52,7 @@ const routeTitles: Record<string, string> = {
   '/tools-ia': 'Ferramentas IA',
   '/menina-da-roca': 'Menina da Roca',
   '/clonagem-video': 'Clonagem de Video',
+  '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',
@@ -281,6 +283,14 @@ export default function App() {
                 element={
                   <AdminRoute>
                     <AdminBlog />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="admin/assinatura"
+                element={
+                  <AdminRoute>
+                    <AdminSubscription />
                   </AdminRoute>
                 }
               />

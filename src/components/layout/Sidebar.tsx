@@ -20,6 +20,7 @@ import {
   Megaphone,
   Users,
   FileText,
+  CircleDollarSign,
   LogOut,
   X,
 } from 'lucide-react';
@@ -138,6 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Gerenciar Avisos', icon: Megaphone, path: '/admin/notices' },
     { title: 'Gerenciar Alunos', icon: Users, path: '/admin/students' },
     { title: 'Gerenciar Blog', icon: FileText, path: '/admin/blog' },
+    { title: 'Página de Assinatura', icon: CircleDollarSign, path: '/admin/assinatura' },
   ];
 
   const renderMenuItem = (item: MenuItem) => {

@@ -34,7 +34,7 @@ const Assinar: React.FC = () => {
         const { data } = await supabase
           .from('app_settings')
           .select('value')
-          .eq('key', 'subscription_offer')
+          .eq('id', 'subscription_offer')
           .maybeSingle();
 
         const value = data?.value;

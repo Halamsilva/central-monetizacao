@@ -17,6 +17,7 @@ import {
   ChefHat,
   Bug,
   Package,
+  Video,
   User,
   Settings,
   Shield,
@@ -122,6 +123,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           { title: 'Mestre 30s', icon: ChefHat, path: '/mestre-30s' },
           { title: 'Receitas Anti-Pragas', icon: Bug, path: '/insetos' },
           { title: 'POV Produto', icon: Package, path: '/pov-produto' },
+          { title: 'TikTok Shop Seedance', icon: Video, path: '/seedance' },
         ]
       : []),
   ];

@@ -28,6 +28,7 @@ const NovelinhasUni = lazy(() => import('./pages/NovelinhasUni'));
 const Mestre30s = lazy(() => import('./pages/mestre30s/App'));
 const Insetos = lazy(() => import('./pages/insetos/App'));
 const PovProduto = lazy(() => import('./pages/povProduto/App'));
+const Seedance = lazy(() => import('./pages/seedance/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -64,6 +65,7 @@ const routeTitles: Record<string, string> = {
   '/mestre-30s': 'Mestre 30s',
   '/insetos': 'Receitas Anti-Pragas',
   '/pov-produto': 'POV Produto',
+  '/seedance': 'TikTok Shop Seedance',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
@@ -280,6 +282,7 @@ export default function App() {
               <Route path="mestre-30s" element={<AdminRoute><Mestre30s /></AdminRoute>} />
               <Route path="insetos" element={<AdminRoute><Insetos /></AdminRoute>} />
               <Route path="pov-produto" element={<AdminRoute><PovProduto /></AdminRoute>} />
+              <Route path="seedance" element={<AdminRoute><Seedance /></AdminRoute>} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

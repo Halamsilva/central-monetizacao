@@ -340,6 +340,48 @@ REGRAS OBRIGATORIAS DE COERENCIA, IDENTIFICACAO DE FALA E DURACAO
    - NUNCA ultrapasse 9 segundos. Se ficar longo, corte e mantenha apenas a essencia da fala.
 
 ================================================================================
+DIRETRIZ DE OURO DO ROTEIRO (PADRAO DAS MICRO-NOVELAS QUE VIRALIZAM)
+================================================================================
+Antes de escrever as cenas, planeje mentalmente (NAO escreva o plano no texto final) uma NOVELINHA DE VERDADE seguindo o esqueleto abaixo. Historias soltas, aleatorias ou sem escalada estao ABSOLUTAMENTE PROIBIDAS.
+
+A) LOGLINE E MOTOR DRAMATICO (defina em uma frase):
+   - Protagonista + o que ele QUER + o que o IMPEDE + o SEGREDO/MENTIRA que sustenta a trama (o "pavio" que pode explodir). Sem um querer claro e um obstaculo concreto, NAO existe historia.
+   - Escolha uma lane de trope que prende: injustica/humilhacao publica, traicao, identidade oculta, heranca/segredo de familia, amor proibido, vinganca ou reviravolta de poder. Entregue o payoff esperado por um caminho INESPERADO.
+
+B) ESPINHA DRAMATICA EM CAUSA E EFEITO (obrigatoria do inicio ao fim):
+   - Cena 1: GANCHO EXPLOSIVO — comece JA no conflito, com uma imagem, acao ou PROVA que para o scroll. Nunca comece pela rotina.
+   - Cenas iniciais: ESCALADA — cada cena piora a situacao com um fato NOVO; plante a promessa narrativa que sera cobrada depois.
+   - MEIO (cena do meio aproximada): REVIRAVOLTA que RE-PRECIFICA a historia — uma informacao nova que faz tudo o que entendiamos mudar de valor.
+   - Cenas finais: ACELERACAO — segredos vem a tona, aliancas mudam, o cerco aperta.
+   - Ultima cena: DESFECHO com REVERSAO PUBLICA (a derrota do vilao ou a vitoria do protagonista precisa ser VISTA por outros, na frente de testemunhas) e uma licao/emocao memoravel. Pode deixar um fio aberto para continuar.
+
+C) REGRA DO "UM SO TURNO POR CENA":
+   - Cada cena tem EXATAMENTE UM momento que vira o jogo (revelacao, traicao, mudanca de alianca ou decisao). Se tiver duas viradas, divida em duas cenas; se nao tiver NENHUMA, corte a cena.
+   - Cada cena termina em MINI-CLIFFHANGER: corte na pergunta/revelacao, NUNCA na resposta. Deixe o espectador querendo a proxima cena.
+
+D) ESCADA DE ROTACAO DOS GANCHOS (nunca repita o mesmo tipo duas seguidas):
+   - Identidade (alguem nao e quem dizia ser), Emocao (confissao, ruptura ou recusa suspensa) e Realizacao (tudo o que achavamos estava errado). Alterne esses tres tipos entre as cenas.
+
+E) CICLO VICIANTE (DANO -> ALIVIO -> AMEACA MAIOR):
+   - Dano (humilhacao, perda ou ameaca) -> um pequeno alivio verdadeiro -> uma ameaca MAIOR antes que o alivio se assente. Mantenha o publico nesse ciclo.
+
+F) "CHOQUE E PROVA; DOR E DETALHE" (emoção concreta e filmavel):
+   - O choque deve ser uma PROVA fisica e especifica (uma mensagem, um documento, uma foto, uma alianca, uma transferencia), nunca uma frase vaga de sentimento.
+   - A dor deve ser encenada por OBJETOS e detalhes (o contato ainda salvo como "meu amor ❤️", a alianca ainda no dedo, a musica que nunca mudou). Em 9:16, maos, olhos e objetos comunicam mais que fala.
+
+G) PROIBICOES ABSOLUTAS (erros que deixam a historia ruim):
+   - Cenas aleatorias/soltas que nao avancam a causa-e-efeito.
+   - Repetir a mesma acao ou a mesma fala de uma cena anterior.
+   - Personagem sem desejo/objetivo claro, ou que age sem motivo.
+   - Resolver o gancho logo no inicio da cena seguinte (a tensao morre).
+   - Explicar demais o cliffhanger (corte dois segundos antes do que parece seguro).
+   - Vilao generico sem motivacao real; acoes concretas que nao alteram nada.
+   - Mais de um turno por cena ou meio da historia sem forca (sem micro-climax).
+   - Final sem pagamento emocional e sem reversao publica.
+
+Distribua esses batimentos pelo numero de cenas pedido: gancho no inicio, escalada no meio, revirada no meio, aceleracao e pagamento no fim. Se o numero de cenas for pequeno, comprima SEM perder nenhum desses batimentos.
+
+================================================================================
 REGRA CRÍTICA: DESCRIÇÃO PROFUNDA DOS PERSONAGENS & IDENTIFICAÇÃO DE QUEM VAI FALAR
 ================================================================================
 1. IDENTIFICAÇÃO RIGOROSA E DETALHADA DE QUEM VAI FALAR (SEM DIÁLOGO SUGERIDO - APENAS DIÁLOGO REAL):

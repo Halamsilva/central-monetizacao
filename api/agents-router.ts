@@ -7,6 +7,10 @@ import mestre30sHandler from '../server-agents/mestre30s.js';
 import insetosHandler from '../server-agents/insetos.js';
 import povProdutoHandler from '../server-agents/povProduto.js';
 import seedanceHandler from '../server-agents/seedance.js';
+import avatarScaleHandler from '../server-agents/avatarScale.js';
+import receitasEbookHandler from '../server-agents/receitasEbook.js';
+import encapsuladosHandler from '../server-agents/encapsulados.js';
+import novelinhasGordosHandler from '../server-agents/novelinhasGordos.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
@@ -18,6 +22,10 @@ const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   insetos: insetosHandler,
   povProduto: povProdutoHandler,
   seedance: seedanceHandler,
+  avatarScale: avatarScaleHandler,
+  receitasEbook: receitasEbookHandler,
+  encapsulados: encapsuladosHandler,
+  novelinhasGordos: novelinhasGordosHandler,
 };
 
 export default function handler(req: any, res: any) {

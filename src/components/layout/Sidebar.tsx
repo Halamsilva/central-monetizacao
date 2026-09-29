@@ -17,6 +17,9 @@ import {
   Bug,
   Package,
   Video,
+  Scale,
+  TrendingUp,
+  HeartHandshake,
   User,
   Settings,
   Shield,
@@ -117,6 +120,15 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Receitas Anti-Pragas', icon: Bug, path: '/insetos' },
     { title: 'POV Produto', icon: Package, path: '/pov-produto' },
     { title: 'TikTok Shop Seedance', icon: Video, path: '/seedance' },
+    ...(isAdmin
+      ? [
+          { title: 'Avatar Scale', icon: Scale, path: '/avatar-scale' },
+          { title: 'Receitas p/ Ebook', icon: BookOpen, path: '/receitas-ebook' },
+          { title: 'Vender Encapsulados', icon: Package, path: '/encapsulados' },
+          { title: 'Radar TikTok Shop', icon: TrendingUp, path: '/radar-tiktok-shop' },
+          { title: 'Novelinhas Gordos', icon: HeartHandshake, path: '/novelinhas-gordos' },
+        ]
+      : []),
   ];
 
   const socialToolsMenu: MenuItem[] = [

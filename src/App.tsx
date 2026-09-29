@@ -26,6 +26,11 @@ const Mestre30s = lazy(() => import('./pages/mestre30s/App'));
 const Insetos = lazy(() => import('./pages/insetos/App'));
 const PovProduto = lazy(() => import('./pages/povProduto/App'));
 const Seedance = lazy(() => import('./pages/seedance/App'));
+const AvatarScale = lazy(() => import('./pages/AvatarScale'));
+const ReceitasEbook = lazy(() => import('./pages/receitasEbook/App'));
+const Encapsulados = lazy(() => import('./pages/encapsulados/App'));
+const RadarTikTokShop = lazy(() => import('./pages/RadarTikTokShop'));
+const NovelinhasGordos = lazy(() => import('./pages/novelinhasGordos/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -60,6 +65,11 @@ const routeTitles: Record<string, string> = {
   '/insetos': 'Receitas Anti-Pragas',
   '/pov-produto': 'POV Produto',
   '/seedance': 'TikTok Shop Seedance',
+  '/avatar-scale': 'Avatar Scale',
+  '/receitas-ebook': 'Receitas p/ Ebook',
+  '/encapsulados': 'Vender Encapsulados',
+  '/radar-tiktok-shop': 'Radar TikTok Shop',
+  '/novelinhas-gordos': 'Novelinhas Gordos',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
@@ -274,6 +284,11 @@ export default function App() {
               <Route path="insetos" element={<Insetos />} />
               <Route path="pov-produto" element={<PovProduto />} />
               <Route path="seedance" element={<Seedance />} />
+              <Route path="avatar-scale" element={<AdminRoute><AvatarScale /></AdminRoute>} />
+              <Route path="receitas-ebook" element={<AdminRoute><ReceitasEbook /></AdminRoute>} />
+              <Route path="encapsulados" element={<AdminRoute><Encapsulados /></AdminRoute>} />
+              <Route path="radar-tiktok-shop" element={<AdminRoute><RadarTikTokShop /></AdminRoute>} />
+              <Route path="novelinhas-gordos" element={<AdminRoute><NovelinhasGordos /></AdminRoute>} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

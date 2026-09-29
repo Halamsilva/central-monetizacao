@@ -173,6 +173,71 @@ const Assinar: React.FC = () => {
         </div>
       </section>
 
+      {/* ÂNCORA — CURSO x ASSINATURA */}
+      <section className="px-4 pb-16">
+        <div className="mx-auto max-w-4xl rounded-[2rem] border border-white/10 bg-white/[0.03] p-8">
+          <h2 className="text-center text-2xl font-black sm:text-3xl">
+            Curso completo ou só as ferramentas?
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-center text-sm text-slate-400">
+            Os dois te dão acesso à plataforma. A diferença é o quanto você quer
+            aprender — escolha o que faz sentido pra você.
+          </p>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Curso completo
+              </p>
+              <p className="mt-2 text-3xl font-black text-white">R$ 297</p>
+              <p className="text-xs text-slate-500">pagamento único</p>
+
+              <ul className="mt-4 space-y-2 text-sm text-slate-400">
+                <li className="flex items-center gap-2">
+                  <Check size={15} className="text-slate-500" /> Aprender do zero, passo a passo
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={15} className="text-slate-500" /> Acesso à plataforma de agentes
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={15} className="text-slate-500" /> Pagamento único
+                </li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-[#f27d26]/40 bg-[#f27d26]/[0.06] p-6">
+              <p className="text-xs font-black uppercase tracking-widest text-[#f27d26]">
+                Só as ferramentas
+              </p>
+              <p className="mt-2 text-3xl font-black text-white">
+                a partir de {offer.annualMonthly}
+              </p>
+              <p className="text-xs text-slate-500">assinatura · cancele quando quiser</p>
+
+              <ul className="mt-4 space-y-2 text-sm text-slate-300">
+                <li className="flex items-center gap-2">
+                  <Check size={15} className="text-emerald-400" /> Todos os agentes de IA
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={15} className="text-emerald-400" /> Novos agentes toda semana
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={15} className="text-emerald-400" /> Sem compromisso de longo prazo
+                </li>
+              </ul>
+
+              <button
+                type="button"
+                onClick={scrollToPlans}
+                className="mt-5 flex h-12 w-full items-center justify-center rounded-2xl bg-[#f27d26] text-sm font-black text-black transition hover:brightness-110"
+              >
+                Quero só as ferramentas
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* PLANOS */}
       <section id="planos" className="scroll-mt-10 px-4 pb-16">
         <div className="mx-auto max-w-4xl">
@@ -270,6 +335,23 @@ const Assinar: React.FC = () => {
           <p className="mt-6 text-center text-xs font-semibold text-slate-500">
             Pagamento seguro pela Kiwify. Após assinar, use o <strong>mesmo e-mail</strong> para criar sua conta no site.
           </p>
+        </div>
+      </section>
+
+      {/* GARANTIA */}
+      <section className="px-4 pb-16">
+        <div className="mx-auto flex max-w-4xl flex-col items-center gap-5 rounded-[2rem] border border-emerald-500/20 bg-emerald-500/[0.06] p-8 text-center sm:flex-row sm:text-left">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-400">
+            <ShieldCheck size={32} />
+          </div>
+          <div>
+            <h3 className="text-xl font-black text-white">Garantia de 7 dias</h3>
+            <p className="mt-1 text-sm leading-relaxed text-slate-400">
+              Assine sem risco. Se em até 7 dias você achar que não é pra você, é só
+              pedir o reembolso. E depois disso, pode cancelar quando quiser — sem
+              burocracia.
+            </p>
+          </div>
         </div>
       </section>
 

@@ -231,7 +231,7 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   if (loading) return <LoadingScreen />;
 
   if (!isAdmin || profile?.access_status === 'blocked') {
-    return <Navigate to="/agents" replace />;
+    return <Navigate to="/menina-da-roca" replace />;
   }
 
   return <>{children}</>;
@@ -260,8 +260,8 @@ export default function App() {
                 </PrivateRoute>
               }
             >
-              <Route index element={<Navigate to="/agents" replace />} />
-              <Route path="agents" element={<Agents />} />
+              <Route index element={<Navigate to="/menina-da-roca" replace />} />
+              <Route path="agents" element={<AdminRoute><Agents /></AdminRoute>} />
               <Route path="viral-prompts" element={<ViralPrompts />} />
               <Route path="tiktok-shop" element={<TikTokShop />} />
               <Route path="facebook" element={<Facebook />} />
@@ -335,7 +335,7 @@ export default function App() {
             </Route>
 
             {/* Redirecionamento de Rotas Inexistentes */}
-            <Route path="*" element={<Navigate to="/agents" replace />} />
+            <Route path="*" element={<Navigate to="/menina-da-roca" replace />} />
           </Routes>
         </Suspense>
 

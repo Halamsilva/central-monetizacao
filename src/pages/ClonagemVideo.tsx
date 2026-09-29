@@ -15,7 +15,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
 const SMALL_LIMIT = 3.2 * 1024 * 1024;
-const FILE_LIMIT = 20 * 1024 * 1024;
+const FILE_LIMIT = 500 * 1024 * 1024;
 
 const LANGUAGES = [
   { value: 'brasil', label: 'Português (Brasil)' },
@@ -40,30 +40,78 @@ const readBase64 = (file: File) =>
     reader.readAsDataURL(file);
   });
 
-const uploadToGemini = async (file: File, key: string) => {
-  const url = `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=media&key=${encodeURIComponent(key)}`;
+const uploadToGemini = async (
+  file: File,
+  key: string,
+  onProgress?: (percent: number) => void
+) => {
+  const startUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${encodeURIComponent(key)}`;
 
-  const response = await fetch(url, {
+  const startResponse = await fetch(startUrl, {
     method: 'POST',
-    headers: { 'Content-Type': file.type || 'video/mp4' },
-    body: file,
+    headers: {
+      'X-Goog-Upload-Protocol': 'resumable',
+      'X-Goog-Upload-Command': 'start',
+      'X-Goog-Upload-Header-Content-Length': String(file.size),
+      'X-Goog-Upload-Header-Content-Type': file.type || 'video/mp4',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ file: { display_name: 'clonagem-video' } }),
   });
 
-  const payload = await response.json().catch(() => ({} as any));
-
-  if (!response.ok) {
-    const detail = payload?.error?.message || '';
-    if (detail.toLowerCase().includes('blocked') || response.status === 403) {
+  if (!startResponse.ok) {
+    let detail = '';
+    try {
+      const payload = await startResponse.json();
+      detail = payload?.error?.message || '';
+    } catch {
+      detail = '';
+    }
+    if (startResponse.status === 403 || detail.toLowerCase().includes('blocked')) {
       throw new Error(
         'Sua chave do Google AI Studio bloqueia o upload de arquivos. Crie uma chave nova (sem restricoes) em aistudio.google.com/app/apikey.'
       );
     }
-    throw new Error(detail || 'Falha ao enviar o video para a IA.');
+    throw new Error(detail || 'Falha ao iniciar o upload do video.');
   }
 
-  const uri = payload?.file?.uri;
-  if (!uri) throw new Error('O upload nao retornou o arquivo.');
-  return String(uri);
+  const uploadUrl = startResponse.headers.get('x-goog-upload-url');
+  if (!uploadUrl) throw new Error('Nao consegui iniciar o upload do video.');
+
+  const fileUri = await new Promise<string>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', uploadUrl, true);
+    xhr.setRequestHeader('X-Goog-Upload-Command', 'upload, finalize');
+    xhr.setRequestHeader('X-Goog-Upload-Offset', '0');
+    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && onProgress) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject(new Error('Falha ao enviar o video. Tente novamente.'));
+        return;
+      }
+      try {
+        const payload = JSON.parse(xhr.responseText);
+        const uri = payload?.file?.uri;
+        if (uri) resolve(String(uri));
+        else reject(new Error('O upload nao retornou o arquivo.'));
+      } catch {
+        reject(new Error('Resposta de upload invalida.'));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Falha de rede no upload do video.'));
+
+    xhr.send(file);
+  });
+
+  return fileUri;
 };
 
 const ClonagemVideo: React.FC = () => {
@@ -151,8 +199,10 @@ const ClonagemVideo: React.FC = () => {
             'Para videos maiores, adicione sua chave do Google AI Studio em Configuracoes.'
           );
         }
-        setStatus('Enviando o video para a IA...');
-        body.fileUri = await uploadToGemini(file, key);
+        setStatus('Enviando o vídeo... 0%');
+        body.fileUri = await uploadToGemini(file, key, (percent) =>
+          setStatus(`Enviando o vídeo... ${percent}%`)
+        );
       }
 
       setStatus('Analisando o video (pode levar 1-2 minutos)...');

@@ -395,6 +395,7 @@ const AdminAgents = () => {
 
         const payload = {
             title: formData.title.trim(),
+            slug: slugifyAgentTitle(formData.title),
             description: formData.description.trim(),
             image: formData.image.trim(),
             category: formattedCategory,

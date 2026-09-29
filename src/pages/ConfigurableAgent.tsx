@@ -2,7 +2,7 @@ import React, { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'r
 import { useParams } from 'react-router-dom';
 import { AlertCircle, Bot, Check, Copy, ImagePlus, Loader2, Send, Sparkles, Wand2, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { parseConfigurableAgent, slugifyAgentTitle, type ConfigurableAgentConfig } from '../lib/configurableAgent';
+import { parseConfigurableAgent, type ConfigurableAgentConfig } from '../lib/configurableAgent';
 import { canLoadExternalMedia } from '../lib/media';
 
 type Agent = {
@@ -81,10 +81,11 @@ const ConfigurableAgent: React.FC = () => {
       setLoading(true);
       setError('');
 
-      const { data, error: fetchError } = await supabase
+      const { data: found, error: fetchError } = await supabase
         .from('agents')
         .select('*')
-        .neq('is_published', false);
+        .eq('slug', slug)
+        .maybeSingle();
 
       if (fetchError) {
         setError('Nao foi possivel carregar este agente.');
@@ -92,7 +93,6 @@ const ConfigurableAgent: React.FC = () => {
         return;
       }
 
-      const found = (data || []).find((item: Agent) => slugifyAgentTitle(item.title) === slug);
       const parsed = parseConfigurableAgent(found?.prompt);
 
       if (!found || !parsed) {

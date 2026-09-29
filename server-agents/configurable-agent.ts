@@ -89,11 +89,6 @@ export default async function handler(req: any, res: any) {
       return sendError(res, 405, 'Method not allowed');
     }
 
-    const apiKey = await getActiveGeminiApiKey();
-    if (!apiKey) {
-      return sendError(res, 500, 'GEMINI_API_KEY is not configured');
-    }
-
     const serviceSupabase = getServiceSupabase();
     if (!serviceSupabase) {
       return sendError(res, 500, 'SUPABASE_SERVICE_ROLE_KEY is not configured');
@@ -101,6 +96,11 @@ export default async function handler(req: any, res: any) {
 
     const user = await checkAccess(serviceSupabase, req, res);
     if (!user) return;
+
+    const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
+    if (!apiKey) {
+      return sendError(res, 500, 'GEMINI_API_KEY is not configured');
+    }
 
     const agentId = cleanText(req.body?.agentId, 120);
     const values = req.body?.values && typeof req.body.values === 'object' ? req.body.values : {};

@@ -12,6 +12,8 @@ import {
   Loader2,
   Mail,
   Lock,
+  KeyRound,
+  Trash2,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
@@ -38,7 +40,7 @@ const defaultPreferences: Preferences = {
 };
 
 const Settings: React.FC = () => {
-  const { profile } = useAuth();
+  const { user, profile } = useAuth();
 
   const [preferences, setPreferences] = useState<Preferences>(() => {
     const savedPreferences = localStorage.getItem(preferencesKey);
@@ -57,6 +59,14 @@ const Settings: React.FC = () => {
 
   const [saving, setSaving] = useState(false);
   const [sendingRecovery, setSendingRecovery] = useState(false);
+
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [hasApiKey, setHasApiKey] = useState(false);
+  const [keyLoading, setKeyLoading] = useState(false);
+  const [keyMessage, setKeyMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
@@ -77,6 +87,36 @@ const Settings: React.FC = () => {
 
     return () => clearTimeout(timer);
   }, [message]);
+
+  useEffect(() => {
+    if (!keyMessage) return;
+
+    const timer = setTimeout(() => {
+      setKeyMessage(null);
+    }, 4500);
+
+    return () => clearTimeout(timer);
+  }, [keyMessage]);
+
+  useEffect(() => {
+    const loadApiKey = async () => {
+      if (!user?.id) return;
+
+      try {
+        const { data } = await supabase
+          .from('user_secrets')
+          .select('gemini_api_key')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        setHasApiKey(Boolean(data?.gemini_api_key));
+      } catch {
+        setHasApiKey(false);
+      }
+    };
+
+    loadApiKey();
+  }, [user?.id]);
 
   const updatePreference = <K extends keyof Preferences>(
     key: K,
@@ -168,6 +208,83 @@ const Settings: React.FC = () => {
     } finally {
       setSendingRecovery(false);
     }
+  };
+
+  const saveApiKey = async () => {
+    if (!user?.id) return;
+
+    const value = apiKeyInput.trim();
+
+    if (!value) {
+      setKeyMessage({
+        type: 'error',
+        text: 'Cole sua chave da API do Google AI Studio.',
+      });
+      return;
+    }
+
+    if (!value.startsWith('AIza')) {
+      setKeyMessage({
+        type: 'error',
+        text: 'Essa chave parece inválida. Ela deve começar com "AIza".',
+      });
+      return;
+    }
+
+    setKeyLoading(true);
+    setKeyMessage(null);
+
+    const { error } = await supabase.from('user_secrets').insert({
+      id: user.id,
+      gemini_api_key: value,
+      updated_at: new Date().toISOString(),
+    });
+
+    setKeyLoading(false);
+
+    if (error) {
+      setKeyMessage({
+        type: 'error',
+        text: 'Não foi possível salvar a chave. Tente novamente.',
+      });
+      return;
+    }
+
+    setHasApiKey(true);
+    setApiKeyInput('');
+    setKeyMessage({
+      type: 'success',
+      text: 'Chave salva! Os agentes vão usar a sua cota de IA.',
+    });
+  };
+
+  const removeApiKey = async () => {
+    if (!user?.id) return;
+
+    setKeyLoading(true);
+    setKeyMessage(null);
+
+    const { error } = await supabase.from('user_secrets').insert({
+      id: user.id,
+      gemini_api_key: '',
+      updated_at: new Date().toISOString(),
+    });
+
+    setKeyLoading(false);
+
+    if (error) {
+      setKeyMessage({
+        type: 'error',
+        text: 'Não foi possível remover a chave. Tente novamente.',
+      });
+      return;
+    }
+
+    setHasApiKey(false);
+    setKeyMessage({
+      type: 'success',
+      text: 'Chave removida. Os agentes voltam a usar a chave da plataforma.',
+    });
   };
 
   const formatDate = (date?: string | null) => {
@@ -535,6 +652,111 @@ const Settings: React.FC = () => {
           <option value="en-US">Inglês Estados Unidos</option>
           <option value="es-ES">Espanhol</option>
         </select>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm"
+      >
+        <div className="mb-6 flex items-start gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+            <KeyRound size={24} />
+          </div>
+
+          <div>
+            <h3 className="text-xl font-black text-slate-900">
+              Chave de IA (Google AI Studio)
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Use a sua própria chave do Google AI Studio para os agentes
+              rodarem na sua cota. Se deixar em branco, usamos a chave da
+              plataforma.
+            </p>
+          </div>
+        </div>
+
+        {hasApiKey ? (
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+            <div className="flex items-center gap-3 text-emerald-700">
+              <Check size={18} />
+              <span className="text-sm font-bold">
+                Chave configurada. Os agentes usam a sua cota.
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={removeApiKey}
+              disabled={keyLoading}
+              className="mt-3 flex h-11 items-center justify-center gap-2 rounded-2xl bg-white px-4 text-sm font-bold text-red-600 transition hover:bg-red-50 disabled:opacity-70"
+            >
+              {keyLoading ? (
+                <Loader2 className="animate-spin" size={16} />
+              ) : (
+                <Trash2 size={16} />
+              )}
+              Remover chave
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <input
+              type="password"
+              value={apiKeyInput}
+              onChange={(event) => setApiKeyInput(event.target.value)}
+              placeholder="Cole aqui sua chave AIza..."
+              autoComplete="off"
+              className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-blue-500 focus:bg-white"
+            />
+
+            <button
+              type="button"
+              onClick={saveApiKey}
+              disabled={keyLoading}
+              className="flex h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-6 text-sm font-bold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:opacity-70"
+            >
+              {keyLoading ? (
+                <Loader2 className="animate-spin" size={18} />
+              ) : (
+                <Save size={18} />
+              )}
+              Salvar chave
+            </button>
+          </div>
+        )}
+
+        <p className="mt-4 text-xs font-semibold text-slate-400">
+          Pegue sua chave grátis em{' '}
+          <a
+            href="https://aistudio.google.com/app/apikey"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            aistudio.google.com/app/apikey
+          </a>
+          . Ela fica guardada só na sua conta.
+        </p>
+
+        {keyMessage && (
+          <div
+            className={`mt-4 flex items-start gap-3 rounded-2xl border p-4 text-sm font-semibold ${keyMessage.type === 'success'
+                ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                : 'border-red-100 bg-red-50 text-red-700'
+              }`}
+          >
+            {keyMessage.type === 'success' ? (
+              <Check size={18} className="mt-0.5 shrink-0" />
+            ) : (
+              <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+            )}
+
+            <span>{keyMessage.text}</span>
+          </div>
+        )}
       </motion.div>
 
       <div className="flex flex-col gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">

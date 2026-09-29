@@ -307,13 +307,14 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = await getActiveGeminiApiKey();
+  const user = await checkAccess(req, res);
+  if (!user) return;
+
+  const serviceSupabase = getServiceSupabase();
+  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
   if (!apiKey) {
     return res.status(500).json({ error: 'GEMINI_API_KEY is not configured' });
   }
-
-  const user = await checkAccess(req, res);
-  if (!user) return;
 
   const action = cleanText(req.body?.action, 40);
   if (action === 'analyze-image') {

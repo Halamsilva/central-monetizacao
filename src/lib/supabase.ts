@@ -128,7 +128,8 @@ class FirebaseQuery implements PromiseLike<QueryResult> {
     if (visibilityField && !effectiveFilters.some(filter => filter.field === visibilityField)) {
       effectiveFilters.push({ field: visibilityField, value: true, neq: false });
     }
-    const serverFilter = effectiveFilters.find(filter => filter.field === visibilityField)
+    const serverFilter = this.filters.find(filter => filter.field !== 'id' && !filter.neq)
+      || effectiveFilters.find(filter => filter.field === visibilityField)
       || effectiveFilters.find(filter => filter.field !== 'id' && !filter.neq);
     const constraints: QueryConstraint[] = serverFilter
       ? [where(serverFilter.field, '==', serverFilter.value)] : [];

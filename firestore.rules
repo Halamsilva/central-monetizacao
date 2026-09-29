@@ -38,6 +38,10 @@ service cloud.firestore {
       allow delete: if owner();
     }
 
+    match /user_secrets/{userId} {
+      allow read, write: if owner() || (signedIn() && request.auth.uid == userId);
+    }
+
     match /{name}/{itemId} {
       allow read: if owner() || (
         activeStudent()

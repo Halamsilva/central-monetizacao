@@ -49,7 +49,30 @@ export const getStoredGeminiApiKey = async (serviceSupabase?: any) => {
   return cleanApiKey(data?.value?.apiKey);
 };
 
-export const getActiveGeminiApiKey = async (serviceSupabase?: any) => {
-  const storedKey = await getStoredGeminiApiKey(serviceSupabase);
+export const getUserGeminiApiKey = async (serviceSupabase: any, userId?: string) => {
+  if (!serviceSupabase || !userId) return '';
+
+  try {
+    const { data, error } = await serviceSupabase
+      .from('user_secrets')
+      .select('gemini_api_key')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) return '';
+
+    return cleanApiKey(data?.gemini_api_key);
+  } catch {
+    return '';
+  }
+};
+
+export const getActiveGeminiApiKey = async (serviceSupabase?: any, userId?: string) => {
+  const supabase = serviceSupabase || getServiceSupabase();
+
+  const userKey = await getUserGeminiApiKey(supabase, userId);
+  if (userKey) return userKey;
+
+  const storedKey = await getStoredGeminiApiKey(supabase);
   return storedKey || cleanApiKey(process.env.GEMINI_API_KEY);
 };

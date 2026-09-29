@@ -4,6 +4,7 @@ import {
   ChevronDown,
   CreditCard,
   Infinity as InfinityIcon,
+  Play,
   RefreshCw,
   ShieldCheck,
   Sparkles,
@@ -20,6 +21,7 @@ type SubscriptionOffer = {
   annualMonthly: string;
   coursePrice: string;
   courseCheckoutUrl: string;
+  videoUrl: string;
   benefits: string[];
   checkoutUrl: string;
   annualCheckoutUrl: string;
@@ -34,6 +36,7 @@ const DEFAULT_OFFER: SubscriptionOffer = {
   annualMonthly: 'R$ 29/mês',
   coursePrice: 'R$ 297',
   courseCheckoutUrl: '',
+  videoUrl: '',
   benefits: [
     'Acesso a TODOS os agentes de IA da plataforma',
     'Novos agentes adicionados toda semana',
@@ -44,6 +47,16 @@ const DEFAULT_OFFER: SubscriptionOffer = {
   ],
   checkoutUrl: '',
   annualCheckoutUrl: '',
+};
+
+const getVideoEmbed = (url: string) => {
+  const youtube = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+  if (youtube) return `https://www.youtube.com/embed/${youtube[1]}`;
+
+  const vimeo = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+
+  return '';
 };
 
 const FAQ = [
@@ -90,6 +103,7 @@ const Assinar: React.FC = () => {
             annualMonthly: String(value.annualMonthly || DEFAULT_OFFER.annualMonthly),
             coursePrice: String(value.coursePrice || DEFAULT_OFFER.coursePrice),
             courseCheckoutUrl: String(value.courseCheckoutUrl || ''),
+            videoUrl: String(value.videoUrl || ''),
             benefits:
               Array.isArray(value.benefits) && value.benefits.length
                 ? value.benefits.map((item: unknown) => String(item))
@@ -151,6 +165,42 @@ const Assinar: React.FC = () => {
               <InfinityIcon size={14} className="text-emerald-400" /> Acesso imediato
             </span>
           </div>
+        </div>
+      </section>
+
+      {/* VÍDEO DE VENDAS */}
+      <section className="px-4 pb-16">
+        <div className="mx-auto max-w-3xl">
+          {offer.videoUrl ? (
+            getVideoEmbed(offer.videoUrl) ? (
+              <div className="aspect-video overflow-hidden rounded-[1.5rem] border border-white/10 bg-black shadow-2xl">
+                <iframe
+                  src={getVideoEmbed(offer.videoUrl)}
+                  title="Vídeo de vendas"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="h-full w-full"
+                />
+              </div>
+            ) : (
+              <video
+                src={offer.videoUrl}
+                controls
+                playsInline
+                className="aspect-video w-full rounded-[1.5rem] border border-white/10 bg-black shadow-2xl"
+              />
+            )
+          ) : (
+            <div className="flex aspect-video flex-col items-center justify-center gap-3 rounded-[1.5rem] border-2 border-dashed border-white/15 bg-white/[0.02] text-center">
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-[#f27d26]/15 text-[#f27d26]">
+                <Play size={30} fill="currentColor" />
+              </span>
+              <p className="text-sm font-black text-slate-300">Vídeo de vendas</p>
+              <p className="max-w-xs text-xs text-slate-500">
+                Em breve: assista e veja como a plataforma funciona por dentro.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

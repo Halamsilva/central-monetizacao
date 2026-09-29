@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
+import WhatsAppFloat from './components/common/WhatsAppFloat';
 import { firebaseAuth, isFirebaseConfigured } from './lib/supabase';
 import { reload, sendEmailVerification } from 'firebase/auth';
 import { MessageCircle } from 'lucide-react';
@@ -331,6 +332,8 @@ export default function App() {
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Suspense>
+
+        <WhatsAppFloat />
       </BrowserRouter>
     </AuthProvider>
   );

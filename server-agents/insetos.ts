@@ -1804,13 +1804,20 @@ export default async function handler(req: any, res: any) {
 
   const action = String(req.body?.action || '');
 
-  if (action === 'chat') {
-    return handleChat(req, res);
-  }
+  try {
+    if (action === 'chat') {
+      return await handleChat(req, res);
+    }
 
-  if (action === 'recommend-suggestions') {
-    return handleRecommend(req, res);
-  }
+    if (action === 'recommend-suggestions') {
+      return await handleRecommend(req, res);
+    }
 
-  return handleGenerateScript(req, res);
+    return await handleGenerateScript(req, res);
+  } catch (error: any) {
+    console.error('Insetos agent error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Nao consegui processar agora. Tente novamente em alguns instantes.' });
+    }
+  }
 }

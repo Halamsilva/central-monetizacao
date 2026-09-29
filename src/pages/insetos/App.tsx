@@ -44,12 +44,17 @@ export default function App() {
       });
 
       if (!response.ok) {
-        let errorDetail = 'Falha na resposta do servidor.';
+        let errorDetail = `Falha na resposta do servidor (HTTP ${response.status}).`;
         try {
           const errJson = await response.json();
           if (errJson.error) errorDetail = errJson.error;
         } catch {
           // ignore non-json error responses
+        }
+        if (response.status === 413) {
+          errorDetail = 'Arquivo grande demais para envio. Remova o vídeo/imagem de referência ou use um arquivo menor.';
+        } else if (response.status >= 500 && !errorDetail.includes('HTTP')) {
+          errorDetail = `Falha no servidor. Tente novamente em alguns instantes.`;
         }
         throw new Error(errorDetail);
       }

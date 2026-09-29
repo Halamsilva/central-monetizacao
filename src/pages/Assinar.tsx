@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Check, CreditCard, Loader2, Sparkles, Star } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -63,12 +62,6 @@ const Assinar: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0a0a0a] px-4 py-10 text-slate-100">
       <div className="mx-auto max-w-3xl">
-        <div className="text-center">
-          <Link to="/login" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold text-slate-300">
-            ← Voltar para o login
-          </Link>
-        </div>
-
         <div className="mt-8 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-b from-[#141414] to-[#0f0f0f] shadow-2xl">
           <div className="border-b border-white/10 p-8 text-center">
             <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full bg-[#f27d26]/15 px-4 py-1.5 text-xs font-black uppercase tracking-wide text-[#f27d26]">

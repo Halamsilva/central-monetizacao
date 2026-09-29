@@ -281,13 +281,32 @@ Continue imediatamente após os acontecimentos anteriores, mantendo rigorosament
 }
 
 ================================================================================
+REGRAS OBRIGATORIAS DE COERENCIA, IDENTIFICACAO DE FALA E DURACAO
+================================================================================
+1. COERENCIA NARRATIVA (HISTORIA UNICA E CONTINUA):
+   - A historia e UMA so, com inicio, meio e fim, progredindo em CAUSA e EFEITO de uma cena para a outra (a cena 2 continua exatamente de onde a cena 1 parou, e assim por diante).
+   - Mantenha SEMPRE os mesmos personagens (nomes, idades, papeis e figurino identicos) do inicio ao fim. Nunca troque nomes, papeis ou aparencia no meio da historia, nem invente personagens novos sem necessidade.
+   - Nada de cenas soltas ou desconexas: cada cena avanca o conflito (gancho -> escalada -> revirada -> resolucao).
+   - Evite repeticao: cada cena traz um fato NOVO, sem repetir a mesma acao ou a mesma fala de cenas anteriores.
+
+2. IDENTIFICACAO DE QUEM FALA (SEM CONFUSAO):
+   - Em CADA cena, diga explicitamente QUEM FALA pelo NOME e repita a DESCRICAO CURTA FIXA dele (idade + traco fisico marcante + roupa exata com cor), para nunca haver duvida de quem esta falando.
+   - Se mais de um personagem falar na cena, identifique na ordem quem fala e para quem responde (QUEM FALA -> QUEM RESPONDE), repetindo a descricao curta fixa nos dois.
+   - NUNCA atribua a fala ao personagem errado e nunca deixe um personagem mexendo a boca sem falar.
+
+3. DURACAO DAS FALAS (MAXIMO 9 SEGUNDOS POR CENA):
+   - Cada cena tem no MAXIMO 9 segundos de fala. Cada fala individual deve ter no maximo ~25 palavras (cerca de 8-9 segundos em ritmo natural).
+   - Se a cena tiver dialogo entre dois personagens, a SOMA das falas tambem precisa caber em ~9 segundos (ex.: duas falas curtas de ~10-12 palavras cada).
+   - NUNCA ultrapasse 9 segundos. Se ficar longo, corte e mantenha apenas a essencia da fala.
+
+================================================================================
 REGRA CRÍTICA: DESCRIÇÃO PROFUNDA DOS PERSONAGENS & IDENTIFICAÇÃO DE QUEM VAI FALAR
 ================================================================================
 1. IDENTIFICAÇÃO RIGOROSA E DETALHADA DE QUEM VAI FALAR (SEM DIÁLOGO SUGERIDO - APENAS DIÁLOGO REAL):
    Em TODA e qualquer cena, você DEVE descrever claramente quem vai falar e quem responde:
    - QUEM FALA: Descreva minuciosamente o personagem que vai falar. Identifique com precisão: nome do personagem, idade exata, papel dramático na história, seu estado emocional naquele momento específico da cena (olhar marejado de dor, maxilar cerrado pela indignação, respiração entrecortada, sorriso caloroso e aliviado), postura física e o que ele está fazendo fisicamente ao falar. (Exemplo: "QUEM FALA: Carlos (O filho mais velho arrependido, 32 anos, operário humilde com olhar embargado de lágrimas, mãos calejadas trêmulas e postura curvada pelo peso da culpa)").
    - TOM E INTENÇÃO DA FALA: Descreva o tom de voz, ritmo, respiração, cadência e a intenção dramática subjacente da fala no idioma ${currentLang.langName} (se fala com firmeza comovente, sussurro tenso, indignação reprimida, voz embargada pelo choro ou alívio genuíno).
-   - DIÁLOGO REAL: O diálogo REAL, autêntico, vivo e cinematográfico que o personagem fala na cena. NUNCA use "diálogo sugerido", coloque SOMENTE O DIÁLOGO REAL! OBRIGATORIAMENTE entre aspas e com pontuação final.
+   - DIÁLOGO REAL: O diálogo REAL, autêntico, vivo e cinematográfico que o personagem fala na cena. NUNCA use "diálogo sugerido", coloque SOMENTE O DIÁLOGO REAL! OBRIGATORIAMENTE entre aspas e com pontuação final. LIMITE DE TEMPO: no máximo ~25 palavras (cerca de 9 segundos de fala); NUNCA ultrapasse 9 segundos e, se houver réplica, a soma das falas também precisa caber em ~9 segundos.
    - QUEM RESPONDE: Se houver diálogo compartilhado na cena, identifique com a mesma precisão o interlocutor da réplica: nome, idade exata, papel dramático na história, sua reação física imediata e sua expressão emocional ao ouvir a fala. (Exemplo: "QUEM RESPONDE: Dona Laura (A mãe idosa, 68 anos, olhar sereno mas magoado, lágrimas escorrendo suavemente pelas rugas ao encará-lo com as mãos trêmulas)").
    - RESPOSTA: O diálogo REAL da réplica correspondente, também entre aspas e com pontuação final.
 

@@ -18,6 +18,8 @@ type SubscriptionOffer = {
   price: string;
   annualPrice: string;
   annualMonthly: string;
+  coursePrice: string;
+  courseCheckoutUrl: string;
   benefits: string[];
   checkoutUrl: string;
   annualCheckoutUrl: string;
@@ -30,6 +32,8 @@ const DEFAULT_OFFER: SubscriptionOffer = {
   price: 'R$ 47/mês',
   annualPrice: 'R$ 347/ano',
   annualMonthly: 'R$ 29/mês',
+  coursePrice: 'R$ 297',
+  courseCheckoutUrl: '',
   benefits: [
     'Acesso a TODOS os agentes de IA da plataforma',
     'Novos agentes adicionados toda semana',
@@ -84,6 +88,8 @@ const Assinar: React.FC = () => {
             price: String(value.price || DEFAULT_OFFER.price),
             annualPrice: String(value.annualPrice || DEFAULT_OFFER.annualPrice),
             annualMonthly: String(value.annualMonthly || DEFAULT_OFFER.annualMonthly),
+            coursePrice: String(value.coursePrice || DEFAULT_OFFER.coursePrice),
+            courseCheckoutUrl: String(value.courseCheckoutUrl || ''),
             benefits:
               Array.isArray(value.benefits) && value.benefits.length
                 ? value.benefits.map((item: unknown) => String(item))
@@ -185,24 +191,39 @@ const Assinar: React.FC = () => {
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+            <div className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-6">
               <p className="text-xs font-black uppercase tracking-widest text-slate-400">
                 Curso completo
               </p>
-              <p className="mt-2 text-3xl font-black text-white">R$ 297</p>
-              <p className="text-xs text-slate-500">pagamento único</p>
+              <p className="mt-2 text-3xl font-black text-white">{offer.coursePrice}</p>
+              <p className="text-xs text-slate-500">pagamento único · acesso vitalício</p>
 
               <ul className="mt-4 space-y-2 text-sm text-slate-400">
                 <li className="flex items-center gap-2">
                   <Check size={15} className="text-slate-500" /> Aprender do zero, passo a passo
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check size={15} className="text-slate-500" /> Acesso à plataforma de agentes
+                  <Check size={15} className="text-slate-500" /> Acesso à plataforma para sempre
                 </li>
                 <li className="flex items-center gap-2">
                   <Check size={15} className="text-slate-500" /> Pagamento único
                 </li>
               </ul>
+
+              {offer.courseCheckoutUrl ? (
+                <a
+                  href={offer.courseCheckoutUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 flex h-12 items-center justify-center rounded-2xl border border-white/15 bg-white/5 text-sm font-black text-white transition hover:bg-white/10"
+                >
+                  Quero o curso completo
+                </a>
+              ) : (
+                <div className="mt-5 flex h-12 items-center justify-center rounded-2xl border border-dashed border-white/20 text-sm font-bold text-slate-500">
+                  Curso na Kiwify
+                </div>
+              )}
             </div>
 
             <div className="rounded-2xl border border-[#f27d26]/40 bg-[#f27d26]/[0.06] p-6">
@@ -249,7 +270,49 @@ const Assinar: React.FC = () => {
             <h2 className="mt-4 text-3xl font-black sm:text-4xl">Comece hoje mesmo</h2>
           </div>
 
-          <div className="mt-10 grid gap-6 sm:grid-cols-2">
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Curso completo */}
+            <div className="flex flex-col rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-7">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+                Curso completo
+              </p>
+              <p className="mt-3 text-4xl font-black text-white">{offer.coursePrice}</p>
+              <p className="mt-1 text-sm text-slate-500">pagamento único</p>
+
+              <div className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-400">
+                <InfinityIcon size={12} /> Acesso vitalício
+              </div>
+
+              <ul className="mt-6 space-y-2 text-sm text-slate-400">
+                <li className="flex items-center gap-2">
+                  <Check size={15} className="text-emerald-400" /> Curso completo do zero ao avançado
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={15} className="text-emerald-400" /> Acesso vitalício à plataforma
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={15} className="text-emerald-400" /> Pagamento único
+                </li>
+              </ul>
+
+              {loading ? (
+                <div className="mt-8 h-14 animate-pulse rounded-2xl bg-white/10" />
+              ) : offer.courseCheckoutUrl ? (
+                <a
+                  href={offer.courseCheckoutUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-8 flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 text-sm font-black text-white transition hover:bg-white/10"
+                >
+                  Quero o curso completo
+                </a>
+              ) : (
+                <div className="mt-8 flex h-14 items-center justify-center rounded-2xl border border-dashed border-white/20 text-sm font-bold text-slate-500">
+                  Em breve
+                </div>
+              )}
+            </div>
+
             {/* Mensal */}
             <div className="flex flex-col rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-7">
               <p className="text-xs font-black uppercase tracking-widest text-slate-400">

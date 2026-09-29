@@ -21,6 +21,7 @@ const ToolsIA = lazy(() => import('./pages/ToolsIA'));
 
 const MeninaDaRoca = lazy(() => import('./pages/MeninaDaRoca'));
 const ClonagemVideo = lazy(() => import('./pages/ClonagemVideo'));
+const Assinar = lazy(() => import('./pages/Assinar'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
 const Tutorials = lazy(() => import('./pages/Tutorials'));
 const Downloads = lazy(() => import('./pages/Downloads'));
@@ -134,6 +135,12 @@ const PendingAccessScreen = () => (
         o acesso é liberado automaticamente após a confirmação da compra e o
         prazo de 7 dias.
       </p>
+      <a
+        href="/assinar"
+        className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white transition hover:bg-blue-700"
+      >
+        Quero só o acesso à plataforma (assinar)
+      </a>
     </div>
   </div>
 );
@@ -204,6 +211,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/recovery" element={<Recovery />} />
+            <Route path="/assinar" element={<Assinar />} />
 
             {/* Rotas Privadas de Alunos com Layout Base */}
             <Route

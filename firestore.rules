@@ -64,6 +64,11 @@ service cloud.firestore {
       allow write: if owner();
     }
 
+    match /app_settings/{key} {
+      allow read: if key == 'subscription_offer';
+      allow write: if owner();
+    }
+
     match /{document=**} {
       allow read, write: if owner();
     }

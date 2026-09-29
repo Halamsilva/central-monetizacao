@@ -111,7 +111,27 @@ const getKiwifyProduct = (payload: any) => {
   return { id, name };
 };
 
+const getSubscriptionProducts = () =>
+  String(process.env.KIWIFY_SUBSCRIPTION_PRODUCTS || '')
+    .split(',')
+    .map((item) => normalizeProductKey(item))
+    .filter(Boolean);
+
+const isSubscriptionProduct = (product: { id: string; name: string }) => {
+  const subscriptions = getSubscriptionProducts();
+
+  if (!subscriptions.length) return false;
+
+  const candidates = [product.id, product.name]
+    .map((item) => normalizeProductKey(item))
+    .filter(Boolean);
+
+  return candidates.some((candidate) => subscriptions.includes(candidate));
+};
+
 const isAllowedKiwifyProduct = (product: { id: string; name: string }) => {
+  if (isSubscriptionProduct(product)) return true;
+
   const allowedProducts = process.env.KIWIFY_ALLOWED_PRODUCTS;
 
   if (!allowedProducts) return true;
@@ -178,8 +198,10 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
     'order.created_at',
   ]);
   const paidAt = paidAtValue ? new Date(String(paidAtValue)) : new Date();
+  const basePaidAt = Number.isNaN(paidAt.getTime()) ? new Date() : paidAt;
+  const isSubscription = isSubscriptionProduct(product);
   const releaseDelayDays = Number(process.env.KIWIFY_RELEASE_DELAY_DAYS || 7);
-  const releaseAt = addDays(Number.isNaN(paidAt.getTime()) ? new Date() : paidAt, releaseDelayDays);
+  const releaseAt = isSubscription ? basePaidAt : addDays(basePaidAt, releaseDelayDays);
   const isReleased = releaseAt.getTime() <= Date.now();
 
   const revokedEvents = [

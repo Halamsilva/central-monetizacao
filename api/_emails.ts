@@ -133,13 +133,19 @@ const buildEmail = (kind: EmailKind, input: SendAccessEmailInput) => {
   }
 
   return {
-    subject: 'Seu acesso foi liberado',
+    subject: 'Seu acesso esta liberado - Central Monetizacao',
     html: baseEmailHtml(
       'Acesso liberado',
       'Seu acesso a Central Monetizacao foi liberado.',
       `
-        <p>Oi, ${firstName}. Seu acesso foi liberado.</p>
-        <p>Agora voce ja pode entrar na plataforma e acessar a area de alunos.</p>
+        <p>Oi, ${firstName}. Seu acesso foi liberado!</p>
+        <p><strong>Para entrar, e simples:</strong></p>
+        <p>
+          1. Acesse <a href="${appUrl}" style="color:#2563eb;font-weight:700;">${appUrl}</a><br/>
+          2. Faca login ou <strong>crie sua conta usando o MESMO e-mail desta compra</strong><br/>
+          3. Pronto: o acesso e liberado automaticamente.
+        </p>
+        <p style="color:#b45309;">Importante: use o mesmo e-mail da compra. Se o e-mail for diferente, o acesso nao e liberado sozinho.</p>
       `
     ),
   };

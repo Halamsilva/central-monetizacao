@@ -144,7 +144,7 @@ export default async function handler(req: any, res: any) {
       .map((field: any) => `${field.label || field.key}: ${cleanText(values[field.key], 3000) || 'Nao informado'}`)
       .join('\n');
 
-    const prompt = `
+    const basePrompt = `
 ${cleanText(config.masterPrompt, 12000)}
 
 Dados preenchidos pelo aluno:
@@ -156,6 +156,31 @@ Regras finais:
 - Nao explique que voce e uma IA.
 - Se o pedido envolver imagem, use a imagem como referencia do produto/tema.
 `.trim();
+
+    const adjustment = cleanText(req.body?.adjustment, 2000);
+    const previousResult = cleanText(req.body?.previousResult, 16000);
+
+    const prompt = adjustment && previousResult
+      ? `
+${cleanText(config.masterPrompt, 12000)}
+
+Resultado anterior gerado por voce:
+${previousResult}
+
+Dados originais preenchidos pelo aluno:
+${userInput}
+
+Instrucao de ajuste do aluno:
+${adjustment}
+
+Regras finais:
+- Aplique somente o ajuste pedido, mantendo o restante coerente com o resultado anterior.
+- Responda em portugues brasileiro.
+- Entregue direto o resultado final revisado, pronto para copiar e usar.
+- Nao explique que voce e uma IA.
+- Se o pedido envolver imagem, use a imagem como referencia do produto/tema.
+`.trim()
+      : basePrompt;
 
     const ai = new GoogleGenAI({ apiKey });
     const contents: any = image

@@ -358,7 +358,7 @@ INSTRUÇÕES VISUAIS (PROMPT SEEDANCE 2.5 & GOOGLE FLOW):
 
 PROMPT CENA 2 (SEEDANCE 2.5):
 ... até PROMPT CENA ${numScenes} (SEEDANCE 2.5):
-(Seguindo rigorosamente a mesma estrutura para todas as ${numScenes} cenas, com QUEM FALA detalhado, TOM E INTENÇÃO DA FALA, DIÁLOGO REAL, QUEM RESPONDE, RESPOSTA e INSTRUÇÕES VISUAIS completas).
+(OBRIGATORIO para CADA cena, SEM OMITIR NENHUMA SECAO: QUEM FALA, TOM E INTENCAO DA FALA, DIALOGO REAL, QUEM RESPONDE, RESPOSTA e INSTRUCOES VISUAIS contendo TODAS as secoes entre colchetes: [Subject & Character Consistency], [Environment & Scene Setting], [Background Override], [Action & First-Frame Blocking], [Optics & Camera Movement], [Dialogue & Native Audio], [Lighting & Atmosphere], [Audio & Ambience (SFX)], [Global Style & Physical Realism] e [Negative Prompt]. NUNCA encurte, resuma ou pule essas secoes: cada cena tem que sair COMPLETA, com o mesmo nivel de detalhe da CENA 1.)
 
 ================================================================================
 CHARACTER MODEL SHEETS DOS PERSONAGENS (GERADOS NO FINAL — TODOS OS PERSONAGENS DA HISTÓRIA)
@@ -402,6 +402,7 @@ Hashtags Recomendadas: #novelinhas #cenas #dramatiktok #historiasreais #viralvid
 `;
 
     const countScenes = (value: string) => (value.match(/PROMPT\s+CENA\s+\d+/gi) || []).length;
+    const countDetailed = (value: string) => (value.match(/\[Negative Prompt\]/gi) || []).length;
 
     let generatedText = (await generateWithModelFallback(promptInstructions, req.geminiApiKey)).text || '';
 
@@ -409,16 +410,22 @@ Hashtags Recomendadas: #novelinhas #cenas #dramatiktok #historiasreais #viralvid
       throw new Error('Nenhum texto foi gerado pelo modelo.');
     }
 
-    if (countScenes(generatedText) < numScenes) {
+    if (countScenes(generatedText) < numScenes || countDetailed(generatedText) < numScenes) {
       const retryPrompt = `${promptInstructions}
 
 ========================================================================
 CORRECAO OBRIGATORIA
 ========================================================================
-A resposta anterior ficou com menos cenas do que o exigido. Gere a historia COMPLETA novamente, com EXATAMENTE ${numScenes} cenas, numeradas de "PROMPT CENA 1" ate "PROMPT CENA ${numScenes}", SEM PULAR NENHUM numero. Nao repita e nao pule numeros de cena.`;
+A resposta anterior veio incompleta. Gere a historia COMPLETA novamente com:
+- EXATAMENTE ${numScenes} cenas, numeradas de "PROMPT CENA 1" ate "PROMPT CENA ${numScenes}", SEM PULAR numeros;
+- TODAS as secoes de INSTRUCOES VISUAIS em CADA cena ([Subject & Character Consistency], [Environment & Scene Setting], [Background Override], [Action & First-Frame Blocking], [Optics & Camera Movement], [Dialogue & Native Audio], [Lighting & Atmosphere], [Audio & Ambience (SFX)], [Global Style & Physical Realism], [Negative Prompt]).`;
 
       const retry = await generateWithModelFallback(retryPrompt, req.geminiApiKey);
-      if (retry.text && countScenes(retry.text) >= countScenes(generatedText)) {
+      if (
+        retry.text &&
+        countScenes(retry.text) >= countScenes(generatedText) &&
+        countDetailed(retry.text) >= countDetailed(generatedText)
+      ) {
         generatedText = retry.text;
       }
     }

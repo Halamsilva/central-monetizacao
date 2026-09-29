@@ -28,6 +28,7 @@ import {
 } from "../roca-types";
 import { supabase } from "../lib/supabase";
 import { describeHttpError } from "../lib/httpError";
+import { fileToCompressedDataUrl } from "../lib/image";
 
 export default function App() {
   // State variables
@@ -957,19 +958,13 @@ export default function App() {
                       id="character-file-input"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
                           setCharacterImageName(file.name);
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            if (typeof reader.result === "string") {
-                              const imgBase64 = reader.result;
-                              setCharacterImage(imgBase64);
-                              analyzeUploadedImage(imgBase64);
-                            }
-                          };
-                          reader.readAsDataURL(file);
+                          const imgBase64 = await fileToCompressedDataUrl(file, 1280, 0.82);
+                          setCharacterImage(imgBase64);
+                          analyzeUploadedImage(imgBase64);
                         }
                       }}
                     />

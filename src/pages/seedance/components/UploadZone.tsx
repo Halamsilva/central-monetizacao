@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { UploadCloud, Image, X, AlertCircle } from "lucide-react";
+import { fileToCompressedDataUrl } from "../../../lib/image";
 
 interface UploadZoneProps {
   onImageSelected: (base64: string | null) => void;
@@ -34,29 +35,25 @@ export default function UploadZone({
     ? "aspect-square" 
     : "aspect-video";
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       setError("Por favor, selecione um arquivo de imagem válido (PNG, JPEG, WEBP).");
       return;
     }
 
-    // Limit to 30MB to allow larger high-resolution smartphone images
     if (file.size > 30 * 1024 * 1024) {
       setError("A imagem é muito grande. Escolha uma de até 30MB.");
       return;
     }
 
     setError(null);
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        onImageSelected(reader.result);
-      }
-    };
-    reader.onerror = () => {
+
+    try {
+      const compressed = await fileToCompressedDataUrl(file, 1600, 0.82);
+      onImageSelected(compressed);
+    } catch {
       setError("Erro ao ler o arquivo de imagem.");
-    };
-    reader.readAsDataURL(file);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {

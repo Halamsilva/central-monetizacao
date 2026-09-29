@@ -22,6 +22,7 @@ import { SAMPLE_PRODUCTS } from '../data/sampleProducts';
 import { SampleProduct, ProductDiagnostic } from '../types';
 import { supabase } from '../../../lib/supabase';
 import { describeHttpError } from '../../../lib/httpError';
+import { fileToCompressedDataUrl } from '../../../lib/image';
 
 interface ImageUploaderProps {
   onGenerate: (data: {
@@ -76,20 +77,15 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     return () => clearInterval(interval);
   }, [isLoading]);
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       alert('Por favor, envie um arquivo de imagem (JPEG, PNG, WebP).');
       return;
     }
     setMimeType(file.type);
     setDiagnostic(null);
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) {
-        setSelectedImage(e.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
+    const compressed = await fileToCompressedDataUrl(file, 1600, 0.82);
+    setSelectedImage(compressed);
   };
 
   const handleDrop = (e: React.DragEvent) => {

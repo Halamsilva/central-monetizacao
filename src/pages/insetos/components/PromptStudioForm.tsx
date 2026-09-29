@@ -29,6 +29,7 @@ import {
 import { PromptGenerationRequest, HookActionType, ThemeSuggestion } from '../types';
 import { QUICK_STARTER_THEMES, ALL_CURATED_THEME_SUGGESTIONS, getRandomThemeSuggestions } from '../data/presets';
 import { supabase } from '../../../lib/supabase';
+import { fileToCompressedDataUrl } from '../../../lib/image';
 
 interface PromptStudioFormProps {
   onGenerate: (data: PromptGenerationRequest) => void;
@@ -207,20 +208,16 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   };
 
   // Handlers for Reference Image
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setImageFileName(file.name);
     setImageMimeType(file.type);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64Data = result.split(',')[1] || result;
-      setReferenceImageBase64(base64Data);
-    };
-    reader.readAsDataURL(file);
+    const result = await fileToCompressedDataUrl(file, 1600, 0.82);
+    const base64Data = result.split(',')[1] || result;
+    setReferenceImageBase64(base64Data);
   };
 
   const removeImage = () => {
@@ -233,20 +230,16 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   };
 
   // Handlers for Custom Character Image
-  const handleCharacterFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCharacterFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setCharacterImageFileName(file.name);
     setCharacterImageMimeType(file.type);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64Data = result.split(',')[1] || result;
-      setCharacterImageBase64(base64Data);
-    };
-    reader.readAsDataURL(file);
+    const result = await fileToCompressedDataUrl(file, 1600, 0.82);
+    const base64Data = result.split(',')[1] || result;
+    setCharacterImageBase64(base64Data);
   };
 
   const removeCharacterImage = () => {
@@ -259,20 +252,16 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   };
 
   // Handlers for Custom Scenario Image
-  const handleSettingFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSettingFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setSettingImageFileName(file.name);
     setSettingImageMimeType(file.type);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64Data = result.split(',')[1] || result;
-      setSettingImageBase64(base64Data);
-    };
-    reader.readAsDataURL(file);
+    const result = await fileToCompressedDataUrl(file, 1600, 0.82);
+    const base64Data = result.split(',')[1] || result;
+    setSettingImageBase64(base64Data);
   };
 
   const removeSettingImage = () => {
@@ -285,20 +274,16 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   };
 
   // Handlers for Custom Book Image
-  const handleBookFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBookFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setBookImageFileName(file.name);
     setBookImageMimeType(file.type);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64Data = result.split(',')[1] || result;
-      setBookImageBase64(base64Data);
-    };
-    reader.readAsDataURL(file);
+    const result = await fileToCompressedDataUrl(file, 1600, 0.82);
+    const base64Data = result.split(',')[1] || result;
+    setBookImageBase64(base64Data);
   };
 
   const removeBookImage = () => {

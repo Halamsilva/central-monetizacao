@@ -24,6 +24,7 @@ const ToolsIA = lazy(() => import('./pages/ToolsIA'));
 
 const MeninaDaRoca = lazy(() => import('./pages/MeninaDaRoca'));
 const ClonagemVideo = lazy(() => import('./pages/ClonagemVideo'));
+const NovelinhasUni = lazy(() => import('./pages/NovelinhasUni'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -56,6 +57,7 @@ const routeTitles: Record<string, string> = {
   '/tools-ia': 'Ferramentas IA',
   '/menina-da-roca': 'Menina da Roca',
   '/clonagem-video': 'Clonagem de Video',
+  '/novelinhas': 'Novelinhas Universal',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
@@ -268,6 +270,7 @@ export default function App() {
               <Route path="tools-ia" element={<ToolsIA />} />
               <Route path="menina-da-roca" element={<MeninaDaRoca />} />
               <Route path="clonagem-video" element={<AdminRoute><ClonagemVideo /></AdminRoute>} />
+              <Route path="novelinhas" element={<AdminRoute><NovelinhasUni /></AdminRoute>} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

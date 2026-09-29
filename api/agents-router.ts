@@ -2,12 +2,14 @@ import meninaDaRocaHandler from '../server-agents/menina-da-roca.js';
 import configurableAgentHandler from '../server-agents/configurable-agent.js';
 import importAgentHandler from '../server-agents/import-agent.js';
 import clonagemVideoHandler from '../server-agents/clonagem-video.js';
+import novelinhasHandler from '../server-agents/novelinhas.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
   configurable: configurableAgentHandler,
   import: importAgentHandler,
   'clonagem-video': clonagemVideoHandler,
+  novelinhas: novelinhasHandler,
 };
 
 export default function handler(req: any, res: any) {

@@ -13,6 +13,7 @@ import {
   Camera,
   Download,
   FileVideo,
+  Film,
   User,
   Settings,
   Shield,
@@ -112,7 +113,10 @@ const Sidebar: React.FC<SidebarProps> = ({
   const videoToolsMenu: MenuItem[] = [
     { title: 'Menina da Roça', icon: Camera, path: '/menina-da-roca' },
     ...(isAdmin
-      ? [{ title: 'Clonagem de Vídeo', icon: FileVideo, path: '/clonagem-video' }]
+      ? [
+          { title: 'Clonagem de Vídeo', icon: FileVideo, path: '/clonagem-video' },
+          { title: 'Novelinhas Universal', icon: Film, path: '/novelinhas' },
+        ]
       : []),
   ];
 

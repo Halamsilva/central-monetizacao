@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Bot,
   ExternalLink,
@@ -11,6 +12,7 @@ import {
   Filter,
   Heart,
   Clock3,
+  KeyRound,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase } from '../lib/supabase';
@@ -86,6 +88,7 @@ const Agents = () => {
   const [recentOnly, setRecentOnly] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [recentIds, setRecentIds] = useState<string[]>([]);
+  const [hasOwnKey, setHasOwnKey] = useState<boolean | null>(null);
 
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [selectedPromptTitle, setSelectedPromptTitle] = useState('');
@@ -98,6 +101,26 @@ const Agents = () => {
   useEffect(() => {
     setFavoriteIds(getFavoriteAgentIds(user?.id));
     setRecentIds(getRecentAgentIds(user?.id));
+  }, [user?.id]);
+
+  useEffect(() => {
+    const loadKeyState = async () => {
+      if (!user?.id) return;
+
+      try {
+        const { data } = await supabase
+          .from('user_secrets')
+          .select('gemini_api_key')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        setHasOwnKey(Boolean(data?.gemini_api_key));
+      } catch {
+        setHasOwnKey(false);
+      }
+    };
+
+    loadKeyState();
   }, [user?.id]);
 
   const showSuccessMessage = (message: string) => {
@@ -355,6 +378,35 @@ const Agents = () => {
         <div className="fixed left-3 right-3 top-4 z-50 flex items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-700 shadow-lg sm:left-auto sm:right-6 sm:top-6 sm:text-sm">
           <Check className="h-4 w-4" />
           {successMessage}
+        </div>
+      )}
+
+      {hasOwnKey === false && (
+        <div className="mb-4 flex flex-col gap-3 rounded-[24px] border border-amber-100 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <KeyRound className="mt-0.5 shrink-0 text-amber-600" size={20} />
+            <p className="text-xs font-semibold leading-relaxed text-amber-900 sm:text-sm">
+              Você está usando a{' '}
+              <strong>cota de IA da plataforma</strong>. Coloque a sua chave do
+              Google AI Studio para os agentes usarem a sua própria cota (sem
+              dividir o limite).
+            </p>
+          </div>
+
+          <Link
+            to="/settings"
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 text-xs font-black text-white transition hover:bg-amber-600"
+          >
+            <KeyRound size={14} />
+            Colocar minha chave
+          </Link>
+        </div>
+      )}
+
+      {hasOwnKey === true && (
+        <div className="mb-4 flex items-center gap-2 rounded-[20px] border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-700">
+          <Check size={14} />
+          Usando a sua chave de IA
         </div>
       )}
 

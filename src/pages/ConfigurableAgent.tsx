@@ -1,6 +1,6 @@
 import React, { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { AlertCircle, Bot, Check, Copy, ImagePlus, Loader2, Send, Sparkles, Wand2, X } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import { AlertCircle, Bot, Check, Copy, ImagePlus, KeyRound, Loader2, Send, Sparkles, Wand2, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { parseConfigurableAgent, type ConfigurableAgentConfig } from '../lib/configurableAgent';
 import { canLoadExternalMedia } from '../lib/media';
@@ -75,6 +75,7 @@ const ConfigurableAgent: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [adjustment, setAdjustment] = useState('');
   const [adjusting, setAdjusting] = useState(false);
+  const [hasOwnKey, setHasOwnKey] = useState<boolean | null>(null);
 
   useEffect(() => {
     const loadAgent = async () => {
@@ -114,6 +115,28 @@ const ConfigurableAgent: React.FC = () => {
 
     loadAgent();
   }, [slug]);
+
+  useEffect(() => {
+    const loadKeyState = async () => {
+      const { data: session } = await supabase.auth.getSession();
+      const uid = session.session?.user?.id;
+      if (!uid) return;
+
+      try {
+        const { data } = await supabase
+          .from('user_secrets')
+          .select('gemini_api_key')
+          .eq('id', uid)
+          .maybeSingle();
+
+        setHasOwnKey(Boolean(data?.gemini_api_key));
+      } catch {
+        setHasOwnKey(false);
+      }
+    };
+
+    loadKeyState();
+  }, []);
 
   const canGenerate = useMemo(() => {
     if (!config) return false;
@@ -256,6 +279,22 @@ const ConfigurableAgent: React.FC = () => {
           )}
         </div>
       </section>
+
+      {hasOwnKey === false && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-amber-100 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs font-semibold leading-relaxed text-amber-900 sm:text-sm">
+            Usando a <strong>cota de IA da plataforma</strong>. Coloque sua chave
+            do Google AI Studio para este agente usar a sua própria cota.
+          </p>
+          <Link
+            to="/settings"
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-500 px-3 text-xs font-black text-white transition hover:bg-amber-600"
+          >
+            <KeyRound size={14} />
+            Colocar minha chave
+          </Link>
+        </div>
+      )}
 
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700">

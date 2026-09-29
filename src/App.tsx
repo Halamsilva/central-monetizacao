@@ -20,6 +20,7 @@ const YouTubeShorts = lazy(() => import('./pages/YouTubeShorts'));
 const ToolsIA = lazy(() => import('./pages/ToolsIA'));
 
 const MeninaDaRoca = lazy(() => import('./pages/MeninaDaRoca'));
+const ClonagemVideo = lazy(() => import('./pages/ClonagemVideo'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
 const Tutorials = lazy(() => import('./pages/Tutorials'));
 const Downloads = lazy(() => import('./pages/Downloads'));
@@ -48,6 +49,7 @@ const routeTitles: Record<string, string> = {
   '/youtube-shorts': 'YouTube e Shorts',
   '/tools-ia': 'Ferramentas IA',
   '/menina-da-roca': 'Menina da Roca',
+  '/clonagem-video': 'Clonagem de Video',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',
@@ -223,6 +225,7 @@ export default function App() {
               <Route path="youtube-shorts" element={<YouTubeShorts />} />
               <Route path="tools-ia" element={<ToolsIA />} />
               <Route path="menina-da-roca" element={<MeninaDaRoca />} />
+              <Route path="clonagem-video" element={<AdminRoute><ClonagemVideo /></AdminRoute>} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

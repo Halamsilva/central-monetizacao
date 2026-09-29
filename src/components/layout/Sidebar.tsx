@@ -12,6 +12,7 @@ import {
   BookOpen,
   Camera,
   Download,
+  FileVideo,
   User,
   Settings,
   Shield,
@@ -109,6 +110,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const videoToolsMenu: MenuItem[] = [
     { title: 'Menina da Roça', icon: Camera, path: '/menina-da-roca' },
+    ...(isAdmin
+      ? [{ title: 'Clonagem de Vídeo', icon: FileVideo, path: '/clonagem-video' }]
+      : []),
   ];
 
   const socialToolsMenu: MenuItem[] = [

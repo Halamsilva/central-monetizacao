@@ -78,12 +78,18 @@ const baseEmailHtml = (title: string, preview: string, body: string, ctaHtml: st
 `;
 
 const buildEmail = (kind: EmailKind, input: SendAccessEmailInput) => {
-  const firstName = escapeHtml((input.name || '').split(' ')[0] || 'aluno');
+  const rawName = (input.name || '').split(' ')[0] || 'aluno';
+  const firstName = escapeHtml(rawName);
   const releaseDate = formatDate(input.releaseAt);
 
   if (kind === 'registration') {
     return {
       subject: 'Cadastro recebido na Central Monetizacao',
+      text: `Oi, ${rawName}. Recebemos seu cadastro na Central Monetizacao.
+
+Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente depois da confirmacao da compra e do prazo de garantia de 7 dias.
+
+Acesse: ${appUrl}`,
       html: baseEmailHtml(
         'Cadastro recebido',
         'Recebemos seu cadastro na Central Monetizacao.',
@@ -99,6 +105,13 @@ const buildEmail = (kind: EmailKind, input: SendAccessEmailInput) => {
   if (kind === 'purchase_pending') {
     return {
       subject: 'Compra confirmada: acesso em liberacao',
+      text: `Oi, ${rawName}. Encontramos sua compra na Kiwify.
+
+Por seguranca, o acesso sera liberado automaticamente apos o prazo de garantia de 7 dias.${releaseDate ? `\nPrevisao de liberacao: ${releaseDate}.` : ''}
+
+Quando o prazo terminar, entre na plataforma com este mesmo e-mail para ativar o acesso.
+
+Acesse: ${appUrl}`,
       html: baseEmailHtml(
         'Compra confirmada',
         'Sua compra foi confirmada e o acesso sera liberado apos 7 dias.',
@@ -117,6 +130,12 @@ const buildEmail = (kind: EmailKind, input: SendAccessEmailInput) => {
 
     return {
       subject: 'Redefinir sua senha - Central Monetizacao',
+      text: `Oi, ${rawName}. Recebemos um pedido para redefinir a senha da sua conta.
+
+Crie uma nova senha neste link (valido por 1 hora):
+${resetUrl}
+
+Se voce nao pediu isso, pode ignorar este e-mail: sua senha continua a mesma.`,
       html: baseEmailHtml(
         'Redefinir senha',
         'Recebemos um pedido para redefinir sua senha.',
@@ -134,6 +153,14 @@ const buildEmail = (kind: EmailKind, input: SendAccessEmailInput) => {
 
   return {
     subject: 'Seu acesso esta liberado - Central Monetizacao',
+    text: `Oi, ${rawName}. Seu acesso foi liberado!
+
+Para entrar:
+1. Acesse ${appUrl}
+2. Faca login ou crie sua conta usando o MESMO e-mail desta compra.
+3. Pronto: o acesso e liberado automaticamente.
+
+Importante: use o mesmo e-mail da compra. Se o e-mail for diferente, o acesso nao e liberado sozinho.`,
     html: baseEmailHtml(
       'Acesso liberado',
       'Seu acesso a Central Monetizacao foi liberado.',
@@ -161,7 +188,7 @@ export const sendAccessEmail = async (kind: EmailKind, input: SendAccessEmailInp
     return { ok: false, skipped: true, reason: 'missing_resend_api_key' };
   }
 
-  const from = process.env.RESEND_FROM_EMAIL || 'Central Monetizacao <onboarding@resend.dev>';
+  const from = process.env.RESEND_FROM_EMAIL || 'Central Monetizacao <nao-responda@halamsilva.com.br>';
   const email = buildEmail(kind, input);
   const headers: Record<string, string> = {
     Authorization: `Bearer ${resendApiKey}`,
@@ -180,6 +207,7 @@ export const sendAccessEmail = async (kind: EmailKind, input: SendAccessEmailInp
       to,
       subject: email.subject,
       html: email.html,
+      text: email.text,
     }),
   });
 

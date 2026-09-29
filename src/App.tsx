@@ -115,6 +115,12 @@ const VerifyEmailScreen = () => {
       <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
         <h1 className="text-2xl font-bold text-slate-900">Confirme seu e-mail</h1>
         <p className="mt-3 text-slate-600">Enviamos um link para {firebaseAuth.currentUser?.email}. Confirme o endereço para acessar a plataforma.</p>
+
+        <div className="mt-5 rounded-xl border border-amber-100 bg-amber-50 p-4 text-left text-sm leading-relaxed text-amber-900">
+          <strong>Não achou o e-mail?</strong> Confira a caixa de <strong>spam</strong> (ou lixo
+          eletrônico) e marque como "não é spam" para receber os próximos.
+        </div>
+
         {message && <p role="status" className="mt-4 text-sm text-slate-700">{message}</p>}
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <button type="button" disabled={busy} onClick={check} className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50">Já confirmei</button>

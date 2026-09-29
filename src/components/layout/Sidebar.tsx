@@ -16,6 +16,7 @@ import {
   Film,
   ChefHat,
   Bug,
+  Package,
   User,
   Settings,
   Shield,
@@ -120,6 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           { title: 'Novelinhas Universal', icon: Film, path: '/novelinhas' },
           { title: 'Mestre 30s', icon: ChefHat, path: '/mestre-30s' },
           { title: 'Receitas Anti-Pragas', icon: Bug, path: '/insetos' },
+          { title: 'POV Produto', icon: Package, path: '/pov-produto' },
         ]
       : []),
   ];

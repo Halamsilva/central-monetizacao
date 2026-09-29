@@ -5,6 +5,7 @@ import clonagemVideoHandler from '../server-agents/clonagem-video.js';
 import novelinhasHandler from '../server-agents/novelinhas.js';
 import mestre30sHandler from '../server-agents/mestre30s.js';
 import insetosHandler from '../server-agents/insetos.js';
+import povProdutoHandler from '../server-agents/povProduto.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
@@ -14,6 +15,7 @@ const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   novelinhas: novelinhasHandler,
   mestre30s: mestre30sHandler,
   insetos: insetosHandler,
+  povProduto: povProdutoHandler,
 };
 
 export default function handler(req: any, res: any) {

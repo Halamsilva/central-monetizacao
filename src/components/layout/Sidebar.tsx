@@ -109,23 +109,19 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const primaryStrategyMenu: MenuItem[] = [
-    ...(isAdmin ? [{ title: 'Agentes IA', icon: Bot, path: '/agents' }] : []),
+    { title: 'Agentes IA', icon: Bot, path: '/agents' },
     { title: 'Loja VIP', icon: ShoppingBag, path: '/shop-vip' },
     { title: 'Downloads', icon: Download, path: '/downloads' },
   ];
 
   const videoToolsMenu: MenuItem[] = [
     { title: 'Menina da Roça', icon: Camera, path: '/menina-da-roca' },
-    ...(isAdmin
-      ? [
-          { title: 'Clonagem de Vídeo', icon: FileVideo, path: '/clonagem-video' },
-          { title: 'Novelinhas Universal', icon: Film, path: '/novelinhas' },
-          { title: 'Mestre 30s', icon: ChefHat, path: '/mestre-30s' },
-          { title: 'Receitas Anti-Pragas', icon: Bug, path: '/insetos' },
-          { title: 'POV Produto', icon: Package, path: '/pov-produto' },
-          { title: 'TikTok Shop Seedance', icon: Video, path: '/seedance' },
-        ]
-      : []),
+    { title: 'Clonagem de Vídeo', icon: FileVideo, path: '/clonagem-video' },
+    { title: 'Novelinhas Universal', icon: Film, path: '/novelinhas' },
+    { title: 'Mestre 30s', icon: ChefHat, path: '/mestre-30s' },
+    { title: 'Receitas Anti-Pragas', icon: Bug, path: '/insetos' },
+    { title: 'POV Produto', icon: Package, path: '/pov-produto' },
+    { title: 'TikTok Shop Seedance', icon: Video, path: '/seedance' },
   ];
 
   const socialToolsMenu: MenuItem[] = [

@@ -270,19 +270,19 @@ export default function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="comece-aqui" element={<StartHere />} />
               <Route path="notices" element={<Notices />} />
-              <Route path="agents" element={<AdminRoute><Agents /></AdminRoute>} />
+              <Route path="agents" element={<Agents />} />
               <Route path="viral-prompts" element={<ViralPrompts />} />
               <Route path="tiktok-shop" element={<TikTokShop />} />
               <Route path="facebook" element={<Facebook />} />
               <Route path="youtube-shorts" element={<YouTubeShorts />} />
               <Route path="tools-ia" element={<ToolsIA />} />
               <Route path="menina-da-roca" element={<MeninaDaRoca />} />
-              <Route path="clonagem-video" element={<AdminRoute><ClonagemVideo /></AdminRoute>} />
-              <Route path="novelinhas" element={<AdminRoute><NovelinhasUni /></AdminRoute>} />
-              <Route path="mestre-30s" element={<AdminRoute><Mestre30s /></AdminRoute>} />
-              <Route path="insetos" element={<AdminRoute><Insetos /></AdminRoute>} />
-              <Route path="pov-produto" element={<AdminRoute><PovProduto /></AdminRoute>} />
-              <Route path="seedance" element={<AdminRoute><Seedance /></AdminRoute>} />
+              <Route path="clonagem-video" element={<ClonagemVideo />} />
+              <Route path="novelinhas" element={<NovelinhasUni />} />
+              <Route path="mestre-30s" element={<Mestre30s />} />
+              <Route path="insetos" element={<Insetos />} />
+              <Route path="pov-produto" element={<PovProduto />} />
+              <Route path="seedance" element={<Seedance />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

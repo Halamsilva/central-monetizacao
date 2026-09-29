@@ -108,7 +108,7 @@ REGRAS CRITICAS (ANTI-ALUCINACAO)
 - Entregue direto o resultado final, pronto para copiar. Nao explique que voce e uma IA.
 `.trim();
 
-const MODELS = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-1.5-flash'];
+const MODELS = ['gemini-3-flash-preview', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-3.8-flash'];
 
 const extractText = (response: any) => {
   if (!response) return '';

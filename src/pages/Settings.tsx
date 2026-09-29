@@ -224,10 +224,10 @@ const Settings: React.FC = () => {
       return;
     }
 
-    if (!value.startsWith('AIza')) {
+    if (!value.startsWith('AIza') && !value.startsWith('AQ.')) {
       setKeyMessage({
         type: 'error',
-        text: 'Essa chave parece inválida. Ela deve começar com "AIza".',
+        text: 'Essa chave parece inválida. Cole a chave do Google AI Studio (começa com "AIza" ou "AQ.").',
       });
       return;
     }

@@ -138,9 +138,10 @@ Retorne somente JSON puro com exatamente 5 objetos. Cada objeto deve ter:
 
 async function generateWithFallback(ai: GoogleGenAI, payload: { contents: any; config?: any }) {
   const models = [
-    process.env.GEMINI_MODEL || 'gemini-2.5-flash',
-    'gemini-2.5-flash',
-    'gemini-1.5-flash',
+    process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
+    'gemini-3-flash-preview',
+    'gemini-3.5-flash',
+    'gemini-flash-latest',
   ];
   let lastError: any = null;
 

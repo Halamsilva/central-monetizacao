@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Plus,
     Trash2,
@@ -25,12 +25,16 @@ import {
     Eye,
     EyeOff,
     Undo2,
+    Upload,
 } from 'lucide-react';
+import JSZip from 'jszip';
 import { supabase } from '../lib/supabase';
 import {
     buildConfigurableAgentPrompt,
+    defaultConfigurableFields,
     parseConfigurableAgent,
     slugifyAgentTitle,
+    type ConfigurableAgentField,
 } from '../lib/configurableAgent';
 
 interface Agent {
@@ -177,6 +181,13 @@ const AdminAgents = () => {
     );
     const [testingDelete, setTestingDelete] = useState(false);
     const [isConfigurableAgent, setIsConfigurableAgent] = useState(false);
+    const [configFields, setConfigFields] = useState<ConfigurableAgentField[]>(
+        defaultConfigurableFields
+    );
+    const [configAcceptsImage, setConfigAcceptsImage] = useState(true);
+    const [configOutputTitle, setConfigOutputTitle] = useState('Resultado gerado');
+    const [importingZip, setImportingZip] = useState(false);
+    const zipInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetchAgents();
@@ -267,7 +278,125 @@ const AdminAgents = () => {
         setFormData(emptyForm);
         setEditingId(null);
         setIsConfigurableAgent(false);
+        setConfigFields(defaultConfigurableFields);
+        setConfigAcceptsImage(true);
+        setConfigOutputTitle('Resultado gerado');
         localStorage.removeItem(draftKey);
+    };
+
+    const updateConfigField = (
+        index: number,
+        patch: Partial<ConfigurableAgentField>
+    ) => {
+        setConfigFields((current) =>
+            current.map((field, i) => (i === index ? { ...field, ...patch } : field))
+        );
+    };
+
+    const addConfigField = () => {
+        setConfigFields((current) => [
+            ...current,
+            {
+                key: `campo_${Math.random().toString(36).slice(2, 7)}`,
+                label: 'Novo campo',
+                type: 'textarea',
+                required: false,
+            },
+        ]);
+    };
+
+    const removeConfigField = (index: number) => {
+        setConfigFields((current) => current.filter((_, i) => i !== index));
+    };
+
+    const handleImportZip = async (file: File) => {
+        setImportingZip(true);
+        setErrorMessage('');
+
+        try {
+            const zip = await JSZip.loadAsync(file);
+            const textExt = /\.(tsx?|jsx?|json|md|txt|html|css)$/i;
+            const score = (name: string) => {
+                if (/server\.ts$/i.test(name)) return 0;
+                if (/metadata\.json$/i.test(name)) return 1;
+                if (/src\/services\//i.test(name)) return 2;
+                if (/src\/App\.tsx$/i.test(name)) return 3;
+                if (/^src\//i.test(name)) return 4;
+                if (/README/i.test(name)) return 5;
+                return 6;
+            };
+
+            const entries = Object.values(zip.files)
+                .filter(
+                    (entry) =>
+                        !entry.dir &&
+                        textExt.test(entry.name) &&
+                        !entry.name.includes('node_modules') &&
+                        !entry.name.includes('package-lock') &&
+                        !entry.name.includes('bun.lock')
+                )
+                .sort((a, b) => score(a.name) - score(b.name));
+
+            const files: { path: string; content: string }[] = [];
+
+            for (const entry of entries.slice(0, 40)) {
+                const content = await entry.async('string');
+                if (content && content.length > 0 && content.length < 200000) {
+                    files.push({ path: entry.name, content });
+                }
+            }
+
+            if (!files.length) {
+                throw new Error('Nao encontrei arquivos de codigo no zip.');
+            }
+
+            const { data: sessionData } = await supabase.auth.getSession();
+            const token = sessionData.session?.access_token;
+
+            if (!token) {
+                throw new Error('Sessao expirada. Faca login novamente.');
+            }
+
+            const response = await fetch('/api/agents/import', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ files }),
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(payload.error || 'Nao consegui importar o zip.');
+            }
+
+            const imported = payload.agent || {};
+
+            setFormData((current) => ({
+                ...current,
+                title: imported.title || current.title,
+                description: imported.description || current.description,
+                category: imported.category || current.category,
+                prompt: imported.masterPrompt || current.prompt,
+            }));
+            setConfigFields(
+                Array.isArray(imported.fields) && imported.fields.length
+                    ? imported.fields
+                    : defaultConfigurableFields
+            );
+            setConfigAcceptsImage(imported.acceptsImage === true);
+            setConfigOutputTitle(imported.outputTitle || 'Resultado gerado');
+            setIsConfigurableAgent(true);
+            showSuccessMessage(
+                'Agente montado do zip! Revise o prompt, os campos e publique.'
+            );
+        } catch (err: any) {
+            showErrorMessage(err?.message || 'Nao consegui importar o zip.');
+        } finally {
+            setImportingZip(false);
+        }
     };
 
     const clearFilters = () => {
@@ -390,7 +519,10 @@ const AdminAgents = () => {
 
         const formattedCategory = formatCategoryLabel(formData.category);
         const promptPayload = isConfigurableAgent
-            ? buildConfigurableAgentPrompt(formData.prompt.trim())
+            ? buildConfigurableAgentPrompt(formData.prompt.trim(), configFields, {
+                  acceptsImage: configAcceptsImage,
+                  outputTitle: configOutputTitle,
+              })
             : formData.prompt.trim();
 
         const payload = {
@@ -492,6 +624,16 @@ const AdminAgents = () => {
         const configurableConfig = parseConfigurableAgent(agent.prompt);
         setIsConfigurableAgent(Boolean(configurableConfig));
 
+        if (configurableConfig) {
+            setConfigFields(configurableConfig.fields);
+            setConfigAcceptsImage(configurableConfig.acceptsImage !== false);
+            setConfigOutputTitle(configurableConfig.outputTitle || 'Resultado gerado');
+        } else {
+            setConfigFields(defaultConfigurableFields);
+            setConfigAcceptsImage(true);
+            setConfigOutputTitle('Resultado gerado');
+        }
+
         setFormData({
             title: agent.title || '',
             description: agent.description || '',
@@ -511,6 +653,16 @@ const AdminAgents = () => {
         setOpenActionsId(null);
         const configurableConfig = parseConfigurableAgent(agent.prompt);
         setIsConfigurableAgent(Boolean(configurableConfig));
+
+        if (configurableConfig) {
+            setConfigFields(configurableConfig.fields);
+            setConfigAcceptsImage(configurableConfig.acceptsImage !== false);
+            setConfigOutputTitle(configurableConfig.outputTitle || 'Resultado gerado');
+        } else {
+            setConfigFields(defaultConfigurableFields);
+            setConfigAcceptsImage(true);
+            setConfigOutputTitle('Resultado gerado');
+        }
 
         setFormData({
             title: `${agent.title} - Cópia`,
@@ -872,6 +1024,32 @@ const AdminAgents = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-3">
+                        <input
+                            ref={zipInputRef}
+                            type="file"
+                            accept=".zip,application/zip"
+                            className="hidden"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleImportZip(file);
+                                e.target.value = '';
+                            }}
+                        />
+
+                        <button
+                            type="button"
+                            onClick={() => zipInputRef.current?.click()}
+                            disabled={importingZip}
+                            className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-1.5 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-70"
+                        >
+                            {importingZip ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                                <Upload className="h-3 w-3" />
+                            )}
+                            {importingZip ? 'Lendo zip...' : 'Importar do ZIP'}
+                        </button>
+
                         {hasDraft && (
                             <button
                                 onClick={resetForm}
@@ -979,7 +1157,7 @@ const AdminAgents = () => {
                     <div className="mt-2 rounded-xl bg-blue-50 px-3 py-3 text-xs font-semibold leading-relaxed text-blue-700">
                         <p>O link sera criado automaticamente dentro do site. O campo Prompt vira o prompt mestre do agente.</p>
                         <p className="mt-1 text-blue-600">
-                            Escreva o que o agente deve fazer, o formato da resposta e as regras que ele deve seguir. O aluno so preenche produto, objetivo, estilo e imagem opcional.
+                            Escreva o que o agente deve fazer, o formato da resposta e as regras. Defina abaixo os campos que o aluno preenche. Dica: use "Importar do ZIP" para montar tudo a partir do zip do AI Studio.
                         </p>
                     </div>
                 )}
@@ -1012,6 +1190,127 @@ const AdminAgents = () => {
                     }
                     className="mt-4 h-40 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                 />
+
+                {isConfigurableAgent && (
+                    <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                            <p className="text-sm font-black text-slate-800">
+                                Campos que o aluno preenche
+                            </p>
+
+                            <button
+                                type="button"
+                                onClick={addConfigField}
+                                className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-1 text-xs font-bold text-white transition hover:bg-slate-700"
+                            >
+                                <Plus className="h-3 w-3" />
+                                Adicionar campo
+                            </button>
+                        </div>
+
+                        <div className="space-y-3">
+                            {configFields.map((field, index) => (
+                                <div
+                                    key={index}
+                                    className="rounded-xl border border-slate-200 bg-white p-3"
+                                >
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <input
+                                            type="text"
+                                            value={field.label}
+                                            onChange={(e) =>
+                                                updateConfigField(index, {
+                                                    label: e.target.value,
+                                                })
+                                            }
+                                            placeholder="Nome do campo"
+                                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                        />
+
+                                        <select
+                                            value={field.type}
+                                            onChange={(e) =>
+                                                updateConfigField(index, {
+                                                    type: e.target.value as ConfigurableAgentField['type'],
+                                                })
+                                            }
+                                            className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                        >
+                                            <option value="text">Texto curto</option>
+                                            <option value="textarea">Texto longo</option>
+                                            <option value="select">Lista de opções</option>
+                                        </select>
+                                    </div>
+
+                                    {field.type === 'select' && (
+                                        <input
+                                            type="text"
+                                            value={(field.options || []).join(', ')}
+                                            onChange={(e) =>
+                                                updateConfigField(index, {
+                                                    options: e.target.value
+                                                        .split(',')
+                                                        .map((item) => item.trim())
+                                                        .filter(Boolean),
+                                                })
+                                            }
+                                            placeholder="Opções separadas por vírgula"
+                                            className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                                        />
+                                    )}
+
+                                    <div className="mt-2 flex items-center justify-between">
+                                        <label className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                                            <input
+                                                type="checkbox"
+                                                checked={field.required === true}
+                                                onChange={(e) =>
+                                                    updateConfigField(index, {
+                                                        required: e.target.checked,
+                                                    })
+                                                }
+                                                className="h-4 w-4"
+                                            />
+                                            Obrigatório
+                                        </label>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => removeConfigField(index)}
+                                            className="text-xs font-bold text-red-600 transition hover:text-red-700"
+                                        >
+                                            Remover
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {configFields.length === 0 && (
+                                <p className="text-xs font-semibold text-slate-400">
+                                    Sem campos: o aluno verá só o resultado. Adicione um campo acima.
+                                </p>
+                            )}
+                        </div>
+
+                        <label className="mt-3 flex items-center gap-2 text-xs font-semibold text-slate-600">
+                            <input
+                                type="checkbox"
+                                checked={configAcceptsImage}
+                                onChange={(e) => setConfigAcceptsImage(e.target.checked)}
+                                className="h-4 w-4"
+                            />
+                            Permitir imagem opcional
+                        </label>
+
+                        <input
+                            type="text"
+                            value={configOutputTitle}
+                            onChange={(e) => setConfigOutputTitle(e.target.value)}
+                            placeholder="Título do resultado (ex: Roteiros gerados)"
+                            className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                        />
+                    </div>
+                )}
 
                 <label className="mt-4 flex w-fit items-center gap-3 text-sm font-semibold text-slate-700">
                     <input

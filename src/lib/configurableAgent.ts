@@ -50,7 +50,8 @@ export const slugifyAgentTitle = (value: string) =>
 
 export const buildConfigurableAgentPrompt = (
   masterPrompt: string,
-  fields: ConfigurableAgentField[] = defaultConfigurableFields
+  fields: ConfigurableAgentField[] = defaultConfigurableFields,
+  options?: { acceptsImage?: boolean; outputTitle?: string }
 ): string =>
   JSON.stringify(
     {
@@ -58,8 +59,8 @@ export const buildConfigurableAgentPrompt = (
       version: 1,
       masterPrompt,
       fields,
-      acceptsImage: true,
-      outputTitle: 'Resultado gerado',
+      acceptsImage: options?.acceptsImage !== false,
+      outputTitle: options?.outputTitle || 'Resultado gerado',
     } satisfies ConfigurableAgentConfig,
     null,
     2

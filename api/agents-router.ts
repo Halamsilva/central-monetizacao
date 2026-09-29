@@ -1,9 +1,11 @@
 import meninaDaRocaHandler from '../server-agents/menina-da-roca.js';
 import configurableAgentHandler from '../server-agents/configurable-agent.js';
+import importAgentHandler from '../server-agents/import-agent.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
   configurable: configurableAgentHandler,
+  import: importAgentHandler,
 };
 
 export default function handler(req: any, res: any) {

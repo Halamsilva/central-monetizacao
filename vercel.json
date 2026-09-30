@@ -13,10 +13,6 @@
             "destination": "/api/emails-handler?action=password-reset"
         },
         {
-            "source": "/",
-            "destination": "/agents/home.html"
-        },
-        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

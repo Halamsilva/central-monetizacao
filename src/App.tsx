@@ -66,7 +66,7 @@ const routeTitles: Record<string, string> = {
   '/insetos': 'Receitas Anti-Pragas',
   '/pov-produto': 'POV Produto',
   '/seedance': 'TikTok Shop Seedance',
-  '/avatar-scale': 'Avatar Scale',
+  '/avatar-scale': 'Gordo para Magro',
   '/receitas-ebook': 'Receitas p/ Ebook',
   '/encapsulados': 'Vender Encapsulados',
   '/radar-tiktok-shop': 'Radar TikTok Shop',

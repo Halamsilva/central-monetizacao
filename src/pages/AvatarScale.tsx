@@ -102,7 +102,7 @@ export default function App() {
             <div className="bg-indigo-600 p-1.5 rounded-lg">
               <Scale className="text-white" size={20} />
             </div>
-            <span className="font-bold tracking-tight text-slate-800 uppercase tracking-widest">AVATAR SCALE</span>
+            <span className="font-bold tracking-tight text-slate-800 uppercase tracking-widest">GORDO PARA MAGRO</span>
           </motion.div>
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -119,7 +119,7 @@ export default function App() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
           >
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Variação Física IA</h1>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Gordo para Magro</h1>
             <p className="text-slate-500 mt-2 text-sm italic">Mantenha a identidade absoluta enquanto transforma a anatomia.</p>
           </motion.header>
 
@@ -390,7 +390,7 @@ export default function App() {
       </main>
 
       <footer className="py-12 border-t border-slate-100 text-center space-y-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-300 italic underline underline-offset-8 decoration-indigo-500/30">Avatar Scale Engine v1.1 Limpa</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-300 italic underline underline-offset-8 decoration-indigo-500/30">Gordo para Magro Engine</p>
         <div className="flex items-center justify-center gap-2">
           <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Powered by</span>
           <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-[9px] font-bold rounded-full border border-indigo-100">GEMINI 3 FLASH AUTO-REFINE</span>

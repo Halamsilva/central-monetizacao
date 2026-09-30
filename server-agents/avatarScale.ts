@@ -190,12 +190,42 @@ export default async function handler(req: any, res: any) {
       `;
     }
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: { parts: [imagePart, { text: prompt }] },
-    });
+    const models = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
+    let rawText = '';
+    let lastError: any = null;
 
-    const rawText = response.text || '';
+    for (const model of models) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: { parts: [imagePart, { text: prompt }] },
+        });
+        const text = response.text || '';
+        if (text.trim()) {
+          rawText = text;
+          lastError = null;
+          break;
+        }
+      } catch (err: any) {
+        lastError = err;
+        const msg = String(err?.message || err || '');
+        const retryable =
+          msg.includes('429') ||
+          msg.includes('RESOURCE_EXHAUSTED') ||
+          msg.includes('quota') ||
+          msg.includes('503') ||
+          msg.includes('UNAVAILABLE') ||
+          msg.includes('high demand') ||
+          msg.includes('overloaded');
+        if (!retryable) throw err;
+      }
+    }
+
+    if (!rawText) {
+      if (lastError) throw lastError;
+      throw new Error('A IA nao retornou resultado. Tente novamente.');
+    }
+
     const genderMatch = rawText.match(/\[GENDER:\s*(FEMALE|MALE)\]/i);
     const detectedGender = genderMatch
       ? genderMatch[1].toUpperCase() === 'FEMALE' ? 'Feminino' : 'Masculino'
@@ -205,7 +235,17 @@ export default async function handler(req: any, res: any) {
     return res.json({ result: cleanResult, detectedGender });
   } catch (error: any) {
     console.error('Gemini Error:', error);
-    const message = error?.message || 'Erro ao processar imagem.';
-    return res.status(500).json({ error: message });
+    const raw = String(error?.message || '');
+    let friendly = 'Nao consegui processar a imagem agora. Tente novamente.';
+    if (raw.includes('429') || raw.includes('RESOURCE_EXHAUSTED') || raw.includes('quota')) {
+      friendly = 'Limite de uso da IA atingido (cota diaria). Aguarde alguns minutos ou configure outra chave do Google AI Studio em Configuracoes.';
+    } else if (raw.includes('PERMISSION_DENIED') || raw.includes('API key not valid')) {
+      friendly = 'Sua chave do Google AI Studio foi recusada. Confira a chave em Configuracoes.';
+    } else if (raw.includes('503') || raw.includes('UNAVAILABLE') || raw.includes('high demand')) {
+      friendly = 'A IA esta com alta demanda agora. Tente novamente em instantes.';
+    } else if (raw.includes('not found') || raw.includes('NOT_FOUND')) {
+      friendly = 'O modelo de IA nao esta disponivel para a sua chave. Confira a chave em Configuracoes.';
+    }
+    return res.status(500).json({ error: friendly });
   }
 }

@@ -125,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'TikTok Shop Seedance', icon: Video, path: '/seedance' },
     ...(isAdmin
       ? [
-          { title: 'Avatar Scale', icon: Scale, path: '/avatar-scale' },
+          { title: 'Gordo para Magro', icon: Scale, path: '/avatar-scale' },
           { title: 'Receitas p/ Ebook', icon: BookOpen, path: '/receitas-ebook' },
           { title: 'Vender Encapsulados', icon: Package, path: '/encapsulados' },
           { title: 'Radar TikTok Shop', icon: TrendingUp, path: '/radar-tiktok-shop' },

@@ -211,7 +211,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`fixed left-0 top-0 z-40 flex h-screen w-[88%] max-w-[320px] flex-col border-r border-slate-200 bg-white shadow-2xl transition-transform duration-300 lg:static lg:w-72 lg:max-w-none lg:translate-x-0 lg:shadow-none ${isOpen ? 'translate-x-0' : '-translate-x-full'
+      className={`fixed left-0 top-0 z-[80] flex h-screen w-[88%] max-w-[320px] flex-col border-r border-slate-200 bg-white shadow-2xl transition-transform duration-300 lg:static lg:w-72 lg:max-w-none lg:translate-x-0 lg:shadow-none ${isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
     >
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-4 sm:p-5">

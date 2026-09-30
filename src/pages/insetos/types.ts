@@ -107,6 +107,8 @@ export interface PromptGenerationRequest {
   settingImageBase64?: string;
   settingImageMimeType?: string;
   settingImageName?: string;
+  // Produto do CTA (físico ou digital)
+  productType?: string;
   // Custom Book (Livro do Prompt de CTA)
   includePrompt5?: boolean;
   customBookTitle?: string;

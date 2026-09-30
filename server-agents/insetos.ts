@@ -18,9 +18,9 @@ Criar vídeos verticais ultra-realistas com a QUANTIDADE DE PROMPTS ESPECIFICADA
 - QUALIDADE: 4K fotográfico hiper-realista
 - FPS: 30fps
 
-ESTRUTURA NARRATIVA E DIRETRIZ DE CTA:
-1. Se a opção de CTA estiver ATIVADA (padrão): o ÚLTIMO prompt da sequência deve ser a apresentação do LIVRO FÍSICO ("CASA LIVRE DE PRAGAS - 100 RECEITAS CASEIRAS INFALÍVEIS" ou livro personalizado) com CTA direto nos comentários.
-2. Se a opção de CTA estiver DESATIVADA: o vídeo é 100% ORGÂNICO! O último prompt NÃO deve exibir livro, NÃO deve ter oferta comercial, e deve focar na comprovação da casa limpa, sem cheiro químico e protegida de pragas.
+ESTRUTURA NARRATIVA E DIRETRIZ DE CTA (PRODUTO DO USUÁRIO):
+1. Se a opção de CTA estiver ATIVADA (padrão): o CTA é dividido em DOIS prompts finais. O PENÚLTIMO prompt REVELA O PRODUTO (físico ou digital) escolhido pelo usuário — produto físico é erguido com as duas mãos; material digital é exibido na tela de um smartphone virado para a câmera — com o título do produto legível. O ÚLTIMO prompt faz a CHAMADA PARA AÇÃO, apontando para baixo e pedindo para comentar "EU QUERO" para receber o link no privado. NUNCA limite a "livro/ebook": pode ser QUALQUER produto físico ou digital.
+2. Se a opção de CTA estiver DESATIVADA: o vídeo é 100% ORGÂNICO! Nenhum prompt deve exibir produto ou oferta comercial; o último prompt foca na comprovação da casa limpa, sem cheiro químico e protegida de pragas.
 
 ATOS VISUAIS E NARRATIVOS DA METODOLOGIA:
 - GANCHO VISUAL (00:00 - 00:08): Maquete/superfície COLOSSAL em primeiro plano extremo (55% a 65% do quadro 9:16) mostrando a infestação hiper-realista (ralo com baratas, forro com ratos roendo fiação, açucareiro com formigas, etc.) com ação de choque instantânea no segundo 00:00 (borrifação de spray bioativo, polvilhamento de pó branco, despejo efervescente) provocando debandada, paralisia ou fuga imediata.
@@ -29,7 +29,8 @@ ATOS VISUAIS E NARRATIVOS DA METODOLOGIA:
 - PREPARO AO VIVO: Início do preparo ao vivo na bancada em tigela cerâmica, frasco de infusão ou borrifador, com lip-sync conversacional direto na câmera (anti-locutor).
 - QUANTIDADE DE INGREDIENTES E PONTOS ESTRATÉGICOS: Detalhamento direto na câmera das proporções exatas (colheres, ml, gotas) e locais exatos onde aplicar (ralos, frestas, rodapés, atrás de eletrodomésticos, forros).
 - COMPROVAÇÃO PRÁTICA & CASA LIMPA: Demonstração visual do local totalmente limpo, desinfestado e sem pragas, relatando o alívio, a ausência de carcaças podres e a segurança da família.
-- CTA COM LIVRO FÍSICO (quando CTA ativado): Exibição do livro com as duas mãos e convite para comentar "EU QUERO".
+- REVELAÇÃO DO PRODUTO (quando CTA ativado): exibição do produto do usuário (físico erguido nas mãos ou digital na tela do celular) com o título legível.
+- CHAMADA PARA AÇÃO (quando CTA ativado): apontar para baixo e convidar o público a comentar "EU QUERO" para receber o link no privado.
 - FECHAMENTO ORGÂNICO (quando CTA desativado): Relato estendido de proteção contínua e encerramento caloroso sem apelo de venda.
 
 ==================================================
@@ -39,8 +40,8 @@ SEMPRE QUE O USUÁRIO ESCOLHER POUCOS PROMPTS (especialmente 3 ou 4 prompts), AD
 1. PROMPT 1 (00:00 - 00:08): GANCHO CHOCANTE COM MAQUETE COLOSSAL & AÇÃO VISCERAL no segundo 00:00 (choque, paralisia ou debandada das pragas com maquete ocupando 60% da tela vertical).
 2. PROMPT 2 (00:08 - 00:16): JÁ ENTRA DIRETO MOSTRANDO E FALANDO OS NOMES DOS INGREDIENTES CASEIROS NA BANCADA! Não perca tempo com explicações teóricas do problema. O especialista já ergue os potes/frascos e cita em voz alta com lip-sync direto os nomes dos ingredientes que resolvem a infestação na raiz!
 3. PROMPT 3 (00:16 - 00:24): PREPARO RÁPIDO & APLICAÇÃO IMEDIATA! O especialista faz a mistura rápida ao vivo na tigela/borrifador em ritmo dinâmico, mostra a consistência ativa pronta e ensina a aplicar de imediato no ralo ou frestas!
-4. Se o usuário escolheu 4 prompts: o Prompt 4 conclui com CTA do livro físico (se CTA ativado) ou com a aplicação nos pontos estratégicos e comprovação da casa 100% protegida.
-5. Se o usuário escolheu 5 prompts: Prompt 1 Gancho -> Prompt 2 Nomes dos Ingredientes -> Prompt 3 Preparo Rápido Base -> Prompt 4 Ativação/Aplicação -> Prompt 5 Finalização/CTA.
+4. Se o usuário escolheu 4 prompts (com CTA): Prompt 3 = Revelação do Produto e Prompt 4 = Chamada para Ação. Sem CTA: encerra na comprovação da casa 100% protegida.
+5. Se o usuário escolheu 5 prompts (com CTA): Prompt 4 = Revelação do Produto e Prompt 5 = Chamada para Ação.
 
 ==================================================
 REGRA CRÍTICA INEGOCIÁVEL — FIDELIDADE ABSOLUTA AO TEMA SOLICITADO (ZERO CONTAMINAÇÃO):
@@ -576,13 +577,20 @@ function generateLocalScript(
   referenceVideoBase64?: string,
   videoFileName?: string,
   promptCount: number = 8,
-  includeCTA: boolean = true
+  includeCTA: boolean = true,
+  productType?: string,
+  giantModelPreference?: string
 ): any {
   const targetCount = Math.max(2, Math.min(10, Number(promptCount) || 8));
   const hasCTA = Boolean(includeCTA);
   const cleanTheme = theme.trim() || 'Exterminar Baratas de Esgoto e Cozinha com Bicarbonato e Louro';
   const pest = detectPestProfile(cleanTheme, solutionIngredients);
-  const focalModel = pest.modelDescPt;
+  const rawProductType = String(productType || 'fisico').toLowerCase();
+  const isDigitalProduct = ['digital', 'ebook', 'e-book', 'curso', 'infoproduto', 'app', 'software', 'online'].some((k) => rawProductType.includes(k));
+  const productKindPt = isDigitalProduct ? 'material digital' : 'produto físico';
+  const productTitle = (customBookTitle && customBookTitle.trim()) || 'CASA LIVRE DE PRAGAS - 100 RECEITAS CASEIRAS INFALÍVEIS';
+  const maqueteOverride = (giantModelPreference && giantModelPreference.trim()) || '';
+  const focalModel = maqueteOverride || pest.modelDescPt;
   const ingredientsText = solutionIngredients || pest.defaultIngredientsPt;
   
   const noTextDirective = `NEGATIVE PROMPT & ON-SCREEN TEXT BAN: ABSOLUTELY NO on-screen text, NO subtitles, NO captions, NO closed captions, NO words written on screen, NO text overlays, NO floating text, NO typography, NO transcripts, NO lower thirds, NO banners, NO graphic titles, NO digital overlays, NO logos, NO watermarks, NO artificial UI labels. Pure raw cinematic video footage with ZERO text overlays, ZERO subtitles, and ZERO written words on screen. Spoken audio delivered purely via realistic on-camera lip synchronization without on-screen subtitles.`;
@@ -1019,51 +1027,91 @@ SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
 ${settingDesc}`
   };
 
-  const stepCTA = {
-    baseTitle: customBookTitle ? `CTA COM LIVRO "${customBookTitle.toUpperCase()}"` : 'CTA COM LIVRO CASA LIVRE DE PRAGAS',
-    focalObject: customBookTitle 
-      ? `Livro físico impresso "${customBookTitle}" em destaque nas mãos do especialista`
-      : `Livro físico impresso "CASA LIVRE DE PRAGAS - 100 RECEITAS INFALÍVEIS" em destaque nas mãos do especialista`,
-    actionSummary: customBookTitle
-      ? `Especialista ergue e exibe com orgulho o livro físico "${customBookTitle}", aponta para baixo convidando a comentar EU QUERO, finalizando com autoridade`
-      : 'Especialista ergue e exibe o livro físico "CASA LIVRE DE PRAGAS", aponta para baixo convidando a comentar EU QUERO, finalizando com autoridade',
-    cameraFraming: 'Plano Médio Frontal com lente 28mm. O livro físico é erguido na altura do peito ocupando posição central de destaque no enquadramento, com iluminação limpa destacando o título em relevo.',
-    visualSceneDescription: `O especialista segura com as duas mãos o livro físico impresso "${customBookTitle || 'CASA LIVRE DE PRAGAS'}", exibindo a capa com nitidez para a câmera. Com o dedo indicador direito, ele aponta para baixo na direção dos comentários enquanto profere o CTA "Comenta EU QUERO aqui embaixo", encerrando com convicção e autoridade.`,
+  const productVisualPt = isDigitalProduct
+    ? `smartphone moderno segurado nas mãos com a tela virada para a câmera exibindo o material digital "${productTitle}"`
+    : `produto físico impresso "${productTitle}" em destaque nas mãos do especialista`;
+  const productVisualEn = isDigitalProduct
+    ? `a modern smartphone held in his hands with the screen turned toward the camera, clearly displaying the digital product cover/title "${productTitle}"`
+    : `a substantial printed physical product with the title clearly legible on its cover`;
+
+  const stepCTA1Spoken = `Esse é o ${productKindPt} "${productTitle}": o guia completo que eu preparei para você eliminar ${pest.namePt} de vez usando só receitas caseiras seguras.`;
+  const stepCTA2Spoken = `Comenta EU QUERO aqui embaixo agora mesmo que eu te mando o link do ${productKindPt} no seu privado!`;
+
+  const stepCTA1 = {
+    baseTitle: `REVELAÇÃO DO PRODUTO "${productTitle.toUpperCase()}"`,
+    focalObject: productVisualPt,
+    actionSummary: `Especialista revela com orgulho o ${productKindPt} "${productTitle}" para a câmera, explicando o que ele resolve contra ${pest.namePt}.`,
+    cameraFraming: 'Plano Médio Frontal com lente 28mm. O produto é apresentado no centro do enquadramento com iluminação limpa destacando o título.',
+    visualSceneDescription: `O especialista segura ${productVisualPt} e o apresenta com clareza para a câmera, mostrando o título "${productTitle}" e explicando o que o conteúdo entrega contra ${pest.namePt}.`,
     visualTimeline: [
-      { time: '00:00 - 00:03', title: 'Exibição Frontal do Livro Físico', action: 'Especialista ergue com as duas mãos o livro físico com capa nítida e título visível em primeiro plano.' },
-      { time: '00:03 - 00:06', title: 'Chamada para Ação (CTA "Comenta EU QUERO")', action: 'Com a mão esquerda segurando o livro, aponta o dedo indicador direito para baixo, convocando a comentar EU QUERO.' },
-      { time: '00:06 - 00:08', title: 'Fechamento com Autoridade', action: 'Sorriso carismático e olhar firme de autoridade convidando para garantir o exemplar, encerrando a sequência.' }
+      { time: '00:00 - 00:03', title: 'Revelação do Produto', action: `Especialista ergue ${isDigitalProduct ? 'o smartphone com a tela do material digital acesa e visível' : 'o produto físico'} de forma destacada em direção à câmera.` },
+      { time: '00:03 - 00:06', title: 'Apresentação do Conteúdo', action: `Mostra o título "${productTitle}" com nitidez e afirma o que o ${productKindPt} resolve contra ${pest.namePt}.` },
+      { time: '00:06 - 00:08', title: 'Conexão com o Espectador', action: 'Olhar firme e sorriso de autoridade conectando com o espectador, preparando a chamada final.' }
     ],
-    spokenLinePt: pest.ctaSpokenPt,
+    spokenLinePt: `Esse é o ${productKindPt} "${productTitle}": o guia completo que eu preparei para você eliminar ${pest.namePt} de vez usando só receitas caseiras seguras.`,
     promptText: `Live-action photographic realism, 4K resolution, 30fps, vertical 9:16 aspect ratio, 28mm lens at chest level.
 
 ${noTextDirective}
 
 VISUAL CAMERA FRAMING:
-- Vertical 9:16 aspect ratio, medium framing holding the physical book prominently at chest height in the upper-center of the screen.
+- Vertical 9:16 aspect ratio, medium framing presenting the product prominently at chest height in the upper-center of the screen.
 
 WHAT HAPPENS VISUALLY (SECOND-BY-SECOND ACTION TIMELINE):
-• Presenter lifts the physical printed book with both hands right into the center of the frame, showing its tangible weight, thick pages, and embossed cover title.
-• Holding the book firmly in his left hand, his right index finger points directly and decisively down toward the comment area below, commanding viewers to comment "EU QUERO".
-• Warm, authoritative closing smile and direct magnetic eye contact as the recording closes with undeniable confidence.
+• Presenter reveals the product for the camera with both hands, ${isDigitalProduct ? 'holding a smartphone with the digital product screen turned toward the lens' : 'showing its tangible physical presence and cover'}.
+• He presents the title clearly and explains what the content delivers against the pest.
+• Warm, authoritative smile and direct magnetic eye contact.
 
-HOLDING THE VIRAL BOOK & DIRECT CALL TO ACTION:
-In the center of the frame, the presenter proudly holds up with both hands a substantial printed physical hardcover book ${bookImageBase64 ? 'faithfully matching the uploaded custom book cover reference in design, palette, artwork and styling' : 'with an emerald-green and gold cover'}. Clearly legible in crisp embossed gold lettering printed on the front cover is the title:
-"${(customBookTitle || 'CASA LIVRE DE PRAGAS').toUpperCase()}"
-${customBookTitle ? '' : `with the subtitle:
-"100 RECEITAS CASEIRAS INFALÍVEIS"
-below which is a tasteful printed photographic composition showing clean home corners, mint leaves, cloves, and natural pest-defense symbols.`}
+PRODUCT REVEAL:
+In the center of the frame, the presenter proudly presents ${productVisualEn}${bookImageBase64 ? ', faithfully matching the uploaded custom cover reference in design, palette, artwork and styling' : ''}.
 
 ${presenterDesc}
 
-HUMAN SKIN PRIORITY: Visible irregular pores across forehead, nose, cheeks, neck, shoulders, arms, forearms, and hands. Tiny blemishes, natural expression lines, nasolabial folds. NO beauty filter, NO skin smoothing, NO wax skin, NO CGI appearance.
+HUMAN SKIN PRIORITY: Visible irregular pores across forehead, nose, cheeks, neck, shoulders, arms, forearms, and hands. Tiny blemishes, natural expression lines, nasolabial folds. NO beauty filter, NO skin smoothing, NO CGI appearance.
 
-HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joints, natural nails, cuticles, knuckles, veins, tendons, fine hairs, skin folds. Left hand holds the physical book firmly toward the lens; right hand points with index finger downward toward the comment section.
+HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joints, natural nails, cuticles, knuckles, veins, tendons, fine hairs, skin folds.
 
-ACTION: Presenter holds the book prominently, speaks with energetic warmth, points directly down into the camera inviting viewers to comment, delivering the closing line with magnetic conviction.
+ACTION: Presenter reveals and presents the product clearly, speaking with energetic warmth and magnetic conviction.
 
 SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
-"${pest.ctaSpokenPt}"
+"${stepCTA1Spoken}"
+
+${settingDesc}`
+  };
+
+  const stepCTA2 = {
+    baseTitle: 'CHAMADA PARA AÇÃO — "COMENTA EU QUERO"',
+    focalObject: 'Especialista apontando o dedo indicador para baixo, na direção da área de comentários',
+    actionSummary: `Especialista aponta para baixo e convoca o público a comentar "EU QUERO" para receber o ${productKindPt} no privado.`,
+    cameraFraming: 'Plano Médio Frontal com lente 28mm, com espaço no enquadramento para o gesto de apontar para baixo.',
+    visualSceneDescription: `Com o olhar firme na câmera, o especialista aponta o dedo indicador direito para baixo na direção dos comentários e conclama o público a comentar "EU QUERO" para receber o link do ${productKindPt} no privado.`,
+    visualTimeline: [
+      { time: '00:00 - 00:03', title: 'Comando Direto', action: 'Especialista aponta o dedo indicador para baixo, na direção da área de comentários.' },
+      { time: '00:03 - 00:06', title: 'CTA "Comenta EU QUERO"', action: `Fala com convicção o comando para comentar EU QUERO e receber o ${productKindPt} no privado.` },
+      { time: '00:06 - 00:08', title: 'Fechamento com Urgência', action: 'Sorriso de autoridade e senso de urgência, encerrando a sequência.' }
+    ],
+    spokenLinePt: `Comenta EU QUERO aqui embaixo agora mesmo que eu te mando o link do ${productKindPt} no seu privado!`,
+    promptText: `Live-action photographic realism, 4K resolution, 30fps, vertical 9:16 aspect ratio, 28mm lens at chest level.
+
+${noTextDirective}
+
+VISUAL CAMERA FRAMING:
+- Vertical 9:16 aspect ratio, medium framing with clear space below for the pointing gesture.
+
+WHAT HAPPENS VISUALLY (SECOND-BY-SECOND ACTION TIMELINE):
+• Presenter looks straight into the lens and points his right index finger decisively downward toward the comment area.
+• He delivers a direct call to action inviting viewers to comment "EU QUERO" to receive the link privately.
+• Warm, authoritative closing smile and magnetic eye contact.
+
+${presenterDesc}
+
+HUMAN SKIN PRIORITY: Visible irregular pores across forehead, nose, cheeks, neck, shoulders, arms, forearms, and hands. Tiny blemishes, natural expression lines, nasolabial folds. NO beauty filter, NO skin smoothing, NO CGI appearance.
+
+HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joints, natural nails, cuticles, knuckles, veins, tendons, fine hairs, skin folds. Right hand points with index finger downward toward the comment section.
+
+ACTION: Presenter points directly down into the camera inviting viewers to comment, delivering the closing line with magnetic conviction.
+
+SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+"${stepCTA2Spoken}"
 
 ${settingDesc}`
   };
@@ -1107,43 +1155,33 @@ ${settingDesc}`
   };
 
   let chosenSteps: any[] = [];
-  if (targetCount <= 3) {
-    // 3 prompts or fewer: Gancho (P1) -> Mostrando e Falando Nomes dos Ingredientes (P2) -> Preparo Rápido & Aplicação (P3)
+  if (hasCTA && targetCount >= 4) {
+    // CTA dividido em DOIS prompts finais: Revelacao do Produto + Chamada para Acao.
+    const contentSlots = Math.max(2, targetCount - 2);
+    const contentBySlots: Record<number, any[]> = {
+      2: [stepHook, stepIngredientsFewPrompts],
+      3: [stepHook, stepIngredientsFewPrompts, stepQuickCook],
+      4: [stepHook, stepProblem, stepIngredients, stepCook1],
+      5: [stepHook, stepProblem, stepIngredients, stepCook1, stepPortions],
+      6: [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepResult],
+      7: [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult],
+    };
+    const content = contentBySlots[contentSlots] || [
+      stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult,
+    ].slice(0, contentSlots);
+    chosenSteps = [...content, stepCTA1, stepCTA2];
+  } else if (targetCount <= 3) {
     chosenSteps = [stepHook, stepIngredientsFewPrompts, stepQuickCook];
   } else if (targetCount === 4) {
-    // 4 prompts: Gancho (P1) -> Nomes dos Ingredientes (P2) -> Preparo Rápido (P3) -> CTA Livro ou Comprovação (P4)
-    chosenSteps = [
-      stepHook,
-      stepIngredientsFewPrompts,
-      stepQuickCook,
-      hasCTA ? stepCTA : stepResult
-    ];
+    chosenSteps = [stepHook, stepIngredientsFewPrompts, stepQuickCook, stepResult];
   } else if (targetCount === 5) {
-    // 5 prompts: Gancho (P1) -> Nomes dos Ingredientes (P2) -> Preparo Rápido (P3) -> Pontos Estratégicos/Aplicação (P4) -> CTA ou Conclusão Orgânica (P5)
-    chosenSteps = [
-      stepHook,
-      stepIngredientsFewPrompts,
-      stepQuickCook,
-      stepPortions,
-      hasCTA ? stepCTA : stepOrganicClose
-    ];
-  } else if (hasCTA) {
-    const slotsBeforeCTA = targetCount - 1;
-    if (slotsBeforeCTA >= 7) {
-      chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult, stepCTA];
-    } else if (slotsBeforeCTA === 6) {
-      chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepPortions, stepResult, stepCTA];
-    } else {
-      chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepPortions, stepResult, stepCTA];
-    }
+    chosenSteps = [stepHook, stepIngredientsFewPrompts, stepQuickCook, stepPortions, stepOrganicClose];
+  } else if (targetCount >= 8) {
+    chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult, stepOrganicClose];
+  } else if (targetCount === 7) {
+    chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult];
   } else {
-    if (targetCount >= 8) {
-      chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult, stepOrganicClose];
-    } else if (targetCount === 7) {
-      chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult];
-    } else {
-      chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepPortions, stepResult];
-    }
+    chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepPortions, stepResult];
   }
 
   chosenSteps = chosenSteps.slice(0, targetCount);
@@ -1178,11 +1216,11 @@ ${settingDesc}`
     solutionIngredients: ingredientsText,
     elementsPrepared: `Ingredientes caseiros simples em potes de vidro na bancada de madeira e recipientes de preparo (spray, tigela)`,
     transformationType: hasCTA 
-      ? `Preparo ao vivo do repelente/isca caseira na bancada, seguido de comprovação da casa livre de pragas e CTA com o livro ${customBookTitle || 'Casa Livre de Pragas'}`
+      ? `Preparo ao vivo do repelente/isca caseira na bancada, seguido de comprovação da casa livre de pragas e CTA dividido em dois prompts com o ${productKindPt} ${productTitle}`
       : `Preparo ao vivo do repelente/isca caseira na bancada, seguido de comprovação prática da casa limpa sem venda`,
     characterUsed: characterLabel,
     settingUsed: settingLabel,
-    bookTitleUsed: hasCTA ? (customBookTitle || 'Casa Livre de Pragas') : undefined,
+    bookTitleUsed: hasCTA ? productTitle : undefined,
     characterImagePreview: characterImageBase64 ? (characterImageBase64.startsWith('data:') ? characterImageBase64 : `data:image/jpeg;base64,${characterImageBase64}`) : undefined,
     settingImagePreview: settingImageBase64 ? (settingImageBase64.startsWith('data:') ? settingImageBase64 : `data:image/jpeg;base64,${settingImageBase64}`) : undefined,
     bookImagePreview: (hasCTA && bookImageBase64) ? (bookImageBase64.startsWith('data:') ? bookImageBase64 : `data:image/jpeg;base64,${bookImageBase64}`) : undefined,
@@ -1221,7 +1259,8 @@ const handleGenerateScript = async (req: any, res: any) => {
       bookImageMimeType,
       promptCount,
       includeCTA,
-      includePrompt5
+      includePrompt5,
+      productType
     } = req.body;
 
     const targetPromptCount = Math.max(2, Math.min(10, Number(promptCount) || 8));
@@ -1367,16 +1406,23 @@ Analise a retenção, gancho inicial e transposição para a fórmula de prompts
     }
 
     const bookTitleToUse = customBookTitle ? customBookTitle.trim() : 'CASA LIVRE DE PRAGAS - 100 RECEITAS CASEIRAS INFALÍVEIS';
+    const productIsDigitalAi = ['digital', 'ebook', 'e-book', 'curso', 'infoproduto', 'app', 'software', 'online']
+      .some((k) => String(productType || '').toLowerCase().includes(k));
+    const productKindAi = productIsDigitalAi ? 'material digital' : 'produto físico';
+    const productVisualAi = productIsDigitalAi
+      ? `um smartphone moderno com a tela virada para a câmera exibindo o material digital "${bookTitleToUse}"`
+      : `o produto físico impresso "${bookTitleToUse}" erguido com as duas mãos`;
     const requestedPestProfile = detectPestProfile(theme || 'baratas', solutionIngredients);
     const spokenIngredientsForPrompt = solutionIngredients 
       ? formatIngredientsForSpeech(solutionIngredients) 
       : formatIngredientsForSpeech(requestedPestProfile.defaultIngredientsPt);
 
+    const ctaStart = Math.max(1, targetPromptCount - 1);
     const bookDirective = targetIncludeCTA
-      ? (customBookTitle || bookImageBase64
-          ? `DIRETIVA DE LIVRO PERSONALIZADO (ÚLTIMO PROMPT - PROMPT ${targetPromptCount}): O apresentador ergue e exibe com as duas mãos para a câmera o LIVRO FÍSICO DO USUÁRIO intitulado "${bookTitleToUse}".`
-          : `DIRETIVA DE LIVRO PADRÃO (ÚLTIMO PROMPT - PROMPT ${targetPromptCount}): O apresentador ergue e exibe o livro físico "CASA LIVRE DE PRAGAS - 100 RECEITAS CASEIRAS INFALÍVEIS" com capa verde-esmeralda e dourada.`)
-      : `DIRETIVA SEM LIVRO E SEM CTA COMERCIAL (VÍDEO 100% ORGÂNICO): O usuário escolheu NÃO incluir CTA nem livro. O último prompt (${targetPromptCount}) encerra na comprovação prática da casa livre de pragas, segurança da família e alívio de um ambiente protegido.`;
+      ? `DIRETIVA DE PRODUTO E CTA EM DOIS PROMPTS (PROMPT ${ctaStart} = REVELAÇÃO DO PRODUTO e PROMPT ${targetPromptCount} = CHAMADA PARA AÇÃO):
+- PROMPT ${ctaStart} (REVELAÇÃO DO PRODUTO): O apresentador revela e apresenta para a câmera ${productVisualAi}. Deixe o título "${bookTitleToUse}" legível e explique em UMA frase o que o ${productKindAi} entrega contra a praga. Ainda SEM o comando de comentar.
+- PROMPT ${targetPromptCount} (CHAMADA PARA AÇÃO): O apresentador aponta o dedo indicador para baixo na direção dos comentários e conclama o público a comentar "EU QUERO" para receber o link do ${productKindAi} no privado.`
+      : `DIRETIVA SEM PRODUTO E SEM CTA COMERCIAL (VÍDEO 100% ORGÂNICO): O usuário escolheu NÃO incluir CTA nem produto. O último prompt (${targetPromptCount}) encerra na comprovação prática da casa livre de pragas, segurança da família e alívio de um ambiente protegido.`;
     
     const promptStepsGuidance = targetPromptCount <= 5
       ? `ESTRUTURA OBRIGATÓRIA ADAPTADA PARA POUCOS PROMPTS (${targetPromptCount} PROMPTS) — REGRA DE OURO:
@@ -1384,8 +1430,8 @@ Como o usuário escolheu poucos prompts (${targetPromptCount} prompts), aplique 
 - PROMPT 1 (00:00 - 00:08): GANCHO CHOCANTE COM MAQUETE COLOSSAL DA PRAGA "${requestedPestProfile.namePt.toUpperCase()}" (55% a 65% do enquadramento vertical 9:16) com ação visceral de choque no segundo 00:00 (borrifação, pó ou choque provocando debandada ou paralisia da praga).
 - PROMPT 2 (00:08 - 00:16): JÁ ENTRA DIRETO MOSTRANDO E FALANDO OS NOMES DOS INGREDIENTES CASEIROS NA BANCADA! Não gaste tempo explicando o problema ou ninhos. O apresentador entra imediatamente no segundo 00:08 apontando para os potes na bancada e falando claramente com sincronização labial perfeita (lip-sync direto) os nomes exatos de cada um dos ingredientes (${spokenIngredientsForPrompt}). Nunca use caracteres como "+" na fala.
 - PROMPT 3 (00:16 - 00:24): PREPARO RÁPIDO & APLICAÇÃO IMEDIATA! O apresentador faz a mistura rápida ao vivo na tigela ou frasco borrifador em ritmo dinâmico, mostra a consistência ativa pronta e ensina a aplicar de imediato no ralo ou frestas contra ${requestedPestProfile.namePt}!
-${targetPromptCount === 4 ? (targetIncludeCTA ? `- PROMPT 4 (00:24 - 00:32): CTA COM LIVRO FÍSICO "${bookTitleToUse}". Apresentador ergue o livro com as duas mãos e chama o público com o comando "Comenta EU QUERO aqui embaixo que te mando no privado!".` : `- PROMPT 4 (00:24 - 00:32): COMPROVAÇÃO PRÁTICA: CASA 100% LIMPA E PROTEGIDA. Mostra o ralo e cantos desinfestados, sem nenhuma praga e seguro para a família.`) : ''}
-${targetPromptCount === 5 ? (targetIncludeCTA ? `- PROMPT 4 (00:24 - 00:32): PONTOS ESTRATÉGICOS DE APLICAÇÃO E DOSAGENS. Detalha onde colocar e a frequência nos ralos e frestas.\n- PROMPT 5 (00:32 - 00:40): CTA COM LIVRO FÍSICO "${bookTitleToUse}". Apresentador ergue o livro com as duas mãos e chama para comentar EU QUERO.` : `- PROMPT 4 (00:24 - 00:32): PONTOS ESTRATÉGICOS DE APLICAÇÃO E DOSAGENS. Detalha onde colocar e a frequência nos ralos e frestas.\n- PROMPT 5 (00:32 - 00:40): CASA BLINDADA & MANUTENÇÃO ORGÂNICA. Relato de proteção contínua sem menção a livros ou vendas.`) : ''}`
+${targetPromptCount === 4 ? (targetIncludeCTA ? `- PROMPT 3 (00:16 - 00:24): REVELAÇÃO DO PRODUTO — o apresentador apresenta ${productVisualAi} com o título "${bookTitleToUse}".\n- PROMPT 4 (00:24 - 00:32): CHAMADA PARA AÇÃO — aponta para baixo e comanda "Comenta EU QUERO aqui embaixo que te mando no privado!".` : `- PROMPT 4 (00:24 - 00:32): COMPROVAÇÃO PRÁTICA: CASA 100% LIMPA E PROTEGIDA. Mostra o ralo e cantos desinfestados, sem nenhuma praga e seguro para a família.`) : ''}
+${targetPromptCount === 5 ? (targetIncludeCTA ? `- PROMPT 4 (00:24 - 00:32): REVELAÇÃO DO PRODUTO — o apresentador apresenta ${productVisualAi} com o título "${bookTitleToUse}".\n- PROMPT 5 (00:32 - 00:40): CHAMADA PARA AÇÃO — aponta para baixo e comanda "Comenta EU QUERO aqui embaixo que te mando no privado!".` : `- PROMPT 4 (00:24 - 00:32): PONTOS ESTRATÉGICOS DE APLICAÇÃO E DOSAGENS. Detalha onde colocar e a frequência nos ralos e frestas.\n- PROMPT 5 (00:32 - 00:40): CASA BLINDADA & MANUTENÇÃO ORGÂNICA. Relato de proteção contínua sem menção a livros ou vendas.`) : ''}`
       : `ESTRUTURA DAS ETAPAS PARA OS ${targetPromptCount} PROMPTS (SEQUÊNCIA COMPLETA):
 - PROMPT 1 (00:00 - 00:08): GANCHO CHOCANTE COM MAQUETE COLOSSAL DA PRAGA "${requestedPestProfile.namePt.toUpperCase()}" (60% do quadro) com ação de choque no segundo 00:00.
 - PROMPT 2 (00:08 - 00:16): EXPLICAÇÃO DO PROBLEMA (ONDE ELAS SE ESCONDEM E POR QUE O VENENO FALHA). Aponta para frestas e ovos na maquete.
@@ -1394,14 +1440,14 @@ ${targetPromptCount === 5 ? (targetIncludeCTA ? `- PROMPT 4 (00:24 - 00:32): PON
 ${targetPromptCount >= 5 ? '- PROMPT 5 (00:32 - 00:40): PREPARO AO VIVO PARTE 2. Continuação contínua na mesma tigela/recipiente adicionando os bioativos aromáticos.\n' : ''}
 ${targetPromptCount >= 6 ? '- PROMPT 6 (00:40 - 00:48): QUANTIDADE E PONTOS ESTRATÉGICOS DE APLICAÇÃO. Apresentador detalha doses e locais onde aplicar (ralos, frestas, forros, rodapés).\n' : ''}
 ${targetPromptCount >= 7 ? `- PROMPT 7 (00:48 - 00:56): COMPROVAÇÃO PRÁTICA: CASA 100% LIVRE DE ${requestedPestProfile.namePt.toUpperCase()}. Mostra o ambiente limpo, sem insetos/roedores, segurança para crianças e pets.\n` : ''}
-${targetIncludeCTA ? `- PROMPT FINAL (PROMPT ${targetPromptCount}): CTA COM LIVRO FÍSICO "${bookTitleToUse}". Apresentador ergue o livro com as duas mãos e convida o público a comentar EU QUERO.` : `- PROMPT FINAL (PROMPT ${targetPromptCount}): CASA PROTEGIDA E CONCLUSÃO ORGÂNICA. Dicas de reaplicação preventiva sem menção a livros ou vendas.`}`;
+${targetIncludeCTA ? `- PROMPTS FINAIS (PROMPT ${ctaStart} e PROMPT ${targetPromptCount}): PROMPT ${ctaStart} = REVELAÇÃO DO PRODUTO (${productVisualAi}, com o título "${bookTitleToUse}"); PROMPT ${targetPromptCount} = CHAMADA PARA AÇÃO (aponta para baixo e comanda "Comenta EU QUERO aqui embaixo").` : `- PROMPT FINAL (PROMPT ${targetPromptCount}): CASA PROTEGIDA E CONCLUSÃO ORGÂNICA. Dicas de reaplicação preventiva sem menção a livros ou vendas.`}`;
 
     let userPromptText = `Gere a sequência de EXATAMENTE ${targetPromptCount} PROMPTS conectados de 8s cada (${targetPromptCount * 8}s no total) com alta fidelidade visual para receitas caseiras para afastar e matar insetos e pragas.
 
 TEMA / PRAGA SOLICITADA: ${theme || 'Exterminar Baratas de Esgoto e Cozinha'} (Foco 100% EXCLUSIVO em: ${requestedPestProfile.namePt})
 QUANTIDADE EXATA DE PROMPTS A GERAR: ${targetPromptCount} prompts (duração total: ${targetPromptCount * 8} segundos)
-INCLUIR CTA/LIVRO NO FINAL: ${targetIncludeCTA ? `SIM (o prompt ${targetPromptCount} deve ser o CTA do livro)` : 'NÃO (vídeo 100% orgânico educacional, sem livro e sem venda)'}
-${giantModelPreference ? `PREFERÊNCIA DE MAQUETE COLOSSAL: ${giantModelPreference}` : ''}
+INCLUIR PRODUTO/CTA NO FINAL: ${targetIncludeCTA ? `SIM (CTA em DOIS prompts: o prompt ${ctaStart} revela o ${productKindAi} e o prompt ${targetPromptCount} faz a chamada para ação)` : 'NÃO (vídeo 100% orgânico educacional, sem produto e sem venda)'}
+${giantModelPreference ? `MAQUETE/OBJETO GIGANTE OBRIGATÓRIO (SUBSTITUI QUALQUER PADRÃO): use EXATAMENTE esta maquete/objeto colossal no gancho e na explicação: "${giantModelPreference}". NÃO use a maquete padrão da praga; use exatamente a descrição acima.` : ''}
 ${hookStyle ? `ESTILO DO GANCHO: ${hookStyle}` : ''}
 INGREDIENTES CASEIROS: ${spokenIngredientsForPrompt}
 ESCALA DO OBJETO NO GANCHO: MAQUETE/INFESTAÇÃO COLOSSAL OCUPANDO 55% A 65% DO ENQUADRAMENTO VERTICAL 9:16 (em primeiro plano extremo colado na lente, perspectiva forçada ultra-wide 20-24mm).
@@ -1545,11 +1591,13 @@ Lembre-se:
           customBookTitle,
           bookImageBase64,
           bookImageMimeType,
-          referenceVideoBase64,
-          videoFileName,
-          targetPromptCount,
-          targetIncludeCTA
-        );
+        referenceVideoBase64,
+        videoFileName,
+        targetPromptCount,
+        targetIncludeCTA,
+        productType,
+        giantModelPreference
+      );
         while (parsed.prompts.length < targetPromptCount) {
           const idx = parsed.prompts.length;
           parsed.prompts.push(fallback.prompts[idx] || fallback.prompts[fallback.prompts.length - 1]);

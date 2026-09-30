@@ -71,6 +71,7 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   const [bookImageBase64, setBookImageBase64] = useState<string>('');
   const [bookImageMimeType, setBookImageMimeType] = useState<string>('');
   const [bookImageFileName, setBookImageFileName] = useState<string>('');
+  const [productType, setProductType] = useState<string>('fisico');
 
   // Reference (Video / Screenshot / Transcript) State
   const [referenceText, setReferenceText] = useState<string>('');
@@ -321,7 +322,8 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
       settingImageBase64: settingImageBase64 || undefined,
       settingImageMimeType: settingImageMimeType || undefined,
       settingImageName: settingImageFileName || undefined,
-      // Custom Book
+      // Produto (físico ou digital)
+      productType,
       customBookTitle: customBookTitle.trim() || undefined,
       bookImageBase64: bookImageBase64 || undefined,
       bookImageMimeType: bookImageMimeType || undefined,
@@ -734,9 +736,9 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
                   <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                   <div className="text-[11px] leading-relaxed">
                     <strong className="text-white block font-semibold">
-                      Com Prompt de CTA Ativado (Recomendado para Vendas & Direct):
+                      Com CTA Ativado (Recomendado para Vendas & Direct):
                     </strong>
-                    O <strong>Prompt {promptCount} (o último prompt)</strong> encerra com a chamada para ação com o livro físico erguido com as duas mãos, instruindo o público a comentar <em>"EU QUERO"</em> para receber o link ou material no privado.
+                    O CTA é dividido em <strong>DOIS prompts finais</strong>: o <strong>Prompt {Math.max(1, promptCount - 1)}</strong> revela o seu produto (físico erguido nas mãos ou digital na tela do celular) e o <strong>Prompt {promptCount}</strong> faz a chamada para comentar <em>"EU QUERO"</em> e receber o link no privado. Serve para qualquer produto, físico ou digital.
                   </div>
                 </div>
               ) : (
@@ -746,7 +748,7 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
                     <strong className="text-white block font-semibold">
                       Sem Prompt de CTA — Vídeo 100% Orgânico / Educacional:
                     </strong>
-                    O vídeo <strong>NÃO</strong> menciona livro físico, <strong>NÃO</strong> promete material no direct e <strong>NÃO</strong> vende nada. O <strong>Prompt {promptCount}</strong> encerra na comprovação prática da casa livre de insetos e pragas, segurança da família e conclusão inspiradora.
+                    O vídeo <strong>NÃO</strong> menciona produto, <strong>NÃO</strong> promete material no direct e <strong>NÃO</strong> vende nada. O <strong>Prompt {promptCount}</strong> encerra na comprovação prática da casa livre de insetos e pragas, segurança da família e conclusão inspiradora.
                   </div>
                 </div>
               )}
@@ -942,18 +944,18 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
             </div>
           </div>
 
-          {/* 3. Custom Book (Livro do Prompt de CTA) Card */}
+          {/* 3. Produto (físico ou digital) do CTA Card */}
           <div className="rounded-lg border border-lime-900/60 bg-[#0d1c14] p-3.5 space-y-3">
             <div className="flex items-center justify-between border-b border-lime-900/40 pb-2">
               <label className="text-xs font-bold text-lime-200 flex items-center gap-1.5">
                 <BookOpen className="h-4 w-4 text-lime-400" />
-                <span>Livro Físico Personalizado (Prompt {promptCount} — CTA Final):</span>
+                <span>Produto a vender (físico ou digital) — CTA em 2 prompts ({Math.max(1, promptCount - 1)} e {promptCount}):</span>
               </label>
               {includeCTA ? (
-                (bookImageBase64 || customBookTitle) && (
+                (bookImageBase64 || customBookTitle || productType !== 'fisico') && (
                   <span className="flex items-center gap-1 text-[10px] font-medium text-lime-300 bg-lime-950/80 px-1.5 py-0.5 rounded border border-lime-800">
                     <CheckCircle2 className="h-3 w-3" />
-                    Ativo no Prompt {promptCount}
+                    Ativo nos Prompts {Math.max(1, promptCount - 1)} e {promptCount}
                   </span>
                 )
               ) : (
@@ -967,14 +969,29 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
               <div className="rounded-md bg-amber-950/60 border border-amber-800/60 p-2 text-[11px] text-amber-200 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
                 <span>
-                  <strong>Aviso:</strong> Você optou por um vídeo <em>100% Orgânico (Sem CTA)</em> acima. Para exibir a capa deste livro físico na cena final, basta ativar a opção <strong>"Gerar Prompt de Chamada para Ação (CTA)"</strong> no bloco de configuração.
+                  <strong>Aviso:</strong> Você optou por um vídeo <em>100% Orgânico (Sem CTA)</em> acima. Para exibir o seu produto na cena final, basta ativar a opção <strong>"Gerar Prompt de Chamada para Ação (CTA)"</strong> no bloco de configuração.
                 </span>
               </div>
             )}
 
             <p className="text-[11px] text-lime-300/70 leading-relaxed">
-              Deseja que o apresentador segure o <strong>seu próprio livro, ebook ou manual físico</strong> no fechamento do vídeo? Envie a foto da capa e o título exato abaixo.
+              Venda <strong>qualquer produto</strong> — físico (livro, kit, manual) ou digital (ebook, curso, app, material online). O CTA é gerado em <strong>2 prompts</strong>: um revele o produto e o outro faz a chamada "Comenta EU QUERO". Preencha o tipo, o título e (opcionalmente) a imagem.
             </p>
+
+            <div>
+              <label className="text-[11px] font-semibold text-lime-200 block mb-1">
+                Tipo de produto:
+              </label>
+              <select
+                value={productType}
+                onChange={(e) => setProductType(e.target.value)}
+                className="w-full rounded-md border border-lime-900/70 bg-[#07130d] px-2.5 py-2 text-xs text-lime-100 focus:border-lime-500 focus:outline-none"
+              >
+                <option value="fisico">Produto físico (livro, kit, manual, embalagem...)</option>
+                <option value="digital">Material digital (ebook, PDF, curso, infoproduto...)</option>
+                <option value="app">App / Software / Assinatura online</option>
+              </select>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
               {/* Book image upload */}
@@ -998,25 +1015,25 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
                       <Upload className="h-3.5 w-3.5" />
                     </div>
                     <span className="text-xs font-semibold text-lime-200">
-                      Subir foto/capa do seu Livro
+                      Subir imagem do produto
                     </span>
                     <span className="text-[10px] text-lime-400/60">
-                      PNG, JPG ou WEBP (capa frontal do livro)
+                      PNG, JPG ou WEBP (capa, embalagem ou prévia)
                     </span>
                   </button>
                 ) : (
                   <div className="flex items-center gap-3 rounded-lg border border-lime-700/60 bg-[#14281c] p-2 text-xs">
                     <img 
                       src={`data:${bookImageMimeType || 'image/jpeg'};base64,${bookImageBase64}`} 
-                      alt="Capa do Livro enviada" 
+                      alt="Imagem do produto enviada" 
                       className="h-12 w-9 rounded object-cover border border-lime-600/60 shrink-0 shadow"
                     />
                     <div className="flex-1 min-w-0">
                       <span className="font-semibold text-white truncate block text-xs">
-                        {bookImageFileName || 'Capa do Livro'}
+                        {bookImageFileName || 'Imagem do produto'}
                       </span>
                       <span className="text-[10px] text-lime-300/80 block">
-                        Capa exibida nas mãos do apresentador
+                        Imagem exibida no vídeo
                       </span>
                     </div>
                     <button
@@ -1034,13 +1051,13 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
               {/* Book title input */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-semibold text-lime-200 block">
-                  Nome / Título impresso no Livro:
+                  Nome / Título do Produto:
                 </label>
                 <input
                   type="text"
                   value={customBookTitle}
                   onChange={(e) => setCustomBookTitle(e.target.value)}
-                  placeholder='Ex: "CASA LIVRE DE PRAGAS", "MANUAL DO EXTERMINADOR CASEIRO"...'
+                  placeholder='Ex: "CASA LIVRE DE PRAGAS", "CURSO EXTERMINADOR CASEIRO", "KIT ANTI-PRAGAS"...'
                   className="w-full rounded-md border border-lime-900/70 bg-[#07130d] px-2.5 py-2 text-xs text-lime-100 placeholder:text-lime-800/60 focus:border-lime-500 focus:outline-none"
                 />
                 <span className="text-[10px] text-lime-400/60 block">

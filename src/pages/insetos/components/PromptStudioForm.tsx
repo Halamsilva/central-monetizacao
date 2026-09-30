@@ -24,7 +24,8 @@ import {
   AlertCircle,
   Sliders,
   Clock,
-  ListOrdered
+  ListOrdered,
+  Loader2
 } from 'lucide-react';
 import { PromptGenerationRequest, HookActionType, ThemeSuggestion } from '../types';
 import { QUICK_STARTER_THEMES, ALL_CURATED_THEME_SUGGESTIONS, getRandomThemeSuggestions } from '../data/presets';
@@ -72,6 +73,9 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   const [bookImageMimeType, setBookImageMimeType] = useState<string>('');
   const [bookImageFileName, setBookImageFileName] = useState<string>('');
   const [productType, setProductType] = useState<string>('fisico');
+  const [lockMaquete, setLockMaquete] = useState<boolean>(false);
+  const [isAnalyzingMaquete, setIsAnalyzingMaquete] = useState<boolean>(false);
+  const [maqueteFeedback, setMaqueteFeedback] = useState<string>('');
 
   // Reference (Video / Screenshot / Transcript) State
   const [referenceText, setReferenceText] = useState<string>('');
@@ -296,6 +300,34 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
     }
   };
 
+  const handleAnalyzeMaquete = async () => {
+    const text = (giantModelPreference || '').trim();
+    if (!text) return;
+    setIsAnalyzingMaquete(true);
+    setMaqueteFeedback('');
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token || '';
+      const res = await fetch('/api/agents/insetos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'analyze-maquete', text, theme }),
+      });
+      const payload = await res.json().catch(() => ({}));
+      if (res.ok && payload?.result) {
+        setGiantModelPreference(payload.result);
+        setMaqueteFeedback('Maquete analisada e fixada! Será usada obrigatoriamente.');
+      } else {
+        setMaqueteFeedback('Maquete fixada (será usada exatamente como você escreveu).');
+      }
+    } catch {
+      setMaqueteFeedback('Maquete fixada (será usada exatamente como você escreveu).');
+    } finally {
+      setLockMaquete(true);
+      setIsAnalyzingMaquete(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!theme.trim() && !referenceText.trim() && !referenceImageBase64 && !referenceVideoBase64 && !characterImageBase64 && !settingImageBase64 && !customBookTitle.trim() && !bookImageBase64) return;
@@ -303,6 +335,7 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
     onGenerate({
       theme: theme.trim(),
       giantModelPreference: giantModelPreference.trim(),
+      lockMaquete,
       hookStyle,
       solutionIngredients: solutionIngredients.trim() || undefined,
       objectScale,
@@ -519,17 +552,40 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
           </div>
 
           <div>
-            <label htmlFor="input-giant-model" className="block text-xs font-semibold text-emerald-300 mb-1">
-              Maquete / Superfície Gigante Preferida (Opcional):
+            <label htmlFor="input-giant-model" className="block text-xs font-semibold text-emerald-300 mb-1 flex items-center justify-between gap-2">
+              <span>Maquete / Superfície Gigante (o usuário manda):</span>
+              {lockMaquete && (
+                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-300 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-700">
+                  <CheckCircle2 className="h-3 w-3" /> MAQUETE FIXADA (obrigatória)
+                </span>
+              )}
             </label>
-            <input
-              id="input-giant-model"
-              type="text"
-              value={giantModelPreference}
-              onChange={(e) => setGiantModelPreference(e.target.value)}
-              placeholder="Ex: Ralo e fresta com ninho de baratas 60%, Forro com ratos roendo fios..."
-              className="w-full rounded-lg border border-emerald-900/70 bg-[#0c1410] px-3 py-2 text-xs text-white placeholder:text-emerald-600/50 focus:border-emerald-500 focus:outline-none"
-            />
+            <div className="flex gap-2">
+              <input
+                id="input-giant-model"
+                type="text"
+                value={giantModelPreference}
+                onChange={(e) => { setGiantModelPreference(e.target.value); setLockMaquete(false); setMaqueteFeedback(''); }}
+                placeholder="Ex: ralo da cozinha com ninho de baratas, forro com ratos roendo fios, açucareiro com trilha de formigas..."
+                className="w-full rounded-lg border border-emerald-900/70 bg-[#0c1410] px-3 py-2 text-xs text-white placeholder:text-emerald-600/50 focus:border-emerald-500 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={handleAnalyzeMaquete}
+                disabled={isAnalyzingMaquete || !giantModelPreference.trim()}
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-2 text-xs font-bold text-black transition hover:bg-emerald-400 disabled:opacity-50"
+                title="Analisar e fixar a maquete como obrigatória"
+              >
+                {isAnalyzingMaquete ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                Analisar e fixar
+              </button>
+            </div>
+            <p className="mt-1 text-[10px] text-emerald-400/70">
+              Escreva a maquete que você quer e clique em <strong>Analisar e fixar</strong>: ela vira obrigatória no gancho do vídeo.
+            </p>
+            {maqueteFeedback && (
+              <p className="mt-1 text-[10px] font-semibold text-emerald-300">{maqueteFeedback}</p>
+            )}
           </div>
         </div>
 
@@ -648,11 +704,11 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-1">
               {[
                 { count: 3, label: '3 Prompts', time: '24s', desc: 'Gancho (P1) + Nomes dos Ingredientes (P2) + Preparo Rápido (P3)', isQuick: true },
-                { count: 4, label: '4 Prompts', time: '32s', desc: 'Gancho (P1) + Nomes Ingredientes (P2) + Preparo Rápido (P3) + CTA/Fim', isQuick: true },
-                { count: 5, label: '5 Prompts', time: '40s', desc: 'Gancho + Ingredientes + Preparo + Pontos Estratégicos + CTA', isQuick: true },
-                { count: 6, label: '6 Prompts', time: '48s', desc: 'Gancho + Problema + Ingredientes + Preparo + Quantidades + CTA' },
-                { count: 7, label: '7 Prompts', time: '56s', desc: 'Gancho + Problema + Ingredientes + Preparo 1/2 + Comprovação + CTA' },
-                { count: 8, label: '8 Prompts', time: '64s', desc: 'Fórmula Completa: Gancho até Casa Livre de Pragas & Livro', isRecommended: true },
+                { count: 4, label: '4 Prompts', time: '32s', desc: 'Gancho + Ingredientes + Preparo + Comprovação (+2 CTA se ativo)', isQuick: true },
+                { count: 5, label: '5 Prompts', time: '40s', desc: 'Gancho + Ingredientes + Preparo + Aplicação + Prova (+2 CTA)', isQuick: true },
+                { count: 6, label: '6 Prompts', time: '48s', desc: 'Gancho + Problema + Ingredientes + Preparo + Quantidades + Prova (+2 CTA)' },
+                { count: 7, label: '7 Prompts', time: '56s', desc: 'Gancho + Problema + Ingredientes + Preparo 1/2 + Comprovação (+2 CTA)' },
+                { count: 8, label: '8 Prompts', time: '64s', desc: 'Fórmula Completa + 2 prompts EXTRA de CTA (produto físico ou digital)', isRecommended: true },
               ].map((opt) => {
                 const isSelected = promptCount === opt.count;
                 return (

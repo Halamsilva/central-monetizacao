@@ -88,6 +88,7 @@ export interface PromptGenerationRequest {
   videoFileName?: string;
   videoFileSizeMB?: number;
   giantModelPreference?: string;
+  lockMaquete?: boolean;
   hookStyle?: 'curiosidade' | 'segredo' | 'problema_visivel' | 'descoberta';
   solutionIngredients?: string;
   objectScale?: 'colossal_60' | 'large_45';

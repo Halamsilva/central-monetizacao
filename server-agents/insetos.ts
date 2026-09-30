@@ -19,7 +19,7 @@ Criar vídeos verticais ultra-realistas com a QUANTIDADE DE PROMPTS ESPECIFICADA
 - FPS: 30fps
 
 ESTRUTURA NARRATIVA E DIRETRIZ DE CTA (PRODUTO DO USUÁRIO):
-1. Se a opção de CTA estiver ATIVADA (padrão): o CTA é dividido em DOIS prompts finais. O PENÚLTIMO prompt REVELA O PRODUTO (físico ou digital) escolhido pelo usuário — produto físico é erguido com as duas mãos; material digital é exibido na tela de um smartphone virado para a câmera — com o título do produto legível. O ÚLTIMO prompt faz a CHAMADA PARA AÇÃO, apontando para baixo e pedindo para comentar "EU QUERO" para receber o link no privado. NUNCA limite a "livro/ebook": pode ser QUALQUER produto físico ou digital.
+1. Se a opção de CTA estiver ATIVADA (padrão): o CTA são DOIS PROMPTS EXTRA adicionados AO FINAL, que NÃO contam na quantidade de prompts escolhida pelo usuário (ex: 8 prompts escolhidos = 8 de conteúdo + 2 de CTA = 10 no total). O primeiro prompt de CTA REVELA O PRODUTO (físico erguido nas mãos ou digital na tela do celular) e diz O NOME DO PRODUTO em voz alta — NUNCA fale "produto físico" nem "material digital", fale o nome do produto. O segundo prompt de CTA aponta para baixo e pede para comentar "EU QUERO". Pode ser QUALQUER produto físico ou digital.
 2. Se a opção de CTA estiver DESATIVADA: o vídeo é 100% ORGÂNICO! Nenhum prompt deve exibir produto ou oferta comercial; o último prompt foca na comprovação da casa limpa, sem cheiro químico e protegida de pragas.
 
 ATOS VISUAIS E NARRATIVOS DA METODOLOGIA:
@@ -1034,8 +1034,8 @@ ${settingDesc}`
     ? `a modern smartphone held in his hands with the screen turned toward the camera, clearly displaying the digital product cover/title "${productTitle}"`
     : `a substantial printed physical product with the title clearly legible on its cover`;
 
-  const stepCTA1Spoken = `Esse é o ${productKindPt} "${productTitle}": o guia completo que eu preparei para você eliminar ${pest.namePt} de vez usando só receitas caseiras seguras.`;
-  const stepCTA2Spoken = `Comenta EU QUERO aqui embaixo agora mesmo que eu te mando o link do ${productKindPt} no seu privado!`;
+  const stepCTA1Spoken = `Isso aqui é o ${productTitle}: o material completo que eu preparei para você eliminar ${pest.namePt} de vez usando só receitas caseiras seguras.`;
+  const stepCTA2Spoken = `Comenta EU QUERO aqui embaixo agora mesmo que eu te mando o link do ${productTitle} no seu privado!`;
 
   const stepCTA1 = {
     baseTitle: `REVELAÇÃO DO PRODUTO "${productTitle.toUpperCase()}"`,
@@ -1048,7 +1048,7 @@ ${settingDesc}`
       { time: '00:03 - 00:06', title: 'Apresentação do Conteúdo', action: `Mostra o título "${productTitle}" com nitidez e afirma o que o ${productKindPt} resolve contra ${pest.namePt}.` },
       { time: '00:06 - 00:08', title: 'Conexão com o Espectador', action: 'Olhar firme e sorriso de autoridade conectando com o espectador, preparando a chamada final.' }
     ],
-    spokenLinePt: `Esse é o ${productKindPt} "${productTitle}": o guia completo que eu preparei para você eliminar ${pest.namePt} de vez usando só receitas caseiras seguras.`,
+    spokenLinePt: stepCTA1Spoken,
     promptText: `Live-action photographic realism, 4K resolution, 30fps, vertical 9:16 aspect ratio, 28mm lens at chest level.
 
 ${noTextDirective}
@@ -1089,7 +1089,7 @@ ${settingDesc}`
       { time: '00:03 - 00:06', title: 'CTA "Comenta EU QUERO"', action: `Fala com convicção o comando para comentar EU QUERO e receber o ${productKindPt} no privado.` },
       { time: '00:06 - 00:08', title: 'Fechamento com Urgência', action: 'Sorriso de autoridade e senso de urgência, encerrando a sequência.' }
     ],
-    spokenLinePt: `Comenta EU QUERO aqui embaixo agora mesmo que eu te mando o link do ${productKindPt} no seu privado!`,
+    spokenLinePt: stepCTA2Spoken,
     promptText: `Live-action photographic realism, 4K resolution, 30fps, vertical 9:16 aspect ratio, 28mm lens at chest level.
 
 ${noTextDirective}
@@ -1154,37 +1154,24 @@ SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
 ${settingDesc}`
   };
 
-  let chosenSteps: any[] = [];
-  if (hasCTA && targetCount >= 4) {
-    // CTA dividido em DOIS prompts finais: Revelacao do Produto + Chamada para Acao.
-    const contentSlots = Math.max(2, targetCount - 2);
-    const contentBySlots: Record<number, any[]> = {
-      2: [stepHook, stepIngredientsFewPrompts],
-      3: [stepHook, stepIngredientsFewPrompts, stepQuickCook],
-      4: [stepHook, stepProblem, stepIngredients, stepCook1],
-      5: [stepHook, stepProblem, stepIngredients, stepCook1, stepPortions],
-      6: [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepResult],
-      7: [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult],
-    };
-    const content = contentBySlots[contentSlots] || [
-      stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult,
-    ].slice(0, contentSlots);
-    chosenSteps = [...content, stepCTA1, stepCTA2];
-  } else if (targetCount <= 3) {
-    chosenSteps = [stepHook, stepIngredientsFewPrompts, stepQuickCook];
+  let contentSteps: any[] = [];
+  if (targetCount <= 3) {
+    contentSteps = [stepHook, stepIngredientsFewPrompts, stepQuickCook];
   } else if (targetCount === 4) {
-    chosenSteps = [stepHook, stepIngredientsFewPrompts, stepQuickCook, stepResult];
+    contentSteps = [stepHook, stepIngredientsFewPrompts, stepQuickCook, stepResult];
   } else if (targetCount === 5) {
-    chosenSteps = [stepHook, stepIngredientsFewPrompts, stepQuickCook, stepPortions, stepOrganicClose];
-  } else if (targetCount >= 8) {
-    chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult, stepOrganicClose];
+    contentSteps = [stepHook, stepIngredientsFewPrompts, stepQuickCook, stepPortions, hasCTA ? stepResult : stepOrganicClose];
+  } else if (targetCount === 6) {
+    contentSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepPortions, stepResult];
   } else if (targetCount === 7) {
-    chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult];
+    contentSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult];
   } else {
-    chosenSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepPortions, stepResult];
+    contentSteps = [stepHook, stepProblem, stepIngredients, stepCook1, stepCook2, stepPortions, stepResult, stepOrganicClose];
   }
 
-  chosenSteps = chosenSteps.slice(0, targetCount);
+  contentSteps = contentSteps.slice(0, targetCount);
+  // O CTA (2 prompts) é EXTRA: NÃO conta na quantidade escolhida pelo usuário.
+  const chosenSteps: any[] = hasCTA ? [...contentSteps, stepCTA1, stepCTA2] : contentSteps;
 
   const finalPrompts = chosenSteps.map((step, idx) => {
     const promptId = idx + 1;
@@ -1207,10 +1194,10 @@ ${settingDesc}`
   return {
     id: `script-${Date.now()}`,
     theme: cleanTheme,
-    promptCount: targetCount,
+    promptCount: finalPrompts.length,
     includeCTA: hasCTA,
-    totalDurationSeconds: targetCount * 8,
-    summary: `Demonstração visual de alto impacto contra ${cleanTheme} utilizando maquete COLOSSAL de frestas e ralos (60% do quadro) em ${targetCount} etapas de 8s (${targetCount * 8}s total) com gancho de choque: ${selectedHook.summary}`,
+    totalDurationSeconds: finalPrompts.length * 8,
+    summary: `Demonstração visual de alto impacto contra ${cleanTheme} utilizando maquete COLOSSAL de frestas e ralos (60% do quadro) em ${finalPrompts.length} prompts de 8s (${finalPrompts.length * 8}s total)${hasCTA ? ' (inclui 2 prompts de CTA extras)' : ''} com gancho de choque: ${selectedHook.summary}`,
     focalObject: focalModel,
     targetProblem: `Infestação de pragas em frestas e ralos associada a ${cleanTheme}`,
     solutionIngredients: ingredientsText,
@@ -1265,6 +1252,10 @@ const handleGenerateScript = async (req: any, res: any) => {
 
     const targetPromptCount = Math.max(2, Math.min(10, Number(promptCount) || 8));
     const targetIncludeCTA = includeCTA !== undefined ? Boolean(includeCTA) : (includePrompt5 !== undefined ? Boolean(includePrompt5) : true);
+
+    if (req.body?.lockMaquete && !giantModelPreference) {
+      return res.status(400).json({ error: 'Você marcou a maquete como obrigatória. Escreva a maquete e clique em "Analisar e fixar".' });
+    }
 
     if (!theme && !referenceText && !referenceImageBase64 && !referenceVideoBase64 && !characterImageBase64 && !settingImageBase64 && !customBookTitle && !bookImageBase64) {
       return res.status(400).json({ error: 'Forneça ao menos um tema, praga/inseto, vídeo viral, texto, livro ou imagem de referência.' });
@@ -1417,12 +1408,13 @@ Analise a retenção, gancho inicial e transposição para a fórmula de prompts
       ? formatIngredientsForSpeech(solutionIngredients) 
       : formatIngredientsForSpeech(requestedPestProfile.defaultIngredientsPt);
 
-    const ctaStart = Math.max(1, targetPromptCount - 1);
+    const ctaStart = targetPromptCount + 1;
+    const ctaEnd = targetPromptCount + 2;
     const bookDirective = targetIncludeCTA
-      ? `DIRETIVA DE PRODUTO E CTA EM DOIS PROMPTS (PROMPT ${ctaStart} = REVELAÇÃO DO PRODUTO e PROMPT ${targetPromptCount} = CHAMADA PARA AÇÃO):
-- PROMPT ${ctaStart} (REVELAÇÃO DO PRODUTO): O apresentador revela e apresenta para a câmera ${productVisualAi}. Deixe o título "${bookTitleToUse}" legível e explique em UMA frase o que o ${productKindAi} entrega contra a praga. Ainda SEM o comando de comentar.
-- PROMPT ${targetPromptCount} (CHAMADA PARA AÇÃO): O apresentador aponta o dedo indicador para baixo na direção dos comentários e conclama o público a comentar "EU QUERO" para receber o link do ${productKindAi} no privado.`
-      : `DIRETIVA SEM PRODUTO E SEM CTA COMERCIAL (VÍDEO 100% ORGÂNICO): O usuário escolheu NÃO incluir CTA nem produto. O último prompt (${targetPromptCount}) encerra na comprovação prática da casa livre de pragas, segurança da família e alívio de um ambiente protegido.`;
+      ? `DIRETIVA DE PRODUTO E CTA (DOIS PROMPTS EXTRA, que NÃO contam na quantidade de conteúdo): os prompts de conteúdo vão de 1 a ${targetPromptCount}; os DOIS prompts de CTA são o PROMPT ${ctaStart} (REVELAÇÃO DO PRODUTO) e o PROMPT ${ctaEnd} (CHAMADA PARA AÇÃO).
+- PROMPT ${ctaStart} (REVELAÇÃO DO PRODUTO): O apresentador revela e apresenta para a câmera ${productVisualAi}. Deixe o título EXATO do produto legível na capa/tela e diga o NOME do produto em voz alta ("${bookTitleToUse}"). NUNCA fale "produto físico" nem "material digital": fale o NOME do produto. Ainda SEM o comando de comentar.
+- PROMPT ${ctaEnd} (CHAMADA PARA AÇÃO): O apresentador aponta o dedo indicador para baixo na direção dos comentários, fala o NOME do produto ("${bookTitleToUse}") e conclama o público a comentar "EU QUERO" para receber o link no privado.`
+      : `DIRETIVA SEM PRODUTO E SEM CTA COMERCIAL (VÍDEO 100% ORGÂNICO): O usuário escolheu NÃO incluir CTA nem produto. O último prompt de conteúdo (${targetPromptCount}) encerra na comprovação prática da casa livre de pragas, segurança da família e alívio de um ambiente protegido.`;
     
     const promptStepsGuidance = targetPromptCount <= 5
       ? `ESTRUTURA OBRIGATÓRIA ADAPTADA PARA POUCOS PROMPTS (${targetPromptCount} PROMPTS) — REGRA DE OURO:
@@ -1430,8 +1422,8 @@ Como o usuário escolheu poucos prompts (${targetPromptCount} prompts), aplique 
 - PROMPT 1 (00:00 - 00:08): GANCHO CHOCANTE COM MAQUETE COLOSSAL DA PRAGA "${requestedPestProfile.namePt.toUpperCase()}" (55% a 65% do enquadramento vertical 9:16) com ação visceral de choque no segundo 00:00 (borrifação, pó ou choque provocando debandada ou paralisia da praga).
 - PROMPT 2 (00:08 - 00:16): JÁ ENTRA DIRETO MOSTRANDO E FALANDO OS NOMES DOS INGREDIENTES CASEIROS NA BANCADA! Não gaste tempo explicando o problema ou ninhos. O apresentador entra imediatamente no segundo 00:08 apontando para os potes na bancada e falando claramente com sincronização labial perfeita (lip-sync direto) os nomes exatos de cada um dos ingredientes (${spokenIngredientsForPrompt}). Nunca use caracteres como "+" na fala.
 - PROMPT 3 (00:16 - 00:24): PREPARO RÁPIDO & APLICAÇÃO IMEDIATA! O apresentador faz a mistura rápida ao vivo na tigela ou frasco borrifador em ritmo dinâmico, mostra a consistência ativa pronta e ensina a aplicar de imediato no ralo ou frestas contra ${requestedPestProfile.namePt}!
-${targetPromptCount === 4 ? (targetIncludeCTA ? `- PROMPT 3 (00:16 - 00:24): REVELAÇÃO DO PRODUTO — o apresentador apresenta ${productVisualAi} com o título "${bookTitleToUse}".\n- PROMPT 4 (00:24 - 00:32): CHAMADA PARA AÇÃO — aponta para baixo e comanda "Comenta EU QUERO aqui embaixo que te mando no privado!".` : `- PROMPT 4 (00:24 - 00:32): COMPROVAÇÃO PRÁTICA: CASA 100% LIMPA E PROTEGIDA. Mostra o ralo e cantos desinfestados, sem nenhuma praga e seguro para a família.`) : ''}
-${targetPromptCount === 5 ? (targetIncludeCTA ? `- PROMPT 4 (00:24 - 00:32): REVELAÇÃO DO PRODUTO — o apresentador apresenta ${productVisualAi} com o título "${bookTitleToUse}".\n- PROMPT 5 (00:32 - 00:40): CHAMADA PARA AÇÃO — aponta para baixo e comanda "Comenta EU QUERO aqui embaixo que te mando no privado!".` : `- PROMPT 4 (00:24 - 00:32): PONTOS ESTRATÉGICOS DE APLICAÇÃO E DOSAGENS. Detalha onde colocar e a frequência nos ralos e frestas.\n- PROMPT 5 (00:32 - 00:40): CASA BLINDADA & MANUTENÇÃO ORGÂNICA. Relato de proteção contínua sem menção a livros ou vendas.`) : ''}`
+${targetPromptCount === 4 ? (targetIncludeCTA ? `- PROMPT 5 (EXTRA - REVELAÇÃO DO PRODUTO): o apresentador apresenta ${productVisualAi} e diz o NOME do produto em voz alta.\n- PROMPT 6 (EXTRA - CHAMADA PARA AÇÃO): aponta para baixo e comanda "Comenta EU QUERO aqui embaixo que te mando no privado!".` : `- PROMPT 4 (00:24 - 00:32): COMPROVAÇÃO PRÁTICA: CASA 100% LIMPA E PROTEGIDA. Mostra o ralo e cantos desinfestados, sem nenhuma praga e seguro para a família.`) : ''}
+${targetPromptCount === 5 ? (targetIncludeCTA ? `- PROMPT 6 (EXTRA - REVELAÇÃO DO PRODUTO): o apresentador apresenta ${productVisualAi} e diz o NOME do produto em voz alta.\n- PROMPT 7 (EXTRA - CHAMADA PARA AÇÃO): aponta para baixo e comanda "Comenta EU QUERO aqui embaixo que te mando no privado!".` : `- PROMPT 4 (00:24 - 00:32): PONTOS ESTRATÉGICOS DE APLICAÇÃO E DOSAGENS. Detalha onde colocar e a frequência nos ralos e frestas.\n- PROMPT 5 (00:32 - 00:40): CASA BLINDADA & MANUTENÇÃO ORGÂNICA. Relato de proteção contínua sem menção a livros ou vendas.`) : ''}`
       : `ESTRUTURA DAS ETAPAS PARA OS ${targetPromptCount} PROMPTS (SEQUÊNCIA COMPLETA):
 - PROMPT 1 (00:00 - 00:08): GANCHO CHOCANTE COM MAQUETE COLOSSAL DA PRAGA "${requestedPestProfile.namePt.toUpperCase()}" (60% do quadro) com ação de choque no segundo 00:00.
 - PROMPT 2 (00:08 - 00:16): EXPLICAÇÃO DO PROBLEMA (ONDE ELAS SE ESCONDEM E POR QUE O VENENO FALHA). Aponta para frestas e ovos na maquete.
@@ -1440,13 +1432,14 @@ ${targetPromptCount === 5 ? (targetIncludeCTA ? `- PROMPT 4 (00:24 - 00:32): REV
 ${targetPromptCount >= 5 ? '- PROMPT 5 (00:32 - 00:40): PREPARO AO VIVO PARTE 2. Continuação contínua na mesma tigela/recipiente adicionando os bioativos aromáticos.\n' : ''}
 ${targetPromptCount >= 6 ? '- PROMPT 6 (00:40 - 00:48): QUANTIDADE E PONTOS ESTRATÉGICOS DE APLICAÇÃO. Apresentador detalha doses e locais onde aplicar (ralos, frestas, forros, rodapés).\n' : ''}
 ${targetPromptCount >= 7 ? `- PROMPT 7 (00:48 - 00:56): COMPROVAÇÃO PRÁTICA: CASA 100% LIVRE DE ${requestedPestProfile.namePt.toUpperCase()}. Mostra o ambiente limpo, sem insetos/roedores, segurança para crianças e pets.\n` : ''}
-${targetIncludeCTA ? `- PROMPTS FINAIS (PROMPT ${ctaStart} e PROMPT ${targetPromptCount}): PROMPT ${ctaStart} = REVELAÇÃO DO PRODUTO (${productVisualAi}, com o título "${bookTitleToUse}"); PROMPT ${targetPromptCount} = CHAMADA PARA AÇÃO (aponta para baixo e comanda "Comenta EU QUERO aqui embaixo").` : `- PROMPT FINAL (PROMPT ${targetPromptCount}): CASA PROTEGIDA E CONCLUSÃO ORGÂNICA. Dicas de reaplicação preventiva sem menção a livros ou vendas.`}`;
+${targetIncludeCTA ? `- PROMPTS EXTRA DE CTA (PROMPT ${ctaStart} e PROMPT ${ctaEnd} — NÃO contam na quantidade): PROMPT ${ctaStart} = REVELAÇÃO DO PRODUTO (${productVisualAi} e o NOME do produto em voz alta); PROMPT ${ctaEnd} = CHAMADA PARA AÇÃO (aponta para baixo e comanda "Comenta EU QUERO aqui embaixo").` : `- PROMPT FINAL (PROMPT ${targetPromptCount}): CASA PROTEGIDA E CONCLUSÃO ORGÂNICA. Dicas de reaplicação preventiva sem menção a livros ou vendas.`}`;
 
-    let userPromptText = `Gere a sequência de EXATAMENTE ${targetPromptCount} PROMPTS conectados de 8s cada (${targetPromptCount * 8}s no total) com alta fidelidade visual para receitas caseiras para afastar e matar insetos e pragas.
+    const totalPromptsAi = targetPromptCount + (targetIncludeCTA ? 2 : 0);
+    let userPromptText = `Gere a sequência de EXATAMENTE ${totalPromptsAi} PROMPTS conectados de 8s cada (${totalPromptsAi * 8}s no total) com alta fidelidade visual para receitas caseiras para afastar e matar insetos e pragas.
 
 TEMA / PRAGA SOLICITADA: ${theme || 'Exterminar Baratas de Esgoto e Cozinha'} (Foco 100% EXCLUSIVO em: ${requestedPestProfile.namePt})
-QUANTIDADE EXATA DE PROMPTS A GERAR: ${targetPromptCount} prompts (duração total: ${targetPromptCount * 8} segundos)
-INCLUIR PRODUTO/CTA NO FINAL: ${targetIncludeCTA ? `SIM (CTA em DOIS prompts: o prompt ${ctaStart} revela o ${productKindAi} e o prompt ${targetPromptCount} faz a chamada para ação)` : 'NÃO (vídeo 100% orgânico educacional, sem produto e sem venda)'}
+QUANTIDADE: ${targetPromptCount} prompts de CONTEÚDO (numerados de 1 a ${targetPromptCount})${targetIncludeCTA ? ` + 2 prompts EXTRA de CTA (numerados ${ctaStart} e ${ctaEnd}, que NÃO contam na quantidade escolhida pelo usuário; total ${totalPromptsAi} prompts, ${totalPromptsAi * 8}s)` : ` (total ${totalPromptsAi} prompts, ${totalPromptsAi * 8}s)`}
+INCLUIR PRODUTO/CTA NO FINAL: ${targetIncludeCTA ? `SIM (2 prompts EXTRA: o prompt ${ctaStart} revela o produto dizendo o NOME dele e o prompt ${ctaEnd} faz a chamada para ação)` : 'NÃO (vídeo 100% orgânico educacional, sem produto e sem venda)'}
 ${giantModelPreference ? `MAQUETE/OBJETO GIGANTE OBRIGATÓRIO (SUBSTITUI QUALQUER PADRÃO): use EXATAMENTE esta maquete/objeto colossal no gancho e na explicação: "${giantModelPreference}". NÃO use a maquete padrão da praga; use exatamente a descrição acima.` : ''}
 ${hookStyle ? `ESTILO DO GANCHO: ${hookStyle}` : ''}
 INGREDIENTES CASEIROS: ${spokenIngredientsForPrompt}
@@ -1470,7 +1463,7 @@ ${promptStepsGuidance}
 ${referenceText ? `REFERÊNCIA / TRANSCRIÇÃO FORNECIDA:\n"""${referenceText}"""` : ''}
 
 Lembre-se:
-1. Formato exato: EXATAMENTE ${targetPromptCount} PROMPTS conectados de 8 segundos cada (total ${targetPromptCount * 8}s), formato 9:16 vertical, 4K, 30fps.
+1. Formato exato: EXATAMENTE ${totalPromptsAi} PROMPTS conectados de 8 segundos cada (total ${totalPromptsAi * 8}s) — ${targetPromptCount} de conteúdo${targetIncludeCTA ? ` + 2 de CTA EXTRA (numerados ${ctaStart} e ${ctaEnd}, fora da contagem de conteúdo)` : ''}, formato 9:16 vertical, 4K, 30fps.
 2. Cada prompt deve ser completo e independente, repetindo toda a descrição do Apresentador, da Pele Humana, das Mãos, do Cenário e da Câmera.
 3. Maquete COLOSSAL da infestação em primeiro plano extremo (ocupando de 55% a 65% da tela 9:16) no Prompt 1.
 4. Todas as falas em Português Brasileiro (~8 segundos cada, diretas, autênticas e magnéticas).
@@ -1791,6 +1784,39 @@ Retorne estritamente um array JSON contendo 6 objetos com as seguintes chaves:
   }
 };
 
+const handleAnalyzeMaquete = async (req: any, res: any) => {
+  const text = String(req.body?.text || '').trim();
+  const theme = String(req.body?.theme || '').trim();
+  const base = text || theme;
+
+  if (!base) {
+    return res.status(400).json({ error: 'Escreva a maquete/objeto gigante que você quer usar.' });
+  }
+
+  const ai = getGeminiClient();
+  if (!ai) {
+    return res.json({ result: base, resultEn: base, source: 'offline' });
+  }
+
+  const prompt = `Você é diretor de arte de vídeos virais no formato vertical 9:16.
+O usuário quer uma MAQUETE / OBJETO GIGANTE específica para o GANCHO de um vídeo sobre pragas/insetos.
+O que o usuário escreveu: "${base}"
+Tema/praga do vídeo: "${theme || base}"
+Transforme isso numa DESCRIÇÃO TÉCNICA DETALHADA E OBRIGATÓRIA de uma maquete colossal (ocupando de 55% a 65% do quadro 9:16, em primeiro plano extremo, hiper-realista), com a praga correta e materiais/cenário coerentes. Depois forneça o equivalente em inglês cinematográfico técnico.
+Responda APENAS com um objeto JSON (sem markdown):
+{"pt": "descrição detalhada em português", "en": "detailed technical English description"}`;
+
+  try {
+    const { response } = await generateWithGeminiFallback(ai, prompt, { responseMimeType: 'application/json' });
+    const parsed = JSON.parse(response.text);
+    const pt = String(parsed?.pt || base).trim();
+    const en = String(parsed?.en || '').trim();
+    return res.json({ result: pt, resultEn: en, source: 'ai' });
+  } catch (err) {
+    return res.json({ result: base, resultEn: '', source: 'fallback' });
+  }
+};
+
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
 
 const checkAccess = async (serviceSupabase: any, req: any, res: any) => {
@@ -1859,6 +1885,10 @@ export default async function handler(req: any, res: any) {
 
     if (action === 'recommend-suggestions') {
       return await handleRecommend(req, res);
+    }
+
+    if (action === 'analyze-maquete') {
+      return await handleAnalyzeMaquete(req, res);
     }
 
     return await handleGenerateScript(req, res);

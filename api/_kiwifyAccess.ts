@@ -358,10 +358,14 @@ export const handleAccessSync = async (authorization?: string) => {
   }
 
   const releaseAt = new Date(purchase.release_at);
+  const purchaseProductKey = String(purchase.product_id || '');
+  const matchesSubscription = purchaseProductKey
+    ? isSubscriptionProduct({ id: purchaseProductKey, name: purchaseProductKey })
+    : false;
   const nextStatus: KiwifyAccessStatus =
     purchase.purchase_status === 'blocked'
       ? 'blocked'
-      : releaseAt.getTime() <= Date.now()
+      : matchesSubscription || releaseAt.getTime() <= Date.now()
         ? 'active'
         : 'pending';
 

@@ -87,20 +87,28 @@ const getKiwifyEvent = (payload: any) =>
 const getKiwifyProduct = (payload: any) => {
   const id = String(
     getNestedValue(payload, [
+      'Product.product_id',
       'Product.id',
+      'product.product_id',
       'product.id',
       'product_id',
+      'data.Product.product_id',
       'data.product.id',
+      'order.Product.product_id',
       'order.product.id',
       'subscription.product.id',
     ]) || ''
   );
   const name = String(
     getNestedValue(payload, [
+      'Product.product_name',
       'Product.name',
+      'product.product_name',
       'product.name',
       'product_name',
+      'data.Product.product_name',
       'data.product.name',
+      'order.Product.product_name',
       'order.product.name',
       'subscription.product.name',
       'course.name',
@@ -200,9 +208,13 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   const paidAtValue = getNestedValue(payload, [
     'paid_at',
     'approved_at',
+    'approved_date',
+    'paid_date',
     'created_at',
     'data.paid_at',
+    'data.approved_date',
     'order.created_at',
+    'order.approved_date',
   ]);
   const paidAt = paidAtValue ? new Date(String(paidAtValue)) : new Date();
   const basePaidAt = Number.isNaN(paidAt.getTime()) ? new Date() : paidAt;

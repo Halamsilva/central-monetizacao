@@ -87,7 +87,7 @@ const buildEmail = (kind: EmailKind, input: SendAccessEmailInput) => {
       subject: 'Cadastro recebido na Central Monetizacao',
       text: `Oi, ${rawName}. Recebemos seu cadastro na Central Monetizacao.
 
-Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente depois da confirmacao da compra e do prazo de garantia de 7 dias.
+Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente assim que a compra for confirmada.
 
 Acesse: ${appUrl}`,
       html: baseEmailHtml(
@@ -95,7 +95,7 @@ Acesse: ${appUrl}`,
         'Recebemos seu cadastro na Central Monetizacao.',
         `
           <p>Oi, ${firstName}. Recebemos seu cadastro com sucesso.</p>
-          <p>Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente depois da confirmacao da compra e do prazo de garantia de 7 dias.</p>
+          <p>Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente assim que a compra for confirmada.</p>
           <p>Se voce acabou de comprar, nao precisa pedir aprovacao manual: o sistema vai conferir sua compra sozinho.</p>
         `
       ),
@@ -104,22 +104,19 @@ Acesse: ${appUrl}`,
 
   if (kind === 'purchase_pending') {
     return {
-      subject: 'Compra confirmada: acesso em liberacao',
+      subject: 'Compra confirmada: acesso sendo liberado',
       text: `Oi, ${rawName}. Encontramos sua compra na Kiwify.
 
-Por seguranca, o acesso sera liberado automaticamente apos o prazo de garantia de 7 dias.${releaseDate ? `\nPrevisao de liberacao: ${releaseDate}.` : ''}
-
-Quando o prazo terminar, entre na plataforma com este mesmo e-mail para ativar o acesso.
+O seu acesso esta sendo liberado automaticamente. Se ainda aparecer como pendente, aguarde alguns instantes e recarregue a pagina entrando com este mesmo e-mail.
 
 Acesse: ${appUrl}`,
       html: baseEmailHtml(
         'Compra confirmada',
-        'Sua compra foi confirmada e o acesso sera liberado apos 7 dias.',
+        'Sua compra foi confirmada e o acesso esta sendo liberado.',
         `
           <p>Oi, ${firstName}. Encontramos sua compra na Kiwify.</p>
-          <p>Por seguranca, o acesso da area de alunos sera liberado automaticamente apos o prazo de garantia de 7 dias.</p>
-          ${releaseDate ? `<p><strong>Previsao de liberacao:</strong> ${escapeHtml(releaseDate)}.</p>` : ''}
-          <p>Quando o prazo terminar, entre na plataforma com este mesmo e-mail para ativar o acesso.</p>
+          <p>O seu acesso da area de alunos esta sendo liberado automaticamente.</p>
+          <p>Se ainda aparecer como pendente, aguarde alguns instantes e recarregue a pagina entrando com este mesmo e-mail.</p>
         `
       ),
     };

@@ -170,9 +170,8 @@ const PendingAccessScreen = () => (
       </div>
       <h1 className="text-3xl font-black text-slate-900">Acesso em análise</h1>
       <p className="mt-4 leading-relaxed text-slate-500">
-        Seu cadastro foi recebido. Use o mesmo e-mail da compra na Kiwify:
-        o acesso é liberado automaticamente após a confirmação da compra e o
-        prazo de 7 dias.
+        Seu cadastro foi recebido. Use o <strong>mesmo e-mail da compra</strong> na Kiwify
+        para liberar o acesso: ele é liberado automaticamente assim que a compra for confirmada.
       </p>
       <a
         href="/assinar"

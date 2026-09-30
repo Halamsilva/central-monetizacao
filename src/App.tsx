@@ -38,6 +38,7 @@ const Downloads = lazy(() => import('./pages/Downloads'));
 const ShopVIP = lazy(() => import('./pages/ShopVIP')); // <-- Importado com calma aqui!
 const Profile = lazy(() => import('./pages/Profile'));
 const Settings = lazy(() => import('./pages/Settings'));
+const Home = lazy(() => import('./pages/Home'));
 
 // Páginas de Administração
 const Admin = lazy(() => import('./pages/Admin'));
@@ -48,6 +49,7 @@ const AdminBlog = lazy(() => import('./pages/AdminBlog'));
 const AdminSubscription = lazy(() => import('./pages/AdminSubscription'));
 
 const routeTitles: Record<string, string> = {
+  '/': 'Início',
   '/login': 'Entrar',
   '/register': 'Cadastro',
   '/recovery': 'Recuperar acesso',
@@ -240,7 +242,7 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   if (loading) return <LoadingScreen />;
 
   if (!isAdmin || profile?.access_status === 'blocked') {
-    return <Navigate to="/menina-da-roca" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -269,7 +271,7 @@ export default function App() {
                 </PrivateRoute>
               }
             >
-              <Route index element={<Navigate to="/menina-da-roca" replace />} />
+              <Route index element={<Home />} />
               <Route path="agents" element={<AdminRoute><Agents /></AdminRoute>} />
               <Route path="viral-prompts" element={<ViralPrompts />} />
               <Route path="tiktok-shop" element={<TikTokShop />} />
@@ -349,7 +351,7 @@ export default function App() {
             </Route>
 
             {/* Redirecionamento de Rotas Inexistentes */}
-            <Route path="*" element={<Navigate to="/menina-da-roca" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
 

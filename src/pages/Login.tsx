@@ -59,7 +59,7 @@ const Login: React.FC = () => {
     if (!isSupabaseConfigured) {
       setTimeout(() => {
         setLoading(false);
-        navigate('/menina-da-roca');
+        navigate('/');
       }, 1000);
 
       return;
@@ -73,7 +73,7 @@ const Login: React.FC = () => {
 
       if (error) throw error;
 
-      navigate('/menina-da-roca');
+      navigate('/');
     } catch (err: any) {
       setError(getFriendlyAuthError(err));
     } finally {

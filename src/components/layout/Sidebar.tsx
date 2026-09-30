@@ -30,6 +30,7 @@ import {
   CircleDollarSign,
   LogOut,
   X,
+  Home,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -104,7 +105,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-  const mainMenu: MenuItem[] = [];
+  const mainMenu: MenuItem[] = [
+    { title: 'Início', icon: Home, path: '/' },
+  ];
 
   const primaryStrategyMenu: MenuItem[] = [
     ...(isAdmin ? [{ title: 'Agentes IA', icon: Bot, path: '/agents' }] : []),

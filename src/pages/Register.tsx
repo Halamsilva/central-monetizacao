@@ -44,7 +44,7 @@ const Register: React.FC = () => {
     if (!isSupabaseConfigured) {
       setTimeout(() => {
         setLoading(false);
-        navigate('/menina-da-roca');
+        navigate('/');
       }, 1000);
       return;
     }
@@ -79,7 +79,7 @@ const Register: React.FC = () => {
         }
       }
       
-      navigate('/menina-da-roca');
+      navigate('/');
     } catch (err: any) {
       setError(getFriendlyRegisterError(err));
     } finally {

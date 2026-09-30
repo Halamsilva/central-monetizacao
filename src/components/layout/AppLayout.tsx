@@ -8,6 +8,7 @@ import { supabase } from '../../lib/supabase';
 import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/support';
 
 const pageTitles: Record<string, string> = {
+  '/': 'Início',
   '/agents': 'Agentes IA',
   '/viral-prompts': 'Prompts Virais',
   '/tiktok-shop': 'TikTok Shop',
@@ -15,6 +16,17 @@ const pageTitles: Record<string, string> = {
   '/youtube-shorts': 'YouTube Shorts',
   '/tools-ia': 'Ferramentas IA',
   '/menina-da-roca': 'Menina da Roça',
+  '/clonagem-video': 'Clonagem de Vídeo',
+  '/novelinhas': 'Novelinhas Universal',
+  '/novelinhas-gordos': 'Novelinhas Gordos',
+  '/mestre-30s': 'Mestre 30s',
+  '/insetos': 'Receitas Anti-Pragas',
+  '/pov-produto': 'POV Produto',
+  '/seedance': 'TikTok Shop Seedance',
+  '/avatar-scale': 'Avatar Scale',
+  '/receitas-ebook': 'Receitas p/ Ebook',
+  '/encapsulados': 'Vender Encapsulados',
+  '/radar-tiktok-shop': 'Radar TikTok Shop',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',

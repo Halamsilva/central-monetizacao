@@ -57,6 +57,16 @@ const buildPrompt = (targetLanguage: string) => `
 Analise o VIDEO anexado com precisao cirurgica para que qualquer criador possa CLONAR e RECRIAR com 100% de fidelidade visual cada tomada, personagem, fala, movimento de camera, iluminacao e atuacao em geradores de video de IA (Kling 1.5, Runway Gen-3 Alpha, Sora, Luma Dream Machine, Hailuo/Minimax e Wan 2.1).
 Responda INTEIRAMENTE no idioma: ${targetLanguage}.
 
+================================================================================
+REGRA SUPREMA DE IDIOMA (INVIOLAVEL - LEIA ANTES DE TUDO)
+================================================================================
+- O IDIOMA DE DESTINO E: ${targetLanguage}.
+- TODAS as falas dos personagens DEVEM ser entregues TRADUZIDAS para ${targetLanguage}, MESMO que o audio original do video esteja em outro idioma (portugues, ingles, espanhol etc.).
+- Para CADA fala voce DEVE fazer as DUAS coisas: (1) transcrever a fala ORIGINAL exata que ouve; e (2) fornecer a TRADUCAO NATURAL e coloquial dela em ${targetLanguage}. A traducao e OBRIGATORIA em 100% das falas, sem NENHUMA excecao.
+- Nos prompts prontos para copiar (*Prompt Direto* e *Master Cloning Prompt*), a linha de dialogo DEVE conter a FALA JA TRADUZIDA em ${targetLanguage}, para que a IA de video gere o lip-sync FALANDO em ${targetLanguage}.
+- Se o video NAO tiver fala alguma, marque claramente "[SEM DIALOGO]" e siga normalmente.
+- NUNCA entregue a fala apenas no idioma original quando ele for diferente de ${targetLanguage}.
+
 ========================================================================
 REGRA MAXIMA: ENTREGUE OS PROMPTS EM BLOCOS SEPARADOS POR TEMPO DE 8 SEGUNDOS
 ========================================================================
@@ -90,19 +100,21 @@ Para cada bloco: use o cabecalho "### BLOCO 8s: [inicio]-[fim]s (Cena N)" e trag
 1. Direcao de camera, optica e iluminacao do bloco.
 2. Progressao segundo a segundo (0-2s, 2-4s, 4-6s, 6-8s) com FACS e atribuicao de fala:
    [QUEM VAI FALAR: Nome [P1] -> DIRECIONADO A: Nome [P2] | TOM VOCAL: ... | ARTICULACAO LABIAL & FACS: ...]
-   Nome [P1] (descricao curta fixa): acao fisica e labios articulando, dizendo: "fala exata"
+   Nome [P1] (descricao curta fixa): acao fisica e labios articulando.
+   FALA ORIGINAL (transcricao exata do audio, no idioma original): "texto exato ouvido"
+   FALA TRADUZIDA (${targetLanguage}): "a mesma fala traduzida de forma natural para ${targetLanguage}"  <- OBRIGATORIA EM TODAS AS FALAS
    [PERSONAGEM NAO-FALANTE / OUVINTE SILENCIOSO: Nome [P2]]
    Nome [P2] (descricao curta fixa): [SEM FALA / BOCA E LABIOS FECHADOS] reagindo so silenciosamente.
 3. Dois prompts de clonagem:
-   *Prompt Direto (no idioma de destino):* um bloco continuo com [Enquadramento e Optica], [Composicao Espacial e Personagens], [Acao Fisica Continua e Micro-Expressoes FACS], [DIALOGO & SINCRONIA LABIAL EXPLICITA], [Iluminacao Fotométrica e Atmosfera], [Parametros Tecnicos de Renderizacao].
-   *Master Cloning Prompt (Technical English):* o mesmo em ingles tecnico no formato [Camera & Framing], [Spatial Blocking & Identified Subjects], [Continuous Physical Motion & FACS], [EXPLICIT LIP-SYNC & SPEECH], [Photometric Lighting & Atmosphere], [Technical AI Engine Flags].
+   *Prompt Direto (no idioma de destino ${targetLanguage}):* um bloco continuo com [Enquadramento e Optica], [Composicao Espacial e Personagens], [Acao Fisica Continua e Micro-Expressoes FACS], [DIALOGO & SINCRONIA LABIAL EXPLICITA], [Iluminacao Fotométrica e Atmosfera], [Parametros Tecnicos de Renderizacao]. A secao [DIALOGO & SINCRONIA LABIAL EXPLICITA] DEVE conter a FALA TRADUZIDA em ${targetLanguage} (nunca a original).
+   *Master Cloning Prompt (rotulos tecnicos em ingles):* o mesmo em ingles tecnico no formato [Camera & Framing], [Spatial Blocking & Identified Subjects], [Continuous Physical Motion & FACS], [EXPLICIT LIP-SYNC & SPEECH], [Photometric Lighting & Atmosphere], [Technical AI Engine Flags]. ATENCAO: apenas os ROTULOS sao em ingles; o CONTEUDO da secao [EXPLICIT LIP-SYNC & SPEECH] DEVE conter a FALA TRADUZIDA em ${targetLanguage}.
 
 ========================================================================
 REGRAS CRITICAS (ANTI-ALUCINACAO)
 ========================================================================
 - NUNCA atribua a fala a personagem errado, nem invente falas. Observ e a boca/labios e o audio.
 - Quem NAO fala fica explicitamente com "[SEM FALA / BOCA E LABIOS FECHADOS]".
-- Traduza TODAS as falas para o idioma de destino (${targetLanguage}).
+- Traduza TODAS as falas para o idioma de destino (${targetLanguage}); a traducao e obrigatoria em cada fala, e o prompt pronto para copiar deve conter a fala ja traduzida.
 - Parametros tecnicos anti-distorcao: 8k photorealistic, poros hiper-detalhados com subsurface scattering, fisica realista de tecidos, motion blur 24fps, zero morphing, zero distorcao de membros.
 - Se nao houver dialogo no bloco, descreva a acao silenciosa e marque "[Acao Silenciosa - Sem dialogos falados]".
 - Entregue direto o resultado final, pronto para copiar. Nao explique que voce e uma IA.

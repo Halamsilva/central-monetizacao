@@ -178,9 +178,10 @@ const AppLayout: React.FC = () => {
             </h1>
 
             <p className="mx-auto mt-3 max-w-xl text-sm text-slate-500 sm:text-base">
-              Seu cadastro foi recebido. Use o <strong>mesmo e-mail da compra</strong> na
-              Kiwify para liberar o acesso: ele é liberado automaticamente assim que a compra
-              for confirmada. Se você acabou de comprar, aguarde alguns instantes e recarregue a página.
+              Seu cadastro foi recebido. Use o <strong>mesmo e-mail da compra</strong> na Kiwify:
+              o acesso é liberado automaticamente após a confirmação da compra.
+              A <strong>assinatura da plataforma</strong> libera na hora; compras do <strong>curso</strong> são
+              liberadas após o prazo de garantia de <strong>7 dias</strong>.
             </p>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">

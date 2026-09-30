@@ -126,7 +126,14 @@ const isSubscriptionProduct = (product: { id: string; name: string }) => {
     .map((item) => normalizeProductKey(item))
     .filter(Boolean);
 
-  return candidates.some((candidate) => subscriptions.includes(candidate));
+  return candidates.some((candidate) =>
+    subscriptions.some(
+      (subscription) =>
+        candidate === subscription ||
+        candidate.includes(subscription) ||
+        subscription.includes(candidate)
+    )
+  );
 };
 
 const isAllowedKiwifyProduct = (product: { id: string; name: string }) => {
@@ -200,8 +207,8 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   const paidAt = paidAtValue ? new Date(String(paidAtValue)) : new Date();
   const basePaidAt = Number.isNaN(paidAt.getTime()) ? new Date() : paidAt;
   const isSubscription = isSubscriptionProduct(product);
-  const releaseDelayDays = Math.max(0, Number(process.env.KIWIFY_RELEASE_DELAY_DAYS || 0));
-  const releaseAt = addDays(basePaidAt, isSubscription ? 0 : releaseDelayDays);
+  const releaseDelayDays = Math.max(0, Number(process.env.KIWIFY_RELEASE_DELAY_DAYS || 7));
+  const releaseAt = isSubscription ? basePaidAt : addDays(basePaidAt, releaseDelayDays);
   const isReleased = releaseAt.getTime() <= Date.now();
 
   const revokedEvents = [
@@ -338,10 +345,7 @@ export const handleAccessSync = async (authorization?: string) => {
     return { status: 200, body: { ok: true, access_status: 'pending' } };
   }
 
-  const syncDelayDays = Math.max(0, Number(process.env.KIWIFY_RELEASE_DELAY_DAYS || 0));
-  const paidAtSource = new Date(purchase.paid_at || purchase.release_at);
-  const basePaid = Number.isNaN(paidAtSource.getTime()) ? new Date() : paidAtSource;
-  const releaseAt = addDays(basePaid, syncDelayDays);
+  const releaseAt = new Date(purchase.release_at);
   const nextStatus: KiwifyAccessStatus =
     purchase.purchase_status === 'blocked'
       ? 'blocked'

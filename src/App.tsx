@@ -20,7 +20,7 @@ const YouTubeShorts = lazy(() => import('./pages/YouTubeShorts'));
 const ToolsIA = lazy(() => import('./pages/ToolsIA'));
 
 const MeninaDaRoca = lazy(() => import('./pages/MeninaDaRoca'));
-const ClonagemVideo = lazy(() => import('./pages/ClonagemVideo'));
+const ClonagemVideo = lazy(() => import('./pages/clonagem/App'));
 const NovelinhasUni = lazy(() => import('./pages/NovelinhasUni'));
 const Mestre30s = lazy(() => import('./pages/mestre30s/App'));
 const Insetos = lazy(() => import('./pages/insetos/App'));

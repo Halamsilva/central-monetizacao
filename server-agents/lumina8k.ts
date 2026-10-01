@@ -54,7 +54,7 @@ Generation Logic for image_input:
 copy_prompt: "Use the uploaded image as the exact base reference and preserve it with maximum fidelity. Reproduce the exact same image without changing anything: same person, same face, same body, same proportions, same pose, same expression, same hairstyle, same clothing, same accessories, same background, same objects, same framing, same selfie angle, same perspective, same lighting direction, same shadows, same colors, same environment, same composition. Do not redesign, do not reinterpret, do not beautify, do not stylize, do not alter anatomy, do not modify facial features, do not change body shape, do not change hair, do not replace background, do not add or remove elements. Only perform a true photorealistic upscale and detail recovery with HYPER-REALISTIC SKIN TEXTURE: improve sharpness, restore fine skin texture, visible pores, subtle skin imperfections, natural skin highlights, subsurface scattering, fine facial hair (vellus hair), realistic skin tones, realistic eyes, natural reflections, individual hair strands, realistic fabric texture, clean detail reconstruction, realistic daylight rendering, natural contrast, high dynamic range, premium camera clarity, believable real photography. The final result must look like the exact same original image, only enhanced in quality and realism. NO AIRBRUSHING, NO SKIN SMOOTHING."
 negative_prompt: "change face, different person, different body, different pose, different framing, different angle, different clothes, different background, different lighting, altered anatomy, beautified face, stylized image, artistic reinterpretation, cgi, 3d render, cartoon, anime, doll face, plastic skin, waxy skin, beauty filter, fake pores, oversmoothed skin, artificial symmetry, extra fingers, warped limbs, modified composition, replaced details, new elements, removed elements, fake hair, overprocessed image, unrealistic lighting, airbrushed skin, skin smoothing, plastic texture, blurred skin"`;
 
-const MODELS = ['gemini-3.8-flash', 'gemini-flash-latest'];
+const MODELS = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -128,7 +128,7 @@ export default async function handler(req: any, res: any) {
 
   console.error('Lumina 8K error:', lastError);
   const message = String(lastError?.message || '');
-  let friendly = 'Nao consegui gerar o prompt de upscale agora. Tente novamente.';
+  let friendly = `Nao consegui gerar o prompt de upscale agora. Tente novamente.${message ? ` Detalhe: ${message.slice(0, 200)}` : ''}`;
   if (message.includes('429') || message.includes('RESOURCE_EXHAUSTED') || message.includes('quota')) {
     friendly = 'Limite de uso da IA atingido (cota diaria). Aguarde alguns minutos ou configure outra chave em Configuracoes.';
   } else if (message.includes('PERMISSION_DENIED') || message.includes('API key not valid')) {

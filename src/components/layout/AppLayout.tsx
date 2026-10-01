@@ -28,7 +28,7 @@ const pageTitles: Record<string, string> = {
   '/encapsulados': 'Vender Encapsulados',
   '/radar-tiktok-shop': 'Radar TikTok Shop',
   '/tiktok-shop-shopee': 'TikTok Shop & Shopee',
-  '/lumina-8k': 'Lumina 8K',
+  '/lumina-8k': 'Upscale de Imagem',
   '/reflexao-velho-roca': 'Reflexão do Velho da Roça',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',

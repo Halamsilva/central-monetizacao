@@ -21,7 +21,9 @@ import {
   Upload,
   Loader2,
   X,
-  Terminal
+  Terminal,
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { fileToCompressedDataUrl } from '../../lib/image';
@@ -116,10 +118,14 @@ export default function App() {
   const [generatedPrompt, setGeneratedPrompt] = useState<any>(null);
   const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [promptError, setPromptError] = useState<string | null>(null);
+  const [lastImage, setLastImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const generateUpscalePrompt = async (base64Image: string) => {
     setIsGeneratingPrompt(true);
+    setPromptError(null);
+    setLastImage(base64Image);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData?.session?.access_token || '';
@@ -131,7 +137,10 @@ export default function App() {
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data?.error || 'Falha ao gerar o prompt de upscale.');
+        throw new Error(data?.error || `Falha ao gerar o prompt (HTTP ${response.status}).`);
+      }
+      if (!data?.copy_prompt) {
+        throw new Error('A IA nao retornou o prompt. Tente novamente.');
       }
 
       setGeneratedPrompt({
@@ -139,13 +148,10 @@ export default function App() {
         copy_prompt: data.copy_prompt || '',
         negative_prompt: data.negative_prompt || '',
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating prompt:', error);
-      setGeneratedPrompt({
-        mode: 'image_to_image',
-        copy_prompt: 'Error generating detailed prompt. Using default upscale parameters.',
-        negative_prompt: '',
-      });
+      setGeneratedPrompt(null);
+      setPromptError(error?.message || 'Erro ao gerar o prompt. Tente novamente.');
     } finally {
       setIsGeneratingPrompt(false);
     }
@@ -217,7 +223,7 @@ export default function App() {
             <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center">
               <Maximize2 className="w-5 h-5 text-white" />
             </div>
-            <span className="font-display font-bold text-lg tracking-tight">LUMINA 8K</span>
+            <span className="font-display font-bold text-lg tracking-tight">UPSCALE DE IMAGEM</span>
           </div>
           <div className="text-[10px] font-mono text-brand-primary/40 uppercase tracking-widest hidden sm:block">
             Strict Real Upscale Agent v2.0
@@ -306,10 +312,11 @@ export default function App() {
                         <img src={uploadedImage!} alt="Preview" className="w-full h-full object-cover" />
                       </div>
                       <div className="text-left flex-grow">
-                        <div className="text-xs font-bold text-brand-accent flex items-center gap-1 mb-1">
-                          <CheckCircle2 className="w-3 h-3" /> ANÁLISE CONCLUÍDA
+                        <div className={`text-xs font-bold flex items-center gap-1 mb-1 ${promptError ? 'text-red-400' : 'text-brand-accent'}`}>
+                          {promptError ? <AlertCircle className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
+                          {promptError ? 'FALHA NA ANÁLISE' : 'ANÁLISE CONCLUÍDA'}
                         </div>
-                        <div className="text-base font-medium">Prompt Técnico Gerado</div>
+                        <div className="text-base font-medium">{promptError ? 'Toque em Tentar novamente' : 'Prompt Técnico Gerado'}</div>
                       </div>
                       <button 
                         onClick={resetUpload}
@@ -368,13 +375,34 @@ export default function App() {
                         animate={{ opacity: 1 }}
                         className="space-y-6"
                       >
-                        <div className="bg-black/40 rounded-xl p-6 border border-white/5 font-mono text-[13px] text-brand-primary/90 leading-relaxed overflow-x-auto">
-                          <pre className="whitespace-pre-wrap">{JSON.stringify(generatedPrompt || {
-                            mode: "image_to_image",
-                            copy_prompt: "Aguardando upload para gerar prompt de fidelidade absoluta...",
-                            negative_prompt: "..."
-                          }, null, 2)}</pre>
-                        </div>
+                        {!promptError && (
+                          <div className="bg-black/40 rounded-xl p-6 border border-white/5 font-mono text-[13px] text-brand-primary/90 leading-relaxed overflow-x-auto">
+                            <pre className="whitespace-pre-wrap">{JSON.stringify(generatedPrompt || {
+                              mode: "image_to_image",
+                              copy_prompt: "Aguardando upload para gerar prompt de fidelidade absoluta...",
+                              negative_prompt: "..."
+                            }, null, 2)}</pre>
+                          </div>
+                        )}
+
+                        {promptError && (
+                          <div className="space-y-3">
+                            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
+                              <div className="flex items-center gap-2 font-bold mb-1">
+                                <AlertCircle className="w-4 h-4" /> Nao consegui gerar o prompt
+                              </div>
+                              <div className="text-red-200/90 break-words">{promptError}</div>
+                            </div>
+                            <button
+                              onClick={() => lastImage && generateUpscalePrompt(lastImage)}
+                              disabled={isGeneratingPrompt || !lastImage}
+                              className="w-full sm:w-auto flex items-center justify-center gap-3 bg-brand-accent text-white px-8 py-4 rounded-xl text-sm font-bold hover:bg-blue-600 transition-all shadow-lg shadow-brand-accent/20 disabled:opacity-50"
+                            >
+                              <RefreshCw className="w-5 h-5" />
+                              TENTAR NOVAMENTE
+                            </button>
+                          </div>
+                        )}
                         
                         {generatedPrompt && (
                           <button 
@@ -418,7 +446,7 @@ export default function App() {
             <div className="w-5 h-5 bg-brand-accent rounded flex items-center justify-center">
               <Maximize2 className="w-3 h-3 text-white" />
             </div>
-            <span className="font-display font-bold text-sm tracking-tight">LUMINA 8K</span>
+            <span className="font-display font-bold text-sm tracking-tight">UPSCALE DE IMAGEM</span>
           </div>
           <div className="text-[10px] text-brand-primary/20 font-mono">
             © 2026 STRICT REAL UPSCALE AGENT. FIDELIDADE ABSOLUTA.

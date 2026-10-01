@@ -5,3 +5,8 @@ export const whatsappLink = (message: string) =>
 
 export const WHATSAPP_DEFAULT_MESSAGE =
   'Ola! Preciso de ajuda com meu acesso na Central Monetizacao.';
+
+export const WHATSAPP_COMMUNITY_LINK = 'https://chat.whatsapp.com/BCXF8wwP7YWKHbObHf1Q1o';
+
+export const WHATSAPP_COMMUNITY_MESSAGE =
+  'Ola! Quero entrar na comunidade da Central Monetizacao.';

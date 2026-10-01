@@ -33,10 +33,12 @@ import {
   Home,
   Image as ImageIcon,
   Heart,
+  MessageCircle,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { WHATSAPP_COMMUNITY_LINK } from '../../lib/support';
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -49,6 +51,7 @@ type MenuItem = {
   icon: React.ElementType;
   path: string;
   badge?: boolean;
+  external?: string;
 };
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -148,6 +151,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   const utilityMenu: MenuItem[] = [
     { title: 'Ferramentas IA', icon: Wrench, path: '/tools-ia' },
     { title: 'Tutoriais', icon: Youtube, path: '/tutoriais' },
+    {
+      title: 'Comunidade',
+      icon: MessageCircle,
+      path: '/comunidade',
+      external: WHATSAPP_COMMUNITY_LINK,
+    },
   ];
 
   const accountMenu: MenuItem[] = [
@@ -168,16 +177,14 @@ const Sidebar: React.FC<SidebarProps> = ({
     const Icon = item.icon;
     const active = location.pathname === item.path;
 
-    return (
-      <Link
-        key={item.path}
-        to={item.path}
-        onClick={handleNavigate}
-        className={`group flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${active
-          ? 'bg-blue-50 text-blue-600 shadow-sm'
-          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-          }`}
-      >
+    const baseClass = `group flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
+      active
+        ? 'bg-blue-50 text-blue-600 shadow-sm'
+        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+    }`;
+
+    const inner = (
+      <>
         <div className="flex items-center gap-3">
           <Icon
             size={20}
@@ -192,6 +199,27 @@ const Sidebar: React.FC<SidebarProps> = ({
             {visibleUnreadCount}
           </span>
         )}
+      </>
+    );
+
+    if (item.external) {
+      return (
+        <a
+          key={item.path}
+          href={item.external}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleNavigate}
+          className={baseClass}
+        >
+          {inner}
+        </a>
+      );
+    }
+
+    return (
+      <Link key={item.path} to={item.path} onClick={handleNavigate} className={baseClass}>
+        {inner}
       </Link>
     );
   };

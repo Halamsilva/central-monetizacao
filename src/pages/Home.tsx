@@ -27,8 +27,10 @@ import {
   Image as ImageIcon,
   Play,
   X,
+  MessageCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
 
 const TUTORIAL_VIDEO_ID = 'eKRCEJ1CRtE';
 
@@ -241,6 +243,33 @@ const Home: React.FC = () => {
 
           <ArrowRight size={20} className="hidden shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-500 sm:block" />
         </button>
+      </section>
+
+      <section>
+        <a
+          href={WHATSAPP_COMMUNITY_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex w-full items-center gap-4 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md sm:gap-5 sm:p-5"
+        >
+          <span className="flex h-20 w-32 shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white sm:h-24 sm:w-44">
+            <MessageCircle size={34} />
+          </span>
+
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-700">
+              Comunidade
+            </span>
+            <span className="mt-1 block text-base font-black text-slate-900 sm:text-lg">
+              Grupo no WhatsApp
+            </span>
+            <span className="mt-1 block text-xs font-medium leading-relaxed text-slate-600 sm:text-sm">
+              Entre no grupo da turmas para trocar ideias, tirar duvidas e acompanhar os lancamentos.
+            </span>
+          </span>
+
+          <ArrowRight size={20} className="hidden shrink-0 text-emerald-300 transition group-hover:translate-x-0.5 group-hover:text-emerald-600 sm:block" />
+        </a>
       </section>
 
       <section>

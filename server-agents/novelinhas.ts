@@ -591,15 +591,28 @@ const handleIdeas = async (req: any, res: any) => {
   try {
     const { theme = 'Dramas Emocionantes', country = 'Brasil', count = 5 } = req.body || {};
 
-    const extraThemeGuidance =
+const extraThemeGuidance =
       theme === 'Frutas'
-        ? `IMPORTANTE PARA O TEMA FRUTAS: Todos os personagens DEVEM ser FRUTAS HUMANIZADAS / ANTROPOMÓRFICAS (ex: Moranguinha a protagonista romântica com vestido rosa e sementes douradas, Bananão o playboy de terno, Uva Vitória a vilã invejosa de vestido de gala, Maçãzinho o jovem herdeiro, Cereja sedutora, etc.). Crie dilemas novelescos de traição, ciúmes, vingança, romance proibido e superação no mundo das frutas em animação 3D.`
+        ? `IMPORTANTE PARA O TEMA FRUTAS: Todos os personagens DEVEM ser FRUTAS HUMANIZADAS / ANTROPOMÓRFICAS (ex: Moranguinha a protagonista romântica com vestido rosa e sementes douradas, Bananão o playboy de terno, Uva Vitória a vilã invejosa de vestido de gala, Maçãzinho o jovem herdeiro, Cereza sedutora, etc.). Crie dilemas novelescos de traição, ciúmes, vingança, romance proibido e superação no mundo das frutas em animação 3D.`
+        : '';
+
+    const antiClicheIdeasGuidance =
+      theme === 'Gordos'
+        ? `
+IMPORTANTE — COTIDIANO BRASILEIRO REAL (obrigatório para o tema GORDOS):
+- Toda ideia deve nascer de uma situação REAL, reconhecível e do dia a dia do povo brasileiro: periferia, interior, feira, fila do posto de saúde, ônibus lotado, igreja, boteco, salão, grupo da família no WhatsApp, dívida no cartão, bico, programa social, golpe na internet, rede social, briga por dinheiro.
+- O contexto social/econômico é o MOTOR da trama. O peso extremo é só a aparência de todos os personagens.
+- Humor honesto, crítica leve e emoção verdadeira — NUNCA piada humilhante nem deboche.
+- Use detalles concretos e únicos de cada ideia (um objeto, um lugar, uma dívida, uma decisão). Proibido ideias genéricas ou abstratas.
+- Exemplos do TIPO de premissa (varie, não repita): família que teve 10 filhos pra ganhar mais Bolsa Família e colapsa quando o benefício é cortado; pobre que mora numa casa caindo aos pedaços e finge ser rico na internet até a farsa ser exposta ao vivo; vizinho do golpe do Pix; tia que vende bolo no sinal; tio das pirâmides; "influencer" de fachada; mãe que faz bico de tudo; fila do INSS; delivery que não paga; agiota do bairro; churrasco que vira briga de família; a loteria que promete tudo.
+`
         : '';
 
     const prompt = `
 Você é o principal criador e roteirista de novelinhas curtas ultra-virais para redes sociais (TikTok, Kwai, Reels, YouTube Shorts).
 Gere exatamente ${count} ideias curtas, inéditas, dramáticas, viciantes e com ganchos emocionais fortes para o tema '${theme}' ambientado em '${country}'.
-${extraThemeGuidance}
+${extraThemeGuidance}${antiClicheIdeasGuidance}
+REGRA ANTI-CLICHÊ (obrigatória): NUNCA use tramas batidas/genéricas (marido traindo com a empregada, madrasta malvada, herança disputada, "segredo do passado" vazio, vingança de ex, vilão genérico). Cada ideia parte de um PROBLEMA CONCRETO e específico, não de um conflito abstrato.
 Cada ideia deve ter entre 1 e 2 frases de alto impacto:
 - Apresentar personagens nítidos (com nomes e personalidades marcantes)
 - Apresentar o dilema ou conflito inicial
@@ -636,9 +649,9 @@ Retorne EXCLUSIVAMENTE um array JSON com ${count} strings, sem formatação mark
 
     if (ideas.length === 0) {
       ideas = [
-        `Uma revelação surpreendente envolvendo os personagens do tema ${theme} que transforma uma situação de conflito em uma emocionante lição de compaixão.`,
-        `Um confronto tenso onde a aparente fraqueza de um protagonista humilde no tema ${theme} se torna a chave para desmascarar a arrogância do rival.`,
-        `Um reencontro inesperado após anos de separação dentro do universo de ${theme} que traz à tona um segredo guardado com amor.`,
+        `Uma família grande que teve 10 filhos para receber mais Bolsa Família entra em colapso quando o benefício é cortado de surpresa.`,
+        `Um homem pobre que mora numa casa caindo aos pedaços mantém as redes sociais cheias de vida de luxo até a farsa ser exposta ao vivo.`,
+        `Uma mulher que faz bico de tudo descobre que o vizinho do "golpe do Pix" aplicou o golpe nela e no grupo da família.`,
       ];
     }
 

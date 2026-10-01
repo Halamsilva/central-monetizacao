@@ -296,14 +296,14 @@ export default function App() {
               <Route path="insetos" element={<Insetos />} />
               <Route path="pov-produto" element={<PovProduto />} />
               <Route path="seedance" element={<Seedance />} />
-              <Route path="avatar-scale" element={<AdminRoute><AvatarScale /></AdminRoute>} />
-              <Route path="receitas-ebook" element={<AdminRoute><ReceitasEbook /></AdminRoute>} />
-              <Route path="encapsulados" element={<AdminRoute><Encapsulados /></AdminRoute>} />
-              <Route path="radar-tiktok-shop" element={<AdminRoute><RadarTikTokShop /></AdminRoute>} />
-              <Route path="tiktok-shop-shopee" element={<AdminRoute><TiktokShopShopee /></AdminRoute>} />
-              <Route path="lumina-8k" element={<AdminRoute><Lumina8k /></AdminRoute>} />
-              <Route path="reflexao-velho-roca" element={<AdminRoute><ReflexaoVelhoRoca /></AdminRoute>} />
-              <Route path="novelinhas-gordos" element={<AdminRoute><NovelinhasUni lockedTheme="Gordos" /></AdminRoute>} />
+          <Route path="avatar-scale" element={<AvatarScale />} />
+          <Route path="receitas-ebook" element={<ReceitasEbook />} />
+          <Route path="encapsulados" element={<Encapsulados />} />
+          <Route path="radar-tiktok-shop" element={<RadarTikTokShop />} />
+          <Route path="tiktok-shop-shopee" element={<TiktokShopShopee />} />
+          <Route path="lumina-8k" element={<Lumina8k />} />
+          <Route path="reflexao-velho-roca" element={<ReflexaoVelhoRoca />} />
+          <Route path="novelinhas-gordos" element={<NovelinhasUni lockedTheme="Gordos" />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

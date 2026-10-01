@@ -19,6 +19,12 @@ import {
   Users,
   Megaphone,
   Settings,
+  Scale,
+  BookOpen,
+  TrendingUp,
+  Heart,
+  HeartHandshake,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -79,6 +85,62 @@ const tools: Tool[] = [
     path: '/seedance',
     icon: Video,
     accent: 'bg-sky-100 text-sky-600',
+  },
+  {
+    title: 'Gordo para Magro',
+    description: 'Transforme sua foto e acompanhe a evolução do corpo.',
+    path: '/avatar-scale',
+    icon: Scale,
+    accent: 'bg-lime-100 text-lime-600',
+  },
+  {
+    title: 'Reflexão do Velho da Roça',
+    description: 'Reflexões profundas em áudio no estilo do Velho da Roça.',
+    path: '/reflexao-velho-roca',
+    icon: Heart,
+    accent: 'bg-stone-100 text-stone-600',
+  },
+  {
+    title: 'Novelinhas Gordos',
+    description: 'Novelinhas dramáticas com personagens gordos.',
+    path: '/novelinhas-gordos',
+    icon: HeartHandshake,
+    accent: 'bg-fuchsia-100 text-fuchsia-600',
+  },
+  {
+    title: 'Upscale de Imagem',
+    description: 'Aumente a resolução e o detalhe das suas imagens.',
+    path: '/lumina-8k',
+    icon: ImageIcon,
+    accent: 'bg-cyan-100 text-cyan-600',
+  },
+  {
+    title: 'TikTok Shop & Shopee',
+    description: 'Roteiros e análise de produto para TikTok Shop e Shopee.',
+    path: '/tiktok-shop-shopee',
+    icon: ShoppingBag,
+    accent: 'bg-orange-100 text-orange-600',
+  },
+  {
+    title: 'Receitas p/ Ebook',
+    description: 'Transforme seu ebook em receitas e vídeos de cuisine.',
+    path: '/receitas-ebook',
+    icon: BookOpen,
+    accent: 'bg-yellow-100 text-yellow-600',
+  },
+  {
+    title: 'Vender Encapsulados',
+    description: 'Prompts e roteiros para vender encapsulados.',
+    path: '/encapsulados',
+    icon: Package,
+    accent: 'bg-teal-100 text-teal-600',
+  },
+  {
+    title: 'Radar TikTok Shop',
+    description: 'Radar de produtos e tendências do TikTok Shop.',
+    path: '/radar-tiktok-shop',
+    icon: TrendingUp,
+    accent: 'bg-blue-100 text-blue-600',
   },
 ];
 

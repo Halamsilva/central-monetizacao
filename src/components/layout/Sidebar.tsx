@@ -125,18 +125,17 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Receitas Anti-Pragas', icon: Bug, path: '/insetos' },
     { title: 'POV Produto', icon: Package, path: '/pov-produto' },
     { title: 'TikTok Shop Seedance', icon: Video, path: '/seedance' },
-    ...(isAdmin
-      ? [
-          { title: 'Gordo para Magro', icon: Scale, path: '/avatar-scale' },
-          { title: 'Receitas p/ Ebook', icon: BookOpen, path: '/receitas-ebook' },
-          { title: 'Vender Encapsulados', icon: Package, path: '/encapsulados' },
-          { title: 'Radar TikTok Shop', icon: TrendingUp, path: '/radar-tiktok-shop' },
-          { title: 'TikTok Shop & Shopee', icon: ShoppingBag, path: '/tiktok-shop-shopee' },
-          { title: 'Upscale de Imagem', icon: ImageIcon, path: '/lumina-8k' },
-          { title: 'Reflexão do Velho da Roça', icon: Heart, path: '/reflexao-velho-roca' },
-          { title: 'Novelinhas Gordos', icon: HeartHandshake, path: '/novelinhas-gordos' },
-        ]
-      : []),
+  ];
+
+  const newAgentsMenu: MenuItem[] = [
+    { title: 'Gordo para Magro', icon: Scale, path: '/avatar-scale' },
+    { title: 'Reflexão do Velho da Roça', icon: Heart, path: '/reflexao-velho-roca' },
+    { title: 'Novelinhas Gordos', icon: HeartHandshake, path: '/novelinhas-gordos' },
+    { title: 'Upscale de Imagem', icon: ImageIcon, path: '/lumina-8k' },
+    { title: 'TikTok Shop & Shopee', icon: ShoppingBag, path: '/tiktok-shop-shopee' },
+    { title: 'Receitas p/ Ebook', icon: BookOpen, path: '/receitas-ebook' },
+    { title: 'Vender Encapsulados', icon: Package, path: '/encapsulados' },
+    { title: 'Radar TikTok Shop', icon: TrendingUp, path: '/radar-tiktok-shop' },
   ];
 
   const socialToolsMenu: MenuItem[] = [
@@ -256,6 +255,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {renderSection('Estratégias', primaryStrategyMenu)}
         {renderSection('Vídeos', videoToolsMenu)}
+        {renderSection('Novos Agentes', newAgentsMenu)}
         {renderSection('Redes Sociais', socialToolsMenu)}
         {renderSection('Ferramentas', utilityMenu)}
         {renderSection('Conta', accountMenu)}

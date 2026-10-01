@@ -180,7 +180,17 @@ REGRAS ANTI-MAGREZA (VIOLAR É PROIBIDO):
 DIRETRIZ NARRATIVA (O PESO É CONTEXTO, NÃO A PIADA):
 - A história NÃO deve girar em torno de dieta ou emagrecimento. O peso extremo é apenas a aparência física de TODOS os personagens.
 - Conte dramas humanos reais, viciantes e emocionantes: traição, injustiça, humilhação, amor verdadeiro, reviravolta e superação, exatamente como uma novelinha normal, mas com TODOS os personagens extremamente obesos.
-- Os personagens vencem pelo caráter, pelo coração e pelas escolhas — NUNCA trate o peso como piada humilhante. No máximo, humor leve, carinhoso e respeitoso.`,
+- Os personagens vencem pelo caráter, pelo coração e pelas escolhas — NUNCA trate o peso como piada humilhante. No máximo, humor leve, carinhoso e respeitoso.
+
+COTIDIANO BRASILEIRO REAL (FONTE OBRIGATÓRIA DAS HISTÓRIAS):
+- Toda história deve nascer de uma situação REAL, reconhecível e do dia a dia do povo brasileiro: periferia, interior, feira, fila do posto de saúde, ônibus lotado, igreja, boteco, salão de beleza, grupo da família no WhatsApp, dívida no cartão, bico, programa social, golpe na internet, rede social e briga por dinheiro.
+- O contexto social e econômico é o MOTOR da trama (o peso extremo continua sendo apenas a aparência de TODOS os personagens).
+- Traga humor honesto, crítica leve e emoção verdadeira — NUNCA deboche gratuito nem piada humilhante.
+- Exemplos do TIPO de premissa desejada (VARIE sempre, NUNCA repita a mesma):
+  * Uma família que teve 10 filhos para ganhar mais Bolsa Família e entra em colapso quando o benefício é cortado.
+  * Um pobre que mora numa casa caindo aos pedaços e finge ser rico nas redes sociais, até a farsa ser exposta AO VIVO.
+  * Outras sementes: o vizinho do "golpe do Pix", a tia que vende bolo no sinal, o tio das pirâmides, o "influencer" de fachada, a mãe que faz bico de tudo, o compadre que deve a todos, a fila do INSS, o delivery que não paga, o agiota do bairro, o churrasco que virou briga de família, a loteria que promete tudo.
+- Cada história deve ser ÚNICA e específica: use detalhes concretos (um objeto, um lugar, uma dívida, uma decisão) que só existem nessa história.`,
     };
 
     const themeDirective =
@@ -334,10 +344,11 @@ REGRAS OBRIGATORIAS DE COERENCIA, IDENTIFICACAO DE FALA E DURACAO
    - Se mais de um personagem falar na cena, identifique na ordem quem fala e para quem responde (QUEM FALA -> QUEM RESPONDE), repetindo a FICHA FÍSICA FIXA COMPLETA nos dois.
    - NUNCA atribua a fala ao personagem errado e nunca deixe um personagem mexendo a boca sem falar.
 
-3. DURACAO DAS FALAS (MAXIMO 9 SEGUNDOS POR CENA):
-   - Cada cena tem no MAXIMO 9 segundos de fala. Cada fala individual deve ter no maximo ~25 palavras (cerca de 8-9 segundos em ritmo natural).
-   - Se a cena tiver dialogo entre dois personagens, a SOMA das falas tambem precisa caber em ~9 segundos (ex.: duas falas curtas de ~10-12 palavras cada).
-   - NUNCA ultrapasse 9 segundos. Se ficar longo, corte e mantenha apenas a essencia da fala.
+3. DURACAO DAS FALAS (REGRA DURA - MAXIMO 9 SEGUNDOS POR CENA):
+   - FALA INDIVIDUAL: no MAXIMO 18 palavras (ideal 10 a 14). Isso da cerca de 5 a 7 segundos em ritmo natural. É PROIBIDO passar de 18 palavras em uma fala unica.
+   - CENA COM DIALOGO (duas pessoas falando): CADA fala com no MAXIMO 10 palavras; a SOMA das duas falas NUNCA passa de 20 palavras (cerca de 8 a 9 segundos).
+   - Antes de fechar a cena, CONTE as palavras de cada fala. Se passar do limite, REESCREVA mais curta e guarde apenas a essencia.
+   - NUNCA use discursos, monologos, explicacoes ou falas longas. Prefira frases curtas, secas e de impacto (estilo novela): "Voce me mentiu.", "Isso nao vai ficar assim.", "Assina aqui e resolvemos."
 
 ================================================================================
 DIRETRIZ DE OURO DO ROTEIRO (PADRAO DAS MICRO-NOVELAS QUE VIRALIZAM)
@@ -382,13 +393,29 @@ G) PROIBICOES ABSOLUTAS (erros que deixam a historia ruim):
 Distribua esses batimentos pelo numero de cenas pedido: gancho no inicio, escalada no meio, revirada no meio, aceleracao e pagamento no fim. Se o numero de cenas for pequeno, comprima SEM perder nenhum desses batimentos.
 
 ================================================================================
+REGRA ANTI-CLICHE E TESTE DE LOGICA (OBRIGATORIO)
+================================================================================
+H) PROIBIDO CLICHE (as tramas mais batidas da internet estao VETADAS):
+   - É TERMINANTEMENTE PROIBIDO usar: marido traindo com a empregada, madrasta malvada, heranca disputada, filho que so quer dinheiro, "segredo do passado" generico, casamento cancelado no altar, ex que volta para vingar, vilão que sorri maquiavelico no fim.
+   - É TERMINANTEMENTE PROIBIDO dialogo genérico de novela, tipo "Eu sempre te amei", "Voce vai pagar por isso", "Nao acreditava em voce". Cada fala tem que soar como uma pessoa REAL falando AQUELA situacao especifica.
+   - PROIBIDO repetir gancho, desfecho ou o tipo de virada entre duas historias diferentes.
+   - Toda premissa tem que sair de um PROBLEMA CONCRETO do cotidiano (uma divida, um corte, um exame, uma humilhacao publica, uma mentira contada no grupo da familia, um boleto, um post que viraliza), e nao de um conflito generico.
+
+I) TESTE DE LOGICA (responda mentalmente ANTES de escrever, nao escreva o texto):
+   - Qual e o QUERER concreto do protagonista na primeira cena?
+   - Por que a cena 2 acontece por causa da cena 1? Se a resposta for "nao tem ligacao", a cena e aleatoria: reescreva ou corte.
+   - O que muda de VALOR no meio da historia (a reviravolta)?
+   - A resolucao vem das ESCOLHAS do protagonista, nunca de coincidencia ou milagre.
+   - Se qualquer resposta nao existir, a historia esta sem sentido. Refaca antes de escrever as cenas.
+
+================================================================================
 REGRA CRÍTICA: DESCRIÇÃO PROFUNDA DOS PERSONAGENS & IDENTIFICAÇÃO DE QUEM VAI FALAR
 ================================================================================
 1. IDENTIFICAÇÃO RIGOROSA E DETALHADA DE QUEM VAI FALAR (SEM DIÁLOGO SUGERIDO - APENAS DIÁLOGO REAL):
    Em TODA e qualquer cena, você DEVE descrever claramente quem vai falar e quem responde:
    - QUEM FALA: Nome + FICHA FÍSICA FIXA COMPLETA do personagem que vai falar (idade exata, altura, porte, tom/textura de pele, cabelo, ROUPA exata com cores/tecidos, CALÇADOS e ACESSÓRIOS) + papel dramático na história + estado emocional daquele momento (olhar marejado de dor, maxilar cerrado pela indignação, respiração entrecortada, sorriso caloroso), postura física e o que ele está fazendo fisicamente ao falar. (Exemplo: "QUEM FALA: Carlos (filho mais velho arrependido, 32 anos, 1,78m, magro, pele morena clara, cabelo preto curto, camisa social branca amassada, calça preta de trabalho, botas gastas e aliança de ouro no dedo, com olhar embargado de lágrimas e mãos calejadas trêmulas)").
    - TOM E INTENÇÃO DA FALA: Descreva o tom de voz, ritmo, respiração, cadência e a intenção dramática subjacente da fala no idioma ${currentLang.langName} (se fala com firmeza comovente, sussurro tenso, indignação reprimida, voz embargada pelo choro ou alívio genuíno).
-   - DIÁLOGO REAL: O diálogo REAL, autêntico, vivo e cinematográfico que o personagem fala na cena. NUNCA use "diálogo sugerido", coloque SOMENTE O DIÁLOGO REAL! OBRIGATORIAMENTE entre aspas e com pontuação final. LIMITE DE TEMPO: no máximo ~25 palavras (cerca de 9 segundos de fala); NUNCA ultrapasse 9 segundos e, se houver réplica, a soma das falas também precisa caber em ~9 segundos.
+   - DIÁLOGO REAL: O diálogo REAL, autêntico, vivo e cinematográfico que o personagem fala na cena. NUNCA use "diálogo sugerido", coloque SOMENTE O DIÁLOGO REAL! OBRIGATORIAMENTE entre aspas e com pontuação final. LIMITE DURO DE TEMPO: no máximo 18 palavras por fala (cerca de 5 a 7 segundos); NUNCA ultrapasse 9 segundos e, se houver réplica, cada fala tem no máximo 10 palavras e a soma das duas NUNCA passa de 20 palavras. Conte as palavras antes de fechar a cena.
    - QUEM RESPONDE: Se houver diálogo compartilhado na cena, repita a FICHA FÍSICA FIXA COMPLETA do interlocutor da réplica (idade exata, altura, porte, tom/textura de pele, cabelo, ROUPA exata com cores/tecidos, CALÇADOS e ACESSÓRIOS), seu papel dramático na história, sua reação física imediata e sua expressão emocional ao ouvir a fala. (Exemplo: "QUEM RESPONDE: Dona Laura (mãe idosa, 68 anos, 1,60m, obesa, pele clara enrugada, cabelo grisalho preso, vestido floral azul, chinelos e óculos de leitura pendurados em uma corrente, olhar sereno mas magoado)").
    - RESPOSTA: O diálogo REAL da réplica correspondente, também entre aspas e com pontuação final.
 

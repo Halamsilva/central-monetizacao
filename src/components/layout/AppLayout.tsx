@@ -193,13 +193,13 @@ const AppLayout: React.FC = () => {
               </button>
 
               <a
-                href={whatsappLink(WHATSAPP_DEFAULT_MESSAGE)}
+                href={whatsappLink(`Olá! Fiz a compra na Kiwify e meu acesso ainda não foi liberado. Meu e-mail de compra é ${profile?.email || '(meu e-mail)'}. Pode liberar meu acesso, por favor?`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-2xl bg-[#25D366] px-6 py-3 text-sm font-bold text-white transition hover:brightness-105"
               >
                 <MessageCircle size={18} />
-                Falar no WhatsApp
+                Pedir liberação no WhatsApp
               </a>
             </div>
           </div>

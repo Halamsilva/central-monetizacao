@@ -24,6 +24,7 @@ import {
   Terminal
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { fileToCompressedDataUrl } from '../../lib/image';
 
 const ComparisonSlider = () => {
   const [sliderPosition, setSliderPosition] = useState(50);
@@ -158,18 +159,25 @@ export default function App() {
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      setUploadedImage(base64);
-      startProcessing();
-      generateUpscalePrompt(base64);
-    };
-    reader.readAsDataURL(file);
+    let base64 = '';
+    try {
+      base64 = await fileToCompressedDataUrl(file);
+    } catch {
+      base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(String(event.target?.result || ''));
+        reader.onerror = () => reject(new Error('Falha ao ler a imagem.'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    setUploadedImage(base64);
+    startProcessing();
+    generateUpscalePrompt(base64);
   };
 
   const startProcessing = () => {
@@ -203,7 +211,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-brand-secondary selection:bg-brand-accent selection:text-white flex flex-col">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-6">
+      <nav className="relative z-10 px-6 py-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between glass-panel px-6 py-3 rounded-full">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center">
@@ -218,7 +226,7 @@ export default function App() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-grow flex items-center justify-center pt-20 px-6">
+      <main className="flex-grow flex items-center justify-center pt-6 px-6">
         <section className="w-full max-w-4xl py-20 relative">
           <motion.div 
             style={{ opacity, scale }}

@@ -193,18 +193,6 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   );
   const product = getKiwifyProduct(payload);
 
-  if (!isAllowedKiwifyProduct(product)) {
-    return {
-      status: 200,
-      body: {
-        ok: true,
-        ignored: true,
-        reason: 'product_not_allowed',
-        event,
-      },
-    };
-  }
-
   const paidAtValue = getNestedValue(payload, [
     'paid_at',
     'approved_at',
@@ -226,14 +214,19 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   const revokedEvents = [
     'reembolso',
     'compra_reembolsada',
-    'order_refunded',
+    'compra_chargeback',
     'chargeback',
+    'order_refunded',
+    'order_chargeback',
     'assinatura_cancelada',
     'assinatura_atrasada',
+    'assinatura_chargeback',
     'subscription_canceled',
     'subscription_late',
+    'subscription_chargeback',
     'refunded',
     'canceled',
+    'cancelled',
     'late',
   ];
   const approvedEvents = [
@@ -245,10 +238,26 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
     'paid',
   ];
 
+  const isRevoked = revokedEvents.includes(event);
+  const isApproved = approvedEvents.includes(event);
+
+  // Bloqueios por reembolso/chargeback/cancelamento SEMPRE aplicam, mesmo se o produto não estiver na lista de permitidos.
+  if (isApproved && !isAllowedKiwifyProduct(product)) {
+    return {
+      status: 200,
+      body: {
+        ok: true,
+        ignored: true,
+        reason: 'product_not_allowed',
+        event,
+      },
+    };
+  }
+
   let accessStatus: KiwifyAccessStatus | null = null;
 
-  if (revokedEvents.includes(event)) accessStatus = 'blocked';
-  if (approvedEvents.includes(event)) accessStatus = isReleased ? 'active' : 'pending';
+  if (isRevoked) accessStatus = 'blocked';
+  if (isApproved) accessStatus = isReleased ? 'active' : 'pending';
 
   if (!accessStatus) {
     return { status: 200, body: { ok: true, ignored: true, event } };

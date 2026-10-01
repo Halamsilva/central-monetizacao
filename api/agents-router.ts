@@ -10,6 +10,9 @@ import seedanceHandler from '../server-agents/seedance.js';
 import avatarScaleHandler from '../server-agents/avatarScale.js';
 import receitasEbookHandler from '../server-agents/receitasEbook.js';
 import encapsuladosHandler from '../server-agents/encapsulados.js';
+import tiktokShopShopeeHandler from '../server-agents/tiktokShopShopee.js';
+import lumina8kHandler from '../server-agents/lumina8k.js';
+import reflexaoVelhoRocaHandler from '../server-agents/reflexaoVelhoRoca.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
@@ -24,6 +27,9 @@ const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   avatarScale: avatarScaleHandler,
   receitasEbook: receitasEbookHandler,
   encapsulados: encapsuladosHandler,
+  tiktokShopShopee: tiktokShopShopeeHandler,
+  lumina8k: lumina8kHandler,
+  reflexaoVelhoRoca: reflexaoVelhoRocaHandler,
 };
 
 export default function handler(req: any, res: any) {

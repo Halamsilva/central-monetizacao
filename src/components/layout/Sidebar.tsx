@@ -31,6 +31,8 @@ import {
   LogOut,
   X,
   Home,
+  Image as ImageIcon,
+  Heart,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -129,6 +131,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           { title: 'Receitas p/ Ebook', icon: BookOpen, path: '/receitas-ebook' },
           { title: 'Vender Encapsulados', icon: Package, path: '/encapsulados' },
           { title: 'Radar TikTok Shop', icon: TrendingUp, path: '/radar-tiktok-shop' },
+          { title: 'TikTok Shop & Shopee', icon: ShoppingBag, path: '/tiktok-shop-shopee' },
+          { title: 'Lumina 8K', icon: ImageIcon, path: '/lumina-8k' },
+          { title: 'Reflexão do Velho da Roça', icon: Heart, path: '/reflexao-velho-roca' },
           { title: 'Novelinhas Gordos', icon: HeartHandshake, path: '/novelinhas-gordos' },
         ]
       : []),

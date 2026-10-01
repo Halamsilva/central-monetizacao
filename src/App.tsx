@@ -30,6 +30,9 @@ const AvatarScale = lazy(() => import('./pages/AvatarScale'));
 const ReceitasEbook = lazy(() => import('./pages/receitasEbook/App'));
 const Encapsulados = lazy(() => import('./pages/encapsulados/App'));
 const RadarTikTokShop = lazy(() => import('./pages/RadarTikTokShop'));
+const TiktokShopShopee = lazy(() => import('./pages/tiktokShopShopee/App'));
+const Lumina8k = lazy(() => import('./pages/lumina8k/App'));
+const ReflexaoVelhoRoca = lazy(() => import('./pages/reflexaoVelhoRoca/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -70,6 +73,9 @@ const routeTitles: Record<string, string> = {
   '/receitas-ebook': 'Receitas p/ Ebook',
   '/encapsulados': 'Vender Encapsulados',
   '/radar-tiktok-shop': 'Radar TikTok Shop',
+  '/tiktok-shop-shopee': 'TikTok Shop & Shopee',
+  '/lumina-8k': 'Lumina 8K',
+  '/reflexao-velho-roca': 'Reflexão do Velho da Roça',
   '/novelinhas-gordos': 'Novelinhas Gordos',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
@@ -294,6 +300,9 @@ export default function App() {
               <Route path="receitas-ebook" element={<AdminRoute><ReceitasEbook /></AdminRoute>} />
               <Route path="encapsulados" element={<AdminRoute><Encapsulados /></AdminRoute>} />
               <Route path="radar-tiktok-shop" element={<AdminRoute><RadarTikTokShop /></AdminRoute>} />
+              <Route path="tiktok-shop-shopee" element={<AdminRoute><TiktokShopShopee /></AdminRoute>} />
+              <Route path="lumina-8k" element={<AdminRoute><Lumina8k /></AdminRoute>} />
+              <Route path="reflexao-velho-roca" element={<AdminRoute><ReflexaoVelhoRoca /></AdminRoute>} />
               <Route path="novelinhas-gordos" element={<AdminRoute><NovelinhasUni lockedTheme="Gordos" /></AdminRoute>} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />

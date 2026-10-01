@@ -185,6 +185,7 @@ export default async function handler(req: any, res: any) {
     } catch (error: any) {
       lastError = error;
       const message = String(error?.message || error || '');
+      console.error(`[clonagem-video] falha no modelo ${model}:`, message.slice(0, 500));
       if (message.includes('PERMISSION_DENIED') || message.includes('API key not valid')) {
         break;
       }
@@ -198,9 +199,15 @@ export default async function handler(req: any, res: any) {
     friendly = 'Sua chave do Google AI Studio foi recusada. Confira a chave em Configuracoes.';
   } else if (message.includes('RESOURCE_EXHAUSTED') || message.includes('quota')) {
     friendly = 'Limite de IA atingido agora. Tente novamente em alguns minutos.';
+  } else if (message.includes('PROCESSING') || message.includes('still being processed')) {
+    friendly = 'O video ainda estava sendo processado pelo Google. Tente novamente em alguns segundos.';
+  } else if (message.includes('INVALID_ARGUMENT') || message.includes('invalid argument')) {
+    friendly = 'O Google recusou este video (formato ou tamanho). Envie um clipe menor em mp4 (H.264).';
+  } else if (message.includes('too large') || message.includes('exceeds') || message.includes('413')) {
+    friendly = 'Video grande demais para a IA analisar. Use um clipe menor.';
   } else if (message.includes('not found') || message.includes('NOT_FOUND')) {
     friendly = 'O video expirou antes da analise. Envie novamente.';
   }
 
-  return res.status(500).json({ error: friendly });
+  return res.status(500).json({ error: friendly, detail: message.slice(0, 600) });
 }

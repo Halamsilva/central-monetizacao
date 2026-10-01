@@ -11,6 +11,11 @@ export const describeHttpError = async (
   try {
     const payload = await response.json();
     detail = String(payload?.error || payload?.message || '');
+
+    const extra = String(payload?.detail || '').trim();
+    if (extra) {
+      detail = detail ? `${detail} Detalhe: ${extra}` : `Detalhe: ${extra}`;
+    }
   } catch {
     detail = '';
   }

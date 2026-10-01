@@ -115,6 +115,48 @@ const uploadToGemini = async (
   return fileUri;
 };
 
+// O Google processa o video antes de liberar a analise. Sem essa espera,
+// o generateContent recebe um arquivo em PROCESSING e devolve erro.
+const waitForFileReady = async (
+  fileUri: string,
+  key: string,
+  onProgress?: (message: string) => void
+) => {
+  const fileName = fileUri.split('/').pop() || '';
+
+  if (!fileName) throw new Error('Upload do video invalido. Tente novamente.');
+
+  const statusUrl = `https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${encodeURIComponent(key)}`;
+  const deadline = Date.now() + 180000;
+
+  while (Date.now() < deadline) {
+    const statusResponse = await fetch(statusUrl);
+
+    if (!statusResponse.ok) {
+      throw new Error('Nao consegui verificar o processamento do video.');
+    }
+
+    const payload = await statusResponse.json().catch(() => ({}));
+    const state = String(payload?.state || '');
+    const apiError = String(payload?.error?.message || '');
+
+    if (apiError) throw new Error(apiError);
+
+    if (state === 'ACTIVE') return;
+
+    if (state === 'FAILED') {
+      throw new Error(
+        'O Google nao conseguiu processar este video. Tente um clipe menor ou em mp4 (H.264).'
+      );
+    }
+
+    onProgress?.('Processando o video no Google...');
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+
+  throw new Error('O video demorou demais para ser processado. Tente um clipe menor.');
+};
+
 const ClonagemVideo: React.FC = () => {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -203,6 +245,10 @@ const ClonagemVideo: React.FC = () => {
         setStatus('Enviando o vídeo... 0%');
         body.fileUri = await uploadToGemini(file, key, (percent) =>
           setStatus(`Enviando o vídeo... ${percent}%`)
+        );
+
+        await waitForFileReady(body.fileUri as string, key, (message) =>
+          setStatus(message)
         );
       }
 
@@ -348,9 +394,22 @@ const ClonagemVideo: React.FC = () => {
             </div>
 
             {error && (
-              <div className="flex items-start gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">
-                <AlertCircle size={18} className="mt-0.5 shrink-0" />
-                <span>{error}</span>
+              <div className="space-y-3 rounded-2xl border border-red-100 bg-red-50 p-4">
+                <div className="flex items-start gap-3 text-sm font-semibold text-red-700">
+                  <AlertCircle size={18} className="mt-0.5 shrink-0" />
+                  <span className="whitespace-pre-line break-words">{error}</span>
+                </div>
+
+                {file && !loading && (
+                  <button
+                    type="button"
+                    onClick={handleAnalyze}
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-xs font-black text-white transition hover:bg-red-700"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Tentar novamente
+                  </button>
+                )}
               </div>
             )}
 

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from '../../lib/support';
+import MissingApiKeyNotice from '../MissingApiKeyNotice';
 
 const pageTitles: Record<string, string> = {
   '/': 'Início',
@@ -312,6 +313,8 @@ const AppLayout: React.FC = () => {
           <span>© {currentYear} Central Monetização</span>
         </footer>
       </div>
+
+      <MissingApiKeyNotice />
     </div>
   );
 };

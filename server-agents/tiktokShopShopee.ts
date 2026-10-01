@@ -12,32 +12,46 @@ const getAi = (apiKey: string) =>
     },
   });
 
-// Helper function to retry Gemini API calls in case of temporary 503 (high demand) or 429 (rate limits)
-async function callGeminiWithRetry<T>(fn: () => Promise<T>, retries = 5, delay = 1500): Promise<T> {
-  let attempt = 0;
-  while (true) {
-    try {
-      return await fn();
-    } catch (error: any) {
-      attempt++;
-      
-      // Determine if error is a retriable status/code or message
-      const errorStr = typeof error === "string" ? error : JSON.stringify(error) || error?.message || "";
-      const isUnavailable = error?.status === "UNAVAILABLE" || error?.code === 503 || error?.statusCode === 503 || errorStr.includes("503") || errorStr.includes("UNAVAILABLE") || errorStr.includes("high demand") || errorStr.includes("temporary") || errorStr.includes("overloaded");
-      const isRateLimited = error?.status === "RESOURCE_EXHAUSTED" || error?.code === 429 || error?.statusCode === 429 || errorStr.includes("429") || errorStr.includes("RESOURCE_EXHAUSTED") || errorStr.includes("quota");
-      
-      const shouldRetry = (isUnavailable || isRateLimited) && attempt <= retries;
-      
-      if (!shouldRetry) {
+const GEMINI_MODELS = ["gemini-3.8-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
+
+const friendlyAiError = (error: any) => {
+  const msg = String(error?.message || error || "");
+  if (msg.includes("429") || msg.includes("RESOURCE_EXHAUSTED") || msg.includes("quota")) {
+    return "Limite de uso da IA atingido (cota diaria do modelo). Tente novamente em alguns minutos ou configure outra chave do Google AI Studio em Configuracoes.";
+  }
+  if (msg.includes("PERMISSION_DENIED") || msg.includes("API key not valid")) {
+    return "Sua chave do Google AI Studio foi recusada. Confira a chave em Configuracoes.";
+  }
+  if (msg.includes("503") || msg.includes("UNAVAILABLE") || msg.includes("high demand")) {
+    return "A IA esta com alta demanda agora. Tente novamente em instantes.";
+  }
+  return msg || "Nao consegui processar agora. Tente novamente.";
+};
+
+// Tenta varios modelos (cada um tem cota propria) com retry curto em 503/high demand.
+async function callGeminiWithRetry<T>(fn: (model: string) => Promise<T>, retries = 2, delay = 1500): Promise<T> {
+  let lastError: any = null;
+  for (const model of GEMINI_MODELS) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        return await fn(model);
+      } catch (error: any) {
+        lastError = error;
+        const errorStr = typeof error === "string" ? error : JSON.stringify(error) || error?.message || "";
+        const isUnavailable = error?.status === "UNAVAILABLE" || error?.code === 503 || error?.statusCode === 503 || errorStr.includes("503") || errorStr.includes("UNAVAILABLE") || errorStr.includes("high demand") || errorStr.includes("temporary") || errorStr.includes("overloaded");
+        const isRateLimited = error?.status === "RESOURCE_EXHAUSTED" || error?.code === 429 || error?.statusCode === 429 || errorStr.includes("429") || errorStr.includes("RESOURCE_EXHAUSTED") || errorStr.includes("quota");
+
+        if (isUnavailable && attempt < retries) {
+          const nextDelay = delay * Math.pow(2, attempt) * (0.8 + Math.random() * 0.4);
+          await new Promise((resolve) => setTimeout(resolve, nextDelay));
+          continue;
+        }
+        if (isUnavailable || isRateLimited) break; // tenta o proximo modelo
         throw error;
       }
-      
-      // Exponential backoff: delay * 2^(attempt-1) plus some randomized jitter (80% to 120%)
-      const nextDelay = delay * Math.pow(2, attempt - 1) * (0.8 + Math.random() * 0.4);
-      console.warn(`[Gemini API] Call failed (Attempt ${attempt}/${retries + 1}). Retrying in ${Math.round(nextDelay)}ms... Reason: ${error?.status || "Unavailable/Rate Limited"}`);
-      await new Promise((resolve) => setTimeout(resolve, nextDelay));
     }
   }
+  throw lastError || new Error("Nao foi possivel concluir a chamada de IA.");
 }
 
 const handleGeneratePrompts = async (req: any, res: any) => {
@@ -186,9 +200,9 @@ INFORMAÇÕES DE MULTIMÍDIA FORNECIDAS:`;
       text: promptText,
     });
 
-    const response = await callGeminiWithRetry(() =>
+    const response = await callGeminiWithRetry((model) =>
       ai.models.generateContent({
-        model: "gemini-3.8-flash",
+        model,
         contents: { parts: contentParts },
         config: {
           systemInstruction: systemInstruction,
@@ -248,7 +262,7 @@ INFORMAÇÕES DE MULTIMÍDIA FORNECIDAS:`;
     console.error("Erro na rota /api/generate-prompts:", error);
     res.status(500).json({
       success: false,
-      error: error.message || "Erro desconhecido ao gerar roteiro.",
+      error: friendlyAiError(error),
     });
   }
 };
@@ -292,9 +306,9 @@ ATENÇÃO: Não use jargões chatos ou formais demais, use português coloquial 
       },
     ];
 
-    const response = await callGeminiWithRetry(() =>
+    const response = await callGeminiWithRetry((model) =>
       ai.models.generateContent({
-        model: "gemini-3.8-flash",
+        model,
         contents: { parts: contentParts },
         config: {
           systemInstruction: systemInstructionAnalyze,
@@ -338,7 +352,7 @@ ATENÇÃO: Não use jargões chatos ou formais demais, use português coloquial 
     console.error("Erro na rota /api/analyze-product:", error);
     res.status(500).json({
       success: false,
-      error: error.message || "Erro desconhecido ao analisar imagem do produto.",
+      error: friendlyAiError(error),
     });
   }
 };

@@ -99,7 +99,7 @@ export default async function handler(req: any, res: any) {
 
     const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
     if (!apiKey) {
-      return sendError(res, 500, 'GEMINI_API_KEY is not configured');
+      return sendError(res, 400, 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.');
     }
 
     const agentId = cleanText(req.body?.agentId, 120);

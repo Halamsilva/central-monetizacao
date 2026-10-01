@@ -74,7 +74,7 @@ const handleGeneratePrompts = async (req: any, res: any) => {
 
     if (!ai) {
       return res.status(500).json({
-        error: "API Key do Gemini não está configurada. Defina GEMINI_API_KEY no painel de Secrets.",
+        error: "IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.",
       });
     }
 
@@ -281,7 +281,7 @@ const handleAnalyzeProduct = async (req: any, res: any) => {
 
     if (!ai) {
       return res.status(500).json({
-        error: "API Key do Gemini não está configurada. Defina GEMINI_API_KEY no painel de Secrets.",
+        error: "IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.",
       });
     }
 

@@ -34,23 +34,17 @@ const checkAdminAccess = async (serviceSupabase: any, token?: string) => {
 };
 
 const listEntitlements = async (serviceSupabase: any) => {
+  const { data, error } = await serviceSupabase
+    .from('profiles')
+    .select('id, ai_accounts_access')
+    .eq('ai_accounts_access', true);
+
+  if (error) return {};
+
   const entitlements: Record<string, boolean> = {};
-  let page = 1;
 
-  while (page <= 20) {
-    const { data, error } = await serviceSupabase.auth.admin.listUsers({
-      page,
-      perPage: 1000,
-    });
-
-    if (error) break;
-
-    for (const user of data.users || []) {
-      entitlements[user.id] = user.app_metadata?.ai_accounts_access === true;
-    }
-
-    if (!data.users || data.users.length < 1000) break;
-    page += 1;
+  for (const profile of data || []) {
+    if (profile?.id) entitlements[profile.id] = true;
   }
 
   return entitlements;

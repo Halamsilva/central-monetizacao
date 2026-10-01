@@ -96,6 +96,19 @@ class FirestoreTable implements PromiseLike<Result> {
     return snapshots;
   }
 
+  private canAggregateCount() {
+    return this.filters.length === 0 || (this.filters.length === 1 && !this.filters[0].not);
+  }
+
+  private async countRows() {
+    const db = getFirestore(getAdminApp());
+    let query: Query<DocumentData> = db.collection(this.table);
+    const equality = this.filters.find(filter => !filter.not);
+    if (equality) query = query.where(equality.field, '==', equality.value);
+    const snapshot = await query.count().get();
+    return snapshot.data().count;
+  }
+
   private project(row: Record<string, any>) {
     if (this.columns === '*') return row;
     const names = this.columns.split(',').map(value => value.trim()).filter(value => /^\w+$/.test(value));
@@ -122,6 +135,9 @@ class FirestoreTable implements PromiseLike<Result> {
           saved.push({ ...item, id: ref.id });
         }
         return { data: this.one ? saved[0] || null : saved, error: null, count: saved.length };
+      }
+      if (this.mode === 'select' && this.headMode && this.countMode && this.canAggregateCount()) {
+        return { data: null, error: null, count: await this.countRows() };
       }
       const snapshots = await this.references();
       if (this.mode === 'update' || this.mode === 'delete') {

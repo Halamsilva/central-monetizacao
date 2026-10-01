@@ -67,31 +67,13 @@ export const getUserGeminiApiKey = async (serviceSupabase: any, userId?: string)
   }
 };
 
-const isAdminUser = async (serviceSupabase: any, userId?: string) => {
-  if (!serviceSupabase || !userId) return true;
-
-  try {
-    const { data } = await serviceSupabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .maybeSingle();
-
-    return data?.role === 'admin';
-  } catch {
-    return false;
-  }
-};
-
-// Prioridade: a chave do proprio usuario. A chave da plataforma e usada SOMENTE por
-// admin, para que nenhum aluno consuma a cota do administrador.
+// Prioridade: a chave do proprio aluno. Sem chave propria, usa a chave da plataforma
+// (admin). Quando a cota da plataforma acabar, o aluno cadastra a sua em Configuracoes.
 export const getActiveGeminiApiKey = async (serviceSupabase?: any, userId?: string) => {
   const supabase = serviceSupabase || getServiceSupabase();
 
   const userKey = await getUserGeminiApiKey(supabase, userId);
   if (userKey) return userKey;
-
-  if (!(await isAdminUser(supabase, userId))) return '';
 
   const storedKey = await getStoredGeminiApiKey(supabase);
   return storedKey || cleanApiKey(process.env.GEMINI_API_KEY);

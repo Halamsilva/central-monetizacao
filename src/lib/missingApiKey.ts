@@ -1,32 +1,48 @@
 export const MISSING_API_KEY_EVENT = 'halamsilva:missing-api-key';
+export const QUOTA_EXCEEDED_EVENT = 'halamsilva:quota-exceeded';
 
 const MISSING_API_KEY_MARKERS = ['ia nao configurada'];
 
-export const isMissingApiKeyPayload = (payload: unknown) => {
-  if (!payload) return false;
+const QUOTA_MARKERS = [
+  'limite de uso da ia',
+  'cota diaria',
+  'cota di',
+  'resource_exhausted',
+  'insufficient account funds',
+  'quota exceeded',
+  '429',
+];
 
-  let raw = '';
-
-  if (typeof payload === 'string') {
-    raw = payload;
-  } else {
-    try {
-      raw = JSON.stringify(payload);
-    } catch {
-      return false;
-    }
-  }
-
+const includesAnyMarker = (raw: string, markers: string[]) => {
   const normalized = raw.toLowerCase();
-
-  return MISSING_API_KEY_MARKERS.some((marker) => normalized.includes(marker));
+  return markers.some((marker) => normalized.includes(marker));
 };
 
-export const notifyMissingApiKey = () => {
+const stringifyPayload = (payload: unknown) => {
+  if (!payload) return '';
+
+  if (typeof payload === 'string') return payload;
+
+  try {
+    return JSON.stringify(payload);
+  } catch {
+    return '';
+  }
+};
+
+export const isMissingApiKeyPayload = (payload: unknown) =>
+  includesAnyMarker(stringifyPayload(payload), MISSING_API_KEY_MARKERS);
+
+export const isQuotaExceededPayload = (payload: unknown) =>
+  includesAnyMarker(stringifyPayload(payload), QUOTA_MARKERS);
+
+const dispatch = (eventName: string) => {
   if (typeof window === 'undefined') return;
-
-  window.dispatchEvent(new CustomEvent(MISSING_API_KEY_EVENT));
+  window.dispatchEvent(new CustomEvent(eventName));
 };
+
+export const notifyMissingApiKey = () => dispatch(MISSING_API_KEY_EVENT);
+export const notifyQuotaExceeded = () => dispatch(QUOTA_EXCEEDED_EVENT);
 
 export const installMissingApiKeyWatcher = () => {
   if (typeof window === 'undefined') return;
@@ -58,6 +74,11 @@ export const installMissingApiKeyWatcher = () => {
           .then((payload) => {
             if (isMissingApiKeyPayload(payload)) {
               notifyMissingApiKey();
+              return;
+            }
+
+            if (isQuotaExceededPayload(payload)) {
+              notifyQuotaExceeded();
             }
           })
           .catch(() => undefined);

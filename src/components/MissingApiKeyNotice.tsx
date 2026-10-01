@@ -1,23 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { KeyRound, Settings, X } from 'lucide-react';
-import { MISSING_API_KEY_EVENT } from '../lib/missingApiKey';
+import { MISSING_API_KEY_EVENT, QUOTA_EXCEEDED_EVENT } from '../lib/missingApiKey';
+
+type NoticeMode = 'missing' | 'quota';
+
+const copy: Record<
+  NoticeMode,
+  { title: string; description: string; steps: string[] }
+> = {
+  missing: {
+    title: 'Cadastre sua chave de IA',
+    description:
+      'Para usar os agentes voce precisa da sua propria chave do Google AI Studio (ela e gratuita e fica na sua conta). Assim cada aluno usa a propria API e a cota do administrador nunca e gasta.',
+    steps: [
+      '1. Crie a chave em ai.google.dev (Free).',
+      '2. No painel, va em Configuracoes e cole a chave.',
+      '3. Volte aqui e gere novamente.',
+    ],
+  },
+  quota: {
+    title: 'A cota da plataforma acabou',
+    description:
+      'A chave da plataforma chegou no limite de uso do plano. Cadastre a sua propria chave do Google AI Studio (gratuita) para continuar usando todos os agentes agora mesmo.',
+    steps: [
+      '1. Crie sua chave gratuita em ai.google.dev.',
+      '2. No painel, va em Configuracoes e cole a chave.',
+      '3. Volte aqui e continue usando sem interrupcao.',
+    ],
+  },
+};
 
 const MissingApiKeyNotice: React.FC = () => {
-  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<NoticeMode | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handle = () => setOpen(true);
+    const handleMissing = () => setMode('missing');
+    const handleQuota = () => setMode('quota');
 
-    window.addEventListener(MISSING_API_KEY_EVENT, handle);
-    return () => window.removeEventListener(MISSING_API_KEY_EVENT, handle);
+    window.addEventListener(MISSING_API_KEY_EVENT, handleMissing);
+    window.addEventListener(QUOTA_EXCEEDED_EVENT, handleQuota);
+
+    return () => {
+      window.removeEventListener(MISSING_API_KEY_EVENT, handleMissing);
+      window.removeEventListener(QUOTA_EXCEEDED_EVENT, handleQuota);
+    };
   }, []);
 
-  if (!open) return null;
+  if (!mode) return null;
+
+  const { title, description, steps } = copy[mode];
 
   const goToSettings = () => {
-    setOpen(false);
+    setMode(null);
     navigate('/settings');
   };
 
@@ -31,7 +67,7 @@ const MissingApiKeyNotice: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => setOpen(false)}
+            onClick={() => setMode(null)}
             className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
             aria-label="Fechar aviso"
           >
@@ -39,20 +75,16 @@ const MissingApiKeyNotice: React.FC = () => {
           </button>
         </div>
 
-        <h2 className="mt-4 text-lg font-black text-slate-900">
-          Cadastre sua chave de IA
-        </h2>
+        <h2 className="mt-4 text-lg font-black text-slate-900">{title}</h2>
 
         <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
-          Para usar os agentes voce precisa da sua propria chave do Google AI Studio
-          (ela e gratuita e fica na sua conta). Assim cada aluno usa a propria API e a
-          cota do administrador nunca e gasta.
+          {description}
         </p>
 
         <ol className="mt-4 space-y-2 rounded-2xl bg-slate-50 p-4 text-xs font-medium leading-relaxed text-slate-600">
-          <li>1. Crie a chave em ai.google.dev (Free).</li>
-          <li>2. No painel, va em Configuracoes e cole a chave.</li>
-          <li>3. Volte aqui e gere novamente.</li>
+          {steps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
         </ol>
 
         <div className="mt-6 flex flex-col gap-2 sm:flex-row">
@@ -67,7 +99,7 @@ const MissingApiKeyNotice: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => setOpen(false)}
+            onClick={() => setMode(null)}
             className="inline-flex h-12 items-center justify-center rounded-2xl bg-slate-100 px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
           >
             Agora nao

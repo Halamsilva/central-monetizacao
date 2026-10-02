@@ -68,6 +68,8 @@ const handleGenerate = async (req: any, res: any) => {
       scenes = 6,
       context = '',
       previousStory = '',
+      userScript = '',
+      userScriptMode = '',
     } = req.body || {};
 
     const skinDescriptorMap: Record<string, string> = {
@@ -265,6 +267,37 @@ COTIDIANO BRASILEIRO REAL (FONTE OBRIGATÓRIA DAS HISTÓRIAS):
     const numScenes = Math.min(60, Math.max(4, Number(scenes) || 6));
     const isContinuing = Boolean(previousStory && previousStory.trim().length > 0);
 
+    // O usuario pode colar um roteiro ja pronto. Nesse caso a historia dele e CANONICA:
+    // a IA nao reescreve, nao troca o desfecho e nao inventa outra trama.
+    const ownScript = String(userScript || '').trim();
+    const ownScriptMode = String(userScriptMode || '').trim() === 'adapt' ? 'adapt' : 'continue';
+    const hasOwnScript = ownScript.length > 0;
+
+    const ownScriptDirective = hasOwnScript
+      ? `
+################################################################
+ROTEIRO DO USUÁRIO (FONTE CANÔNICA E OBRIGATÓRIA DA HISTÓRIA)
+################################################################
+O usuário JÁ TEM um roteiro pronto. Esse texto abaixo é a VERDADE da história e NÃO PODE ser reescrito, resumido, corrigido, reordenado nem substituído:
+
+"""
+${ownScript.slice(0, 6000)}
+"""
+
+REGRAS INEGOCIÁVEIS:
+1. ACOMPANHE A HISTÓRIA IDÊNTICA ao texto do usuário: mesma ordem de acontecimentos, mesmos nomes, mesmos personagens, mesmos lugares, mesmo tom e MESMO FINAL. É TERMINANTEMENTE PROIBIDO inventar outra história, trocar o desfecho, mudar o nome de qualquer personagem ou acrescentar um enredo parallel que contradiga o roteiro.
+2. Reutilize as falas do próprio roteiro do usuário sempre que elas existirem no texto. NÃO reescreva, NÃO modernize e NÃO troque o texto das falas já escritas.
+${
+  ownScriptMode === 'continue'
+    ? `3. MODO CONTINUAR: o roteiro do usuário é o COMEÇO da história. Continue a partir de EXATAMENTE onde o texto termina (mesma cena, mesma hora do dia, mesma situação), criando apenas os acontecimentos seguintes até fechar a história com um desfecho memorável. Não repita e não reconte nada do que já está escrito.`
+    : `3. MODO ADAPTAR: NÃO escreva cenas novas. Converta o roteiro do usuário, cena por cena e na MESMA ordem, no formato técnico completo do agente (${numScenes} cenas de 8 segundos, PROMPT 00 com ficha dos personagens, [Subject & Character Consistency], [Dialogue & Native Audio] em ${currentLang.langName}, e o bloco SEO final), preservando integralmente a história, os diálogos e o desfecho do usuário.`
+}
+4. As ${numScenes} cenas devem cobrir o roteiro do usuário de forma COMPLETA, sem pular nenhum TRECHO RELEVANTE do texto e sem inventar cenas que não estejam no que ele escreveu.
+5. Se o roteiro do usuário for curto, complete as cenas restantes com continuação coerente a partir do ponto em que ele parou — sempre respeitando o tom, os personagens e o desfecho descritos por ele.
+################################################################
+`
+      : '';
+
     const extremeWeightDirective =
       theme === 'Gordos'
         ? `
@@ -309,6 +342,7 @@ ATENÇÃO: É ESTRITAMENTE PROIBIDO DESVIAR DO TEMA '${theme}'!
 Toda a trama, personagens principais e locações DEVEM ser 100% fiéis ao tema '${theme}'.
 ${context ? `Contexto opcional do criador (deve ser totalmente adaptado para ocorrer DENTRO do tema '${theme}'): "${context}"` : ''}
 ${extremeWeightDirective}
+${ownScriptDirective}
 
 PARÂMETROS DA PRODUÇÃO:
 - Tema Selecionado: ${theme}
@@ -320,14 +354,16 @@ PARÂMETROS DA PRODUÇÃO:
 - REGRA ABSOLUTA DE NUMERACAO SEQUENCIAL: entregue EXATAMENTE ${numScenes} cenas, numeradas rigorosamente em sequencia, de "PROMPT CENA 1" ate "PROMPT CENA ${numScenes}", UMA cena por numero, SEM PULAR nenhum numero (é TERMINANTEMENTE PROIBIDO, por exemplo, ir de CENA 3 direto para CENA 8). Cada bloco deve ter o cabecalho "PROMPT CENA N (SEEDANCE 2.5)". Faca a contagem mental: se escreveu a CENA 1, 2 e 3, o proximo bloco e OBRIGATORIAMENTE a CENA 4, e assim por diante, ate a CENA ${numScenes}. Nao repita numeros e nao pule numeros.
 
 ${
-  isContinuing
-    ? `ATENÇÃO: Esta é uma PARTE 2 que dá continuidade direta ao enredo anterior no tema '${theme}'.
+  hasOwnScript
+    ? `ATENÇÃO SUPREMA: o roteiro do usuário acima é a FONTE CANÔNICA desta história e sua prioridade é ABSOLUTA MAIOR do que qualquer sugestão de tema, estrutura, engine ou regra anti-clichê desta minha diretriz. Você NÃO cria uma nova história: você executa o roteiro dele, na ordem dele, com as falas dele, até o final que ele escreveu. As regras de formato (numeração de cenas, PROMPT 00, ficha física, Subject & Character Consistency, SEO) continuam OBRIGATÓRIAS — elas mudam COMO o roteiro é entregue, nunca O QUE acontece.`
+    : isContinuing
+      ? `ATENÇÃO: Esta é uma PARTE 2 que dá continuidade direta ao enredo anterior no tema '${theme}'.
 História anterior:
 """
 ${previousStory.slice(0, 3000)}
 """
 Continue imediatamente após os acontecimentos anteriores, mantendo rigorosamente a mesma continuidade visual dos personagens e do universo de '${theme}'.`
-    : `Desenvolva uma história dramática inédita e comovente EXCLUSIVAMENTE sobre o tema '${theme}', com gancho chocante logo na primeira cena, escalada de conflito no miolo e uma resolução memorável e reflexiva.`
+      : `Desenvolva uma história dramática inédita e comovente EXCLUSIVAMENTE sobre o tema '${theme}', com gancho chocante logo na primeira cena, escalada de conflito no miolo e uma resolução memorável e reflexiva.`
 }
 
 ================================================================================

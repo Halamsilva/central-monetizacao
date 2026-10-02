@@ -12,6 +12,7 @@ import {
   Clock,
   Copy,
   Download,
+  FileText,
   Film,
   Layers,
   Lightbulb,
@@ -589,6 +590,9 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
   const [generatedIdeasMap, setGeneratedIdeasMap] = useState<Record<string, string[]>>({});
   const [isGeneratingIdeas, setIsGeneratingIdeas] = useState(false);
   const [ideaToast, setIdeaToast] = useState('');
+  const [showOwnScript, setShowOwnScript] = useState(false);
+  const [ownScript, setOwnScript] = useState('');
+  const [ownScriptMode, setOwnScriptMode] = useState<'continue' | 'adapt'>('continue');
 
   const effectiveTheme = lockedTheme || (theme === 'Outro' ? customThemeTitle.trim() || 'Tema personalizado' : theme);
   const visibleThemes = lockedTheme ? [{ label: lockedTheme, icon: '🍔' }] : themes;
@@ -855,6 +859,8 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
           scenes,
           context,
           previousStory: previousResult || '',
+          userScript: ownScript.trim(),
+          userScriptMode: ownScript.trim() ? ownScriptMode : '',
         }),
       });
 
@@ -1150,6 +1156,107 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
               }
               className="w-full resize-y rounded-2xl border border-zinc-700 bg-zinc-900 p-4 text-sm font-semibold leading-relaxed text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 sm:p-5 sm:text-base"
             />
+
+            {/* MEU ROTEIRO: o usuario ja tem um texto pronto e quer que o agente siga ele */}
+            <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/80">
+              <button
+                type="button"
+                onClick={() => setShowOwnScript((value) => !value)}
+                className="flex w-full items-center justify-between gap-3 px-3.5 py-3 text-left transition hover:bg-zinc-900/60 sm:px-4"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/15 text-sky-400">
+                    <FileText size={16} />
+                  </span>
+                  <span className="text-xs font-black uppercase tracking-wider text-sky-400">
+                    Já tenho um roteiro pronto
+                  </span>
+                </span>
+
+                <span className="flex items-center gap-2">
+                  {ownScript.trim() && (
+                    <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-black text-emerald-400">
+                      Roteiro ativo
+                    </span>
+                  )}
+                  <ChevronDown
+                    size={18}
+                    className={`shrink-0 text-zinc-500 transition-transform ${showOwnScript ? 'rotate-180' : ''}`}
+                  />
+                </span>
+              </button>
+
+              {showOwnScript && (
+                <div className="border-t border-zinc-800 p-3.5 sm:p-4">
+                  <p className="mb-3 text-xs font-medium leading-relaxed text-zinc-400">
+                    Cole aqui o seu roteiro. Escolha o que o agente deve fazer com ele:
+                  </p>
+
+                  <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setOwnScriptMode('continue')}
+                      className={`rounded-xl border px-3 py-2.5 text-left transition ${
+                        ownScriptMode === 'continue'
+                          ? 'border-sky-500 bg-sky-500/10'
+                          : 'border-zinc-700 bg-zinc-900 hover:border-zinc-600'
+                      }`}
+                    >
+                      <span className="block text-xs font-black uppercase tracking-wider text-sky-400">
+                        Continuar meu roteiro
+                      </span>
+                      <span className="mt-0.5 block text-[11px] font-medium leading-relaxed text-zinc-400">
+                        Seu texto é o começo da história e a IA escreve as próximas cenas até o final.
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setOwnScriptMode('adapt')}
+                      className={`rounded-xl border px-3 py-2.5 text-left transition ${
+                        ownScriptMode === 'adapt'
+                          ? 'border-sky-500 bg-sky-500/10'
+                          : 'border-zinc-700 bg-zinc-900 hover:border-zinc-600'
+                      }`}
+                    >
+                      <span className="block text-xs font-black uppercase tracking-wider text-sky-400">
+                        Adaptar meu roteiro
+                      </span>
+                      <span className="mt-0.5 block text-[11px] font-medium leading-relaxed text-zinc-400">
+                        Mantém sua história e monta em cima dela os blocos, prompts e SEO.
+                      </span>
+                    </button>
+                  </div>
+
+                  <textarea
+                    value={ownScript}
+                    onChange={(event) => setOwnScript(event.target.value)}
+                    rows={7}
+                    maxLength={6000}
+                    placeholder="Cole aqui o seu roteiro pronto... (até 6000 caracteres)"
+                    className="w-full resize-y rounded-xl border border-zinc-700 bg-zinc-900 p-3.5 text-sm font-medium leading-relaxed text-zinc-100 outline-none transition placeholder:text-zinc-600 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10"
+                  />
+
+                  <div className="mt-2 flex items-center justify-between gap-2 text-[11px] font-bold text-zinc-500">
+                    <span>
+                      {ownScript.trim()
+                        ? `${ownScript.trim().length}/6000 caracteres · modo: ${ownScriptMode === 'continue' ? 'continuar' : 'adaptar'}`
+                        : 'Opcional: deixe vazio para a IA criar a história do zero.'}
+                    </span>
+
+                    {ownScript.trim() && (
+                      <button
+                        type="button"
+                        onClick={() => setOwnScript('')}
+                        className="text-zinc-400 underline transition hover:text-zinc-200"
+                      >
+                        Limpar roteiro
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Painel de Ideias Dinâmicas e Botão para Gerar Novas Ideias */}
             <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-3.5 sm:p-4">

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { KeyRound, Settings, X } from 'lucide-react';
 import { MISSING_API_KEY_EVENT, QUOTA_EXCEEDED_EVENT } from '../lib/missingApiKey';
 
-type NoticeMode = 'missing' | 'quota';
+type NoticeMode = 'missing' | 'quota' | 'timeout';
 
 const copy: Record<
   NoticeMode,
@@ -29,7 +29,19 @@ const copy: Record<
       '3. Volte aqui e continue usando sem interrupcao.',
     ],
   },
+  timeout: {
+    title: 'A geracao demorou demais',
+    description:
+      'A resposta da IA ultrapassou o limite de tempo da rede. Isso nao e erro seu: normalmente significa que o conteudo era grande demais para o tempo disponivel.',
+    steps: [
+      '1. Clique em Tentar Novamente no agente.',
+      '2. Se repetir, gere com menos cenas ou um clipe mais curto.',
+      '3. Aguarde alguns instantes e tente de novo.',
+    ],
+  },
 };
+
+const EDGE_TIMEOUT_EVENT = 'halamsilva:edge-timeout';
 
 const MissingApiKeyNotice: React.FC = () => {
   const [mode, setMode] = useState<NoticeMode | null>(null);
@@ -38,13 +50,16 @@ const MissingApiKeyNotice: React.FC = () => {
   useEffect(() => {
     const handleMissing = () => setMode('missing');
     const handleQuota = () => setMode('quota');
+    const handleTimeout = () => setMode('timeout');
 
     window.addEventListener(MISSING_API_KEY_EVENT, handleMissing);
     window.addEventListener(QUOTA_EXCEEDED_EVENT, handleQuota);
+    window.addEventListener(EDGE_TIMEOUT_EVENT, handleTimeout);
 
     return () => {
       window.removeEventListener(MISSING_API_KEY_EVENT, handleMissing);
       window.removeEventListener(QUOTA_EXCEEDED_EVENT, handleQuota);
+      window.removeEventListener(EDGE_TIMEOUT_EVENT, handleTimeout);
     };
   }, []);
 
@@ -90,20 +105,31 @@ const MissingApiKeyNotice: React.FC = () => {
         <div className="mt-6 flex flex-col gap-2 sm:flex-row">
           <button
             type="button"
-            onClick={goToSettings}
+            onClick={mode === 'timeout' ? () => setMode(null) : goToSettings}
             className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl bg-blue-600 text-sm font-black text-white shadow-sm transition hover:bg-blue-700"
           >
-            <Settings size={18} />
-            Ir para Configuracoes
+            {mode === 'timeout' ? (
+              <>
+                <X size={18} />
+                Entendi
+              </>
+            ) : (
+              <>
+                <Settings size={18} />
+                Ir para Configuracoes
+              </>
+            )}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setMode(null)}
-            className="inline-flex h-12 items-center justify-center rounded-2xl bg-slate-100 px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
-          >
-            Agora nao
-          </button>
+          {mode !== 'timeout' && (
+            <button
+              type="button"
+              onClick={() => setMode(null)}
+              className="inline-flex h-12 items-center justify-center rounded-2xl bg-slate-100 px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
+            >
+              Agora nao
+            </button>
+          )}
         </div>
       </div>
     </div>

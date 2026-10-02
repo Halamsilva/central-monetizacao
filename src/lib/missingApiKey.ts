@@ -44,6 +44,12 @@ const dispatch = (eventName: string) => {
 export const notifyMissingApiKey = () => dispatch(MISSING_API_KEY_EVENT);
 export const notifyQuotaExceeded = () => dispatch(QUOTA_EXCEEDED_EVENT);
 
+const EDGE_TIMEOUT_EVENT = 'halamsilva:edge-timeout';
+
+const isEdgeTimeoutStatus = (status: number) => status === 524 || status === 502 || status === 504;
+
+export const notifyEdgeTimeout = () => dispatch(EDGE_TIMEOUT_EVENT);
+
 export const installMissingApiKeyWatcher = () => {
   if (typeof window === 'undefined') return;
 
@@ -68,6 +74,11 @@ export const installMissingApiKeyWatcher = () => {
             : (input?.url ?? '');
 
       if (url.includes('/api/agents/')) {
+        if (isEdgeTimeoutStatus(response.status)) {
+          notifyEdgeTimeout();
+          return response;
+        }
+
         response
           .clone()
           .json()

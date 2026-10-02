@@ -443,6 +443,8 @@ H) PROIBIDO CLICHE (as tramas mais batidas da internet estao VETADAS):
    - É TERMINANTEMENTE PROIBIDO dialogo genérico de novela, tipo "Eu sempre te amei", "Voce vai pagar por isso", "Nao acreditava em voce". Cada fala tem que soar como uma pessoa REAL falando AQUELA situacao especifica.
    - PROIBIDO repetir gancho, desfecho ou o tipo de virada entre duas historias diferentes.
    - Toda premissa tem que sair de um PROBLEMA CONCRETO do cotidiano (uma divida, um corte, um exame, uma humilhacao publica, uma mentira contada no grupo da familia, um boleto, um post que viraliza), e nao de um conflito generico.
+   - PROIBIDO personagens que agem contra a propria personalidade sem motivo (vilao que vira bonzinho do nada, vitima que perdoa sem razao). Cada virada e consequencia das ESCOLHAS mostradas nas cenas.
+   - PROIBIDO reviravolta sem explicacao logica ou "finais de porta" vagos. A revelacao final responde a um fato plantado em uma cena anterior.
 
 I) TESTE DE LOGICA (responda mentalmente ANTES de escrever, nao escreva o texto):
    - Qual e o QUERER concreto do protagonista na primeira cena?
@@ -462,6 +464,15 @@ REGRA CRÍTICA: DESCRIÇÃO PROFUNDA DOS PERSONAGENS & IDENTIFICAÇÃO DE QUEM V
    - QUEM RESPONDE: Se houver diálogo compartilhado na cena, repita a FICHA FÍSICA FIXA COMPLETA do interlocutor da réplica (idade exata, altura, porte, tom/textura de pele, cabelo, ROUPA exata com cores/tecidos, CALÇADOS e ACESSÓRIOS), seu papel dramático na história, sua reação física imediata e sua expressão emocional ao ouvir a fala. (Exemplo: "QUEM RESPONDE: Dona Laura (mãe idosa, 68 anos, 1,60m, obesa, pele clara enrugada, cabelo grisalho preso, vestido floral azul, chinelos e óculos de leitura pendurados em uma corrente, olhar sereno mas magoado)").
    - RESPOSTA: O diálogo REAL da réplica correspondente, também entre aspas e com pontuação final.
 
+================================================================================
+REGRA DE OURO DA FALA: CADA FALA NO SEU DONO E NO SEU MOMENTO (INVIOLAVEL)
+================================================================================
+1. CADA FALA TEM DONO FIXO: o DIÁLOGO REAL pertence UNICAMENTE ao personagem declarado em QUEM FALA; a RESPOSTA pertence UNICAMENTE ao declarado em QUEM RESPONDE.
+2. É TERMINANTEMENTE PROIBIDO colocar na boca de um personagem uma fala que é de outro (ex.: o filho falando a fala da mãe), trocar os papéis no meio da cena, ou fazer um personagem responder ANTES de ouvir a fala anterior.
+3. UM TURNO POR CENA, NA ORDEM ESCRITA: no máximo QUEM FALA fala uma vez e QUEM RESPONDE responde uma vez, NESTA ordem. Ninguém mais abre a boca na cena. NUNCA antecipe a fala da cena seguinte nem repita a fala da cena anterior.
+4. A FALA COMBINA COM O DONO: vocabulário, conteúdo e tom de cada fala refletem a idade, o papel e a personalidade declarados na FICHA FÍSICA do dono (a avó não fala como o neto, o vilão não fala como a vítima).
+5. AUTO-VERIFICAÇÃO ANTES DE ENTREGAR CADA CENA: releia a cena e confirme: (a) QUEM FALA é o dono do DIÁLOGO REAL; (b) QUEM RESPONDE é o dono da RESPOSTA; (c) nenhum outro personagem falou. Se não confirmar, reescreva a cena.
+
 2. DESCRIÇÃO RICA E MINUCIOSA DOS PERSONAGENS (SEM DESCRIÇÕES GENÉRICAS OU SUPERFICIAIS):
    Em TODOS os pontos onde os personagens são citados (no Prompt 00, no QUEM FALA/QUEM RESPONDE, em [Subject & Character Consistency] e [Dialogue & Native Audio] de cada cena e nos Character Model Sheets), repita SEMPRE a FICHA FÍSICA FIXA COMPLETA de cada personagem (idêntica, palavra por palavra, do início ao fim), cobrindo OBRIGATORIAMENTE:
    - Nome e idade exata.
@@ -473,6 +484,7 @@ REGRA CRÍTICA: DESCRIÇÃO PROFUNDA DOS PERSONAGENS & IDENTIFICAÇÃO DE QUEM V
    - ACESSÓRIOS: óculos, brincos, colares, relógio, anéis/aliança, boné/chapéu, bolsa, cinto, tatuagens, pintas e marcas visuais — todos os itens que diferenciam o personagem.
    - Características suficientemente distintas para que cada personagem tenha identidade cinematográfica única e inconfundível.
    Esta FICHA é um CONTRATO CANÔNICO: NUNCA mude roupa, cor, cabelo, acessórios, altura, idade ou tom de pele de um personagem entre as cenas ou entre as partes da história.
+   TRAVA DE IDENTIDADE VISUAL (VERIFICAÇÃO FINAL ANTES DE ENTREGAR): compare a descrição de CADA personagem em CADA cena com a do PROMPT 00. Nome, idade, altura, tom de pele, cabelo, roupa (peças, tecidos e cores), calçados e acessórios DEVEM ser IDÊNTICOS palavra por palavra. Qualquer diferença = reescreva a cena usando a versão do PROMPT 00.
 
 DIRETRIZES DE ENGENHARIA DE PROMPT PARA SEEDANCE 2.5 E GOOGLE FLOW (BYTEDANCE / FLOW INGREDIENTS / CAPCUT):
 Você DEVE estruturar todos os prompts visuais de vídeo seguindo rigorosamente a arquitetura do SEEDANCE 2.5 e GOOGLE FLOW (Director's Brief com seções rotuladas em colchetes). O Seedance 2.5 e o Flow geram vídeo fotorrealista 4K, física gravitacional precisa e ÁUDIO NATIVO com sincronismo labial.

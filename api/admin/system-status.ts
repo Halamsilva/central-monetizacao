@@ -1,4 +1,5 @@
 import { createServiceClient, isFirebaseAdminConfigured, isVerifiedOwner } from '../_firebase.js';
+import { sendAccessEmail } from '../_emails.js';
 
 const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
 
@@ -199,6 +200,31 @@ export default async function handler(req: any, res: any) {
 
   if (!adminCheck.ok) {
     return res.status(adminCheck.status).json({ error: adminCheck.error });
+  }
+
+  // Acao de diagnostico/reenvio: /api/admin/system-status?test_email=aluno@email.com
+  const testEmail = String(req.query?.test_email || '').trim().toLowerCase();
+
+  if (req.method === 'GET' && testEmail) {
+    if (!testEmail.includes('@')) {
+      return res.status(400).json({ error: 'Informe um e-mail valido.' });
+    }
+
+    const result = await sendAccessEmail('access_released', {
+      to: testEmail,
+      name: 'Aluno',
+      idempotencyKey: `admin-email-${testEmail}-${Date.now()}`,
+    });
+
+    return res.status(result.ok ? 200 : 502).json({
+      ok: result.ok,
+      skipped: Boolean(result.skipped),
+      reason: result.reason || null,
+      error: result.error || null,
+      from: process.env.RESEND_FROM_EMAIL || 'Central Monetizacao <nao-responda@halamsilva.com.br> (padrao)',
+      appUrl: process.env.APP_URL || 'https://www.halamsilva.com.br (padrao - configure APP_URL)',
+      hasResendKey: Boolean(process.env.RESEND_API_KEY),
+    });
   }
 
   if (req.method === 'PATCH') {

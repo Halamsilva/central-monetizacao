@@ -32,6 +32,7 @@ const AdminStudents: React.FC = () => {
     const [diagnosticEmail, setDiagnosticEmail] = useState('');
     const [diagnosingEmail, setDiagnosingEmail] = useState(false);
     const [releasingEmail, setReleasingEmail] = useState(false);
+    const [sendingEmail, setSendingEmail] = useState(false);
     const [diagnosticResult, setDiagnosticResult] = useState<any>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -282,6 +283,47 @@ const AdminStudents: React.FC = () => {
             setMessage({ type: 'error', text: err.message || 'Erro ao liberar aluno.' });
         } finally {
             setReleasingEmail(false);
+        }
+    };
+
+    const resendAccessEmail = async () => {
+        const email = diagnosticResult?.email || diagnosticEmail.trim().toLowerCase();
+
+        if (!email.includes('@')) {
+            setMessage({ type: 'error', text: 'Digite um e-mail valido para reenviar.' });
+            return;
+        }
+
+        setSendingEmail(true);
+
+        try {
+            const { data } = await supabase.auth.getSession();
+            const token = data.session?.access_token;
+
+            if (!token) {
+                throw new Error('Faca login novamente para reenviar o e-mail.');
+            }
+
+            const response = await fetch(
+                `/api/admin/system-status?test_email=${encodeURIComponent(email)}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok || !result.ok) {
+                const detail = result.error || result.reason || `HTTP ${response.status}`;
+                throw new Error(`Nao foi possivel enviar: ${detail}`);
+            }
+
+            setMessage({
+                type: 'success',
+                text: `E-mail enviado para ${email} (remetente: ${result.from || 'padrao'}).`,
+            });
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message || 'Erro ao reenviar o e-mail.' });
+        } finally {
+            setSendingEmail(false);
         }
     };
 
@@ -681,6 +723,19 @@ const AdminStudents: React.FC = () => {
                                 {releasingEmail ? 'Liberando...' : 'Liberar agora'}
                             </button>
                         )}
+
+                        <button
+                            onClick={resendAccessEmail}
+                            disabled={sendingEmail}
+                            className="mt-4 ml-0 inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-60 sm:ml-3"
+                        >
+                            {sendingEmail ? (
+                                <RefreshCw className="animate-spin" size={17} />
+                            ) : (
+                                <MailSearch size={17} />
+                            )}
+                            {sendingEmail ? 'Enviando...' : 'Reenviar e-mail de acesso'}
+                        </button>
 
                         <div className="mt-4 grid gap-3 md:grid-cols-3">
                             <div className="rounded-2xl bg-white p-3 ring-1 ring-slate-200">

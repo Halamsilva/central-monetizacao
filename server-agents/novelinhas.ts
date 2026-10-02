@@ -512,9 +512,10 @@ PROMPT 00 - FICHA DE PERSONAGENS E CENÁRIO MESTRE (REFERENCE SHEET):
 [Master Environment Specification - Primary Setting]: Detailed physical description of the primary set (exact floor materials, wall textures, windows, architectural features, main furniture, props, and ambient lighting palette) to be maintained consistently across all video scenes.
 [Camera, Lighting & Specs]: Shot on Hasselblad H6D-100c, 100mm f/2.8 lens, softbox commercial photography lighting, clean solid white background (#FFFFFF), ultra-sharp focus head-to-toe, raw uncompressed 8K textures, neutral studio poses.]
 
-Em seguida, inicie as cenas de vídeo sequenciais no padrão Seedance 2.5 e Google Flow:
+Em seguida, inicie as cenas de vídeo sequenciais no padrão Seedance 2.5 e Google Flow.
+(A CENA 1 contém o gancho explosivo, mas o CABEÇALHO e o formato dela são EXATAMENTE IGUAIS aos de todas as outras cenas.)
 
-PROMPT GANCHO CHAMATIVO CENA 1 (SEEDANCE 2.5):
+PROMPT CENA 1 (SEEDANCE 2.5):
 QUEM FALA: [Nome + FICHA FÍSICA FIXA COMPLETA (idade exata, altura, porte/biotipo, tom/textura de pele, cabelo/barba, ROUPA exata com peças/tecidos/cores, CALÇADOS e ACESSÓRIOS) + papel dramático detalhado, expressão facial rica, postura corporal e estado emocional minucioso de quem vai falar]
 TOM E INTENÇÃO DA FALA: [Tom vocal, cadência, ritmo e respiração exata no idioma ${currentLang.langName}]
 DIÁLOGO REAL: "[Diálogo real que o personagem fala na cena OBRIGATORIAMENTE NO IDIOMA ${currentLang.langName.toUpperCase()} entre aspas com pontuação final - NUNCA use diálogo sugerido, coloque apenas o diálogo real]"
@@ -535,6 +536,14 @@ INSTRUÇÕES VISUAIS (PROMPT SEEDANCE 2.5 & GOOGLE FLOW):
 PROMPT CENA 2 (SEEDANCE 2.5):
 ... até PROMPT CENA ${numScenes} (SEEDANCE 2.5):
 (OBRIGATORIO para CADA cena, SEM OMITIR NENHUMA SECAO: QUEM FALA, TOM E INTENCAO DA FALA, DIALOGO REAL, QUEM RESPONDE, RESPOSTA e INSTRUCOES VISUAIS contendo TODAS as secoes entre colchetes: [Subject & Character Consistency], [Environment & Scene Setting], [Background Override], [Action & First-Frame Blocking], [Optics & Camera Movement], [Dialogue & Native Audio], [Lighting & Atmosphere], [Audio & Ambience (SFX)], [Global Style & Physical Realism] e [Negative Prompt]. NUNCA encurte, resuma ou pule essas secoes: cada cena tem que sair COMPLETA, com o mesmo nivel de detalhe da CENA 1.)
+
+================================================================================
+REGRA DE PADRAO UNICO (INVIOLAVEL - TODAS AS CENAS IDENTICAS EM FORMATO)
+================================================================================
+- TODAS as ${numScenes} cenas usam EXATAMENTE o mesmo cabeçalho: "PROMPT CENA N (SEEDANCE 2.5):".
+- TODAS as cenas usam EXATAMENTE os mesmos rótulos, na MESMA ordem: QUEM FALA, TOM E INTENÇÃO DA FALA, DIÁLOGO REAL, QUEM RESPONDE, RESPOSTA, INSTRUÇÕES VISUAIS (PROMPT SEEDANCE 2.5 & GOOGLE FLOW) com as 10 seções entre colchetes.
+- A UNICA coisa que muda de uma cena para a outra é o NÚMERO da cena e o CONTEÚDO (ação, fala, cenário daquele momento). O formato, os rótulos e a ordem são IDENTICOS em todas.
+- É TERMINANTEMENTE PROIBIDO: renomear um rótulo, pular uma seção, trocar a ordem das seções, usar "..." ou "mesmo de antes" para economizar, ou entregar uma cena mais curta que as outras.
 
 ================================================================================
 CHARACTER MODEL SHEETS DOS PERSONAGENS (GERADOS NO FINAL — TODOS OS PERSONAGENS DA HISTÓRIA)
@@ -577,8 +586,10 @@ Gatilho de Engajamento: [Pergunta instigante para gerar debates no idioma ${curr
 Hashtags Recomendadas: #novelinhas #cenas #dramatiktok #historiasreais #viralvideo #emocionante
 `;
 
-    const countScenes = (value: string) => (value.match(/PROMPT\s+CENA\s+\d+/gi) || []).length;
+    const countScenes = (value: string) => (value.match(/PROMPT\s+(?:GANCHO\s+CHAMATIVO\s+)?CENA\s+\d+/gi) || []).length;
     const countDetailed = (value: string) => (value.match(/\[Negative Prompt\]/gi) || []).length;
+    const countSubject = (value: string) => (value.match(/\[Subject & Character Consistency\]/gi) || []).length;
+    const countDialogue = (value: string) => (value.match(/\[Dialogue & Native Audio\]/gi) || []).length;
 
     let generatedText = (await generateWithModelFallback(promptInstructions, req.geminiApiKey)).text || '';
 
@@ -586,28 +597,40 @@ Hashtags Recomendadas: #novelinhas #cenas #dramatiktok #historiasreais #viralvid
       throw new Error('Nenhum texto foi gerado pelo modelo.');
     }
 
-    if (countScenes(generatedText) < numScenes || countDetailed(generatedText) < numScenes) {
+    const isComplete =
+      countScenes(generatedText) >= numScenes &&
+      countDetailed(generatedText) >= numScenes &&
+      countSubject(generatedText) >= numScenes &&
+      countDialogue(generatedText) >= numScenes;
+
+    if (!isComplete) {
       const retryPrompt = `${promptInstructions}
 
-========================================================================
+=======================================================================
 CORRECAO OBRIGATORIA
-========================================================================
-A resposta anterior veio incompleta. Gere a historia COMPLETA novamente com:
-- EXATAMENTE ${numScenes} cenas, numeradas de "PROMPT CENA 1" ate "PROMPT CENA ${numScenes}", SEM PULAR numeros;
+=======================================================================
+A resposta anterior veio incompleta ou com cenas faltando secao. Gere a historia COMPLETA novamente com:
+- EXATAMENTE ${numScenes} cenas, numeradas de "PROMPT CENA 1" ate "PROMPT CENA ${numScenes}", SEM PULAR numeros e SEM cabeçalhos diferentes (nada de "GANCHO CHAMATIVO CENA 1": use "PROMPT CENA 1 (SEEDANCE 2.5)" igual as demais);
 - TODAS as secoes de INSTRUCOES VISUAIS em CADA cena ([Subject & Character Consistency], [Environment & Scene Setting], [Background Override], [Action & First-Frame Blocking], [Optics & Camera Movement], [Dialogue & Native Audio], [Lighting & Atmosphere], [Audio & Ambience (SFX)], [Global Style & Physical Realism], [Negative Prompt]).`;
 
       const retry = await generateWithModelFallback(retryPrompt, req.geminiApiKey);
       if (
         retry.text &&
         countScenes(retry.text) >= countScenes(generatedText) &&
-        countDetailed(retry.text) >= countDetailed(generatedText)
+        countDetailed(retry.text) >= countDetailed(generatedText) &&
+        countSubject(retry.text) >= countSubject(generatedText) &&
+        countDialogue(retry.text) >= countDialogue(generatedText)
       ) {
         generatedText = retry.text;
       }
     }
 
+    // Normaliza cabeçalhos para um unico padrão e renumera as cenas em sequencia.
     let sceneOrder = 0;
-    const normalizedText = generatedText.replace(/(PROMPT\s+CENA\s+)\d+/gi, (_match, prefix) => `${prefix}${++sceneOrder}`);
+    const normalizedText = generatedText
+      .replace(/(PROMPT\s+)GANCHO\s+CHAMATIVO\s+(CENA\s+\d+)/gi, '$1$2')
+      .replace(/(PROMPT\s+CENA\s+\d+)(?!\s*\(SEEDANCE)/gi, '$1 (SEEDANCE 2.5)')
+      .replace(/(PROMPT\s+CENA\s+)\d+/gi, (_match, prefix) => `${prefix}${++sceneOrder}`);
 
     res.json({ text: normalizedText });
   } catch (error: any) {

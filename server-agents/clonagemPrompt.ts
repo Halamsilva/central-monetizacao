@@ -10,16 +10,124 @@ export interface PromptConfig {
   targetLanguage: string;
 }
 
-export function buildForensicVideoPrompt(language: string = "brasil"): PromptConfig {
-  const normalizedLang = (language || "brasil").toLowerCase().trim();
+type LanguageKey = "pt" | "en" | "es";
 
-  if (normalizedLang === "estados_unidos" || normalizedLang === "en" || normalizedLang === "english") {
-    return buildEnglishPrompt();
-  } else if (normalizedLang === "mexico" || normalizedLang === "es" || normalizedLang === "spanish" || normalizedLang === "espanol") {
-    return buildSpanishPrompt();
+// Prioridade maxima: garante que a SAIDA e o PROMPT PRONTO PARA COPIAR fiquem no
+// idioma escolhido pelo usuario (o prompt original so pedia "traduzir de forma solta",
+// e a IA acabava entregando os dialogues no idioma original do audio).
+const LANGUAGE_MANDATE: Record<
+  LanguageKey,
+  { system: string; prompt: string; targetLanguage: string }
+> = {
+  pt: {
+    targetLanguage: "Português do Brasil",
+    system: `REGRA SUPREMA E INEGOCIÁVEL DE IDIOMA (PRIORIDADE MÁXIMA - LER ANTES DE QUALQUER COISA):
+- O IDIOMA DE DESTINO DESTA ANÁLISE É: PORTUGUÊS DO BRASIL.
+- TODA a sua saída deve ser escrita em Português do Brasil: títulos, seções, fichas de personagem, descrições, transcrições e PROMPTS DE CLONAGEM.
+- É TERMINANTEMENTE PROIBIDO entregar a saída em outro idioma ou misturar idiomas.`,
+    prompt: `=======================================================================
+REGRA #0 - IDIOMA DE DESTINO OBRIGATÓRIO (VALE ACIMA DE TUDO, SEM NENHUMA EXCEÇÃO)
+=======================================================================
+IDIOMA DE DESTINO: PORTUGUÊS DO BRASIL
+
+1. PARA CADA FALA DO VÍDEO, ENTREGUE OS DOIS ITENS OBRIGATÓRIAMENTE:
+   - "FALA ORIGINAL (transcrição literal)": exatamente o que se ouve, no idioma original do áudio.
+   - "FALA TRADUZIDA (Português do Brasil)": a MESMA fala traduzida de forma natural e coloquial para Português do Brasil. (OBRIGATÓRIA EM 100% DAS FALAS, SEM NENHUMA EXCEÇÃO)
+
+2. NOS PROMPTS PRONTOS PARA COPIAR (*Prompt Direto* e *Master Cloning Prompt*), a linha de diálogo DEVE CONTER A FALA JÁ TRADUZIDA EM PORTUGUÊS DO BRASIL. É PROIBIDO colocar a fala original em inglês, espanhol ou qualquer outro idioma dentro do prompt, porque é esse texto que a IA de vídeo vai pronunciar (lip-sync).
+
+3. Os RÓTULES TÉCNICOS (ex.: [Camera & Framing], [Lighting], [Technical AI Engine Flags], [DIALOGO & SINCRONIA LABIAL EXPLICITA]) podem ficar em inglês, mas TODO O CONTEÚDO dentro deles - inclusive as falas - está em Português do Brasil.
+
+4. Se o vídeo não tiver fala alguma, marque "[SEM DIÁLOGO]" e siga normalmente.
+
+5. ANTES DE ENTREGAR, REVISE CADA FALA E CONFIRME QUE ESTÁ EM PORTUGUÊS DO BRASIL. Saída em idioma errado = análise inválida.`,
+  },
+  en: {
+    targetLanguage: "English (United States)",
+    system: `HIGHEST PRIORITY LANGUAGE RULE (READ THIS FIRST):
+- THE TARGET LANGUAGE FOR THIS ANALYSIS IS: ENGLISH (UNITED STATES).
+- Your ENTIRE output must be written in English (United States): titles, sections, character sheets, descriptions, transcripts and CLONING PROMPTS.
+- It is STRICTLY FORBIDDEN to output in any other language or to mix languages.`,
+    prompt: `=======================================================================
+RULE #0 - MANDATORY TARGET LANGUAGE (OVERRIDES EVERYTHING, NO EXCEPTIONS)
+=======================================================================
+TARGET LANGUAGE: ENGLISH (UNITED STATES)
+
+1. FOR EVERY SPOKEN LINE IN THE VIDEO, DELIVER BOTH ITEMS MANDATORY:
+   - "SPOKEN LINE (verbatim transcript)": exactly what is heard, in the original audio language.
+   - "TRANSLATED LINE (English (United States))": the SAME line translated naturally and colloquially into English (United States). (MANDATORY FOR 100% OF THE LINES, WITH NO EXCEPTION)
+
+2. INSIDE THE READY-TO-COPY PROMPTS (*Direct Script Prompt* and *Master Cloning Prompt*), the dialogue line MUST CONTAIN THE LINE ALREADY TRANSLATED INTO ENGLISH (UNITED STATES). It is FORBIDDEN to put the original foreign line inside the prompt, because that text is what the video AI will speak (lip-sync).
+
+3. TECHNICAL LABELS (e.g., [Camera & Framing], [Lighting], [Technical AI Engine Flags], [EXPLICIT LIP-SYNC & SPEECH]) may stay in English, but ALL CONTENT inside them - including the spoken lines - must be in English (United States).
+
+4. If the video has no dialogue, mark "[NO DIALOGUE]" and continue.
+
+5. BEFORE DELIVERING, REVIEW EVERY SPOKEN LINE AND CONFIRM IT IS IN ENGLISH (UNITED STATES). Wrong language = invalid analysis.`,
+  },
+  es: {
+    targetLanguage: "Spanish (Mexico) / Español",
+    system: `REGLA SUPREMA E INNEGOCIABLE DE IDIOMA (PRIORIDAD MÁXIMA - LEE ESTO PRIMERO):
+- EL IDIOMA DE DESTINO DE ESTE ANÁLISIS ES: ESPAÑOL (MÉXICO / NEUTRO).
+- TODA tu salida debe estar escrita en Español (México / Neutro): títulos, secciones, fichas de personaje, descripciones, transcripciones y PROMPTS DE CLONACIÓN.
+- Está TERMINANTEMENTE PROHIBIDO entregar la salida en otro idioma o mezclar idiomas.`,
+    prompt: `=======================================================================
+REGLA #0 - IDIOMA DE DESTINO OBLIGATORIO (VALE POR ENCIMA DE TODO, SIN EXCEPCIONES)
+=======================================================================
+IDIOMA DE DESTINO: ESPAÑOL (MÉXICO / NEUTRO)
+
+1. PARA CADA FRASE HABLADA DEL VIDEO, ENTREGA OBLIGATORIAMENTE LOS DOS ELEMENTOS:
+   - "FRASE ORIGINAL (transcripción literal)": exactamente lo que se oye, en el idioma original del audio.
+   - "FRASE TRADUCIDA (Español (México / Neutro))": la MISMA frase traducida de forma natural y coloquial al Español (México / Neutro). (OBLIGATORIA EN EL 100% DE LAS FRASES, SIN NINGUNA EXCEPCIÓN)
+
+2. DENTRO DE LOS PROMPTS LISTOS PARA COPIAR (*Prompt Directo* y *Master Cloning Prompt*), la línea de diálogo DEBE CONTENER LA FRASE YA TRADUCIDA AL ESPAÑOL (MÉXICO / NEUTRO). Está PROHIBIDO poner la frase original en inglés o portugués dentro del prompt, porque ese texto es lo que la IA de vídeo va a pronunciar (lip-sync).
+
+3. Las ETIQUETAS TÉCNICAS (ej.: [Camera & Framing], [Lighting], [Technical AI Engine Flags], [LIP-SYNC EXPLÍCITO Y HABLA]) pueden quedar en inglés, pero TODO el contenido dentro de ellas - incluidas las frases - debe estar en Español (México / Neutro).
+
+4. Si el video no tiene diálogo, marca "[SIN DIÁLOGO]" y continúa.
+
+5. ANTES DE ENTREGAR, REVISA CADA FRASE Y CONFIRMA QUE ESTÁ EN ESPAÑOL (MÉXICO / NEUTRO). Salida en idioma incorrecto = análisis inválido.`,
+  },
+};
+
+const resolveLanguageKey = (normalizedLang: string): LanguageKey => {
+  if (
+    normalizedLang === "estados_unidos" ||
+    normalizedLang === "en" ||
+    normalizedLang === "english"
+  ) {
+    return "en";
   }
 
-  return buildPortuguesePrompt();
+  if (
+    normalizedLang === "mexico" ||
+    normalizedLang === "es" ||
+    normalizedLang === "spanish" ||
+    normalizedLang === "espanol"
+  ) {
+    return "es";
+  }
+
+  return "pt";
+};
+
+export function buildForensicVideoPrompt(language: string = "brasil"): PromptConfig {
+  const normalizedLang = (language || "brasil").toLowerCase().trim();
+  const languageKey = resolveLanguageKey(normalizedLang);
+  const mandate = LANGUAGE_MANDATE[languageKey];
+
+  const baseConfig =
+    languageKey === "en"
+      ? buildEnglishPrompt()
+      : languageKey === "es"
+        ? buildSpanishPrompt()
+        : buildPortuguesePrompt();
+
+  return {
+    targetLanguage: mandate.targetLanguage,
+    systemInstruction: `${mandate.system}\n\n${baseConfig.systemInstruction}`,
+    prompt: `${mandate.prompt}\n\n${baseConfig.prompt}`,
+  };
 }
 
 function buildPortuguesePrompt(): PromptConfig {

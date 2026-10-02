@@ -195,8 +195,9 @@ export default async function handler(req: any, res: any) {
     });
   }
 
-  const { systemInstruction, prompt } = buildForensicVideoPrompt(language);
-  const videoPart: any = { fileData: { fileUri, mimeType } };
+const { systemInstruction, prompt, targetLanguage } = buildForensicVideoPrompt(language);
+console.log(`[clonagem-video] idioma solicitado: ${language} -> destino: ${targetLanguage}`);
+const videoPart: any = { fileData: { fileUri, mimeType } };
 
   const ai = new GoogleGenAI({
     apiKey,

@@ -302,8 +302,10 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
     return { status: 500, body: { error: 'Failed to update profile' } };
   }
 
+  let emailResult: { ok: boolean; skipped?: boolean; reason?: string; error?: string } = { ok: false };
+
   if (accessStatus === 'pending') {
-    await sendAccessEmail('purchase_pending', {
+    emailResult = await sendAccessEmail('purchase_pending', {
       to: email,
       releaseAt: releaseAt.toISOString(),
       idempotencyKey: `kiwify-pending-${purchaseId}`,
@@ -311,7 +313,7 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   }
 
   if (accessStatus === 'active') {
-    await sendAccessEmail('access_released', {
+    emailResult = await sendAccessEmail('access_released', {
       to: email,
       releaseAt: releaseAt.toISOString(),
       idempotencyKey: `kiwify-active-${purchaseId}`,
@@ -326,6 +328,10 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
       email,
       access_status: accessStatus,
       release_at: releaseAt.toISOString(),
+      email_sent: emailResult.ok,
+      email_skipped: Boolean(emailResult.skipped),
+      email_reason: emailResult.reason || null,
+      email_error: emailResult.error ? String(emailResult.error).slice(0, 300) : null,
     },
   };
 };
@@ -378,13 +384,15 @@ export const handleAccessSync = async (authorization?: string) => {
         ? 'active'
         : 'pending';
 
+  let syncEmailResult: { ok: boolean; skipped?: boolean; reason?: string; error?: string } | null = null;
+
   if (nextStatus === 'active' && purchase.purchase_status !== 'active') {
     await serviceSupabase
       .from('kiwify_purchases')
       .update({ purchase_status: 'active', updated_at: new Date().toISOString() })
       .eq('email', email);
 
-    await sendAccessEmail('access_released', {
+    syncEmailResult = await sendAccessEmail('access_released', {
       to: email,
       releaseAt: purchase.release_at,
       idempotencyKey: `access-released-${email}-${purchase.release_at}`,
@@ -414,6 +422,10 @@ export const handleAccessSync = async (authorization?: string) => {
       ok: true,
       access_status: nextStatus,
       release_at: purchase.release_at,
+      email_sent: syncEmailResult ? syncEmailResult.ok : null,
+      email_skipped: syncEmailResult ? Boolean(syncEmailResult.skipped) : null,
+      email_reason: syncEmailResult?.reason || null,
+      email_error: syncEmailResult?.error ? String(syncEmailResult.error).slice(0, 300) : null,
     },
   };
 };

@@ -297,6 +297,8 @@ export default async function handler(req: any, res: any) {
         ok: Boolean(process.env.RESEND_API_KEY),
         label: 'E-mail Resend',
         detail: process.env.RESEND_API_KEY ? 'API key configurada' : 'API key ausente',
+        from: process.env.RESEND_FROM_EMAIL || 'Central Monetizacao <nao-responda@halamsilva.com.br> (padrao)',
+        appUrl: process.env.APP_URL || 'https://www.halamsilva.com.br (padrao - configure APP_URL)',
       },
       gemini: {
         ok: geminiSettings.configured,

@@ -1498,7 +1498,7 @@ Lembre-se:
                 items: {
                   type: Type.OBJECT,
                   properties: {
-                    id: { type: Type.INTEGER, description: `Número do prompt (1 a ${targetPromptCount})` },
+                    id: { type: Type.INTEGER, description: `Número do prompt (1 a ${totalPromptsAi}${targetIncludeCTA ? `, sendo ${ctaStart} e ${ctaEnd} os 2 prompts extras de CTA` : ''})` },
                     stepName: { type: Type.STRING, description: 'Título oficial do prompt com duração de 8s' },
                     durationSeconds: { type: Type.INTEGER, description: 'Duração exata em segundos (sempre 8)' },
                     timeRange: { type: Type.STRING, description: 'Faixa de tempo, ex: 00:00 - 00:08' },
@@ -1547,7 +1547,8 @@ Lembre-se:
 
     parsed.promptCount = targetPromptCount;
     parsed.includeCTA = targetIncludeCTA;
-    parsed.totalDurationSeconds = targetPromptCount * 8;
+    parsed.totalDurationSeconds =
+      (targetPromptCount + (targetIncludeCTA ? 2 : 0)) * 8;
 
     if (!Array.isArray(parsed.prompts) || parsed.prompts.length === 0) {
       const fallback = generateLocalScript(
@@ -1569,8 +1570,10 @@ Lembre-se:
       );
       parsed.prompts = fallback.prompts;
     } else {
-      if (parsed.prompts.length > targetPromptCount) {
-        parsed.prompts = parsed.prompts.slice(0, targetPromptCount);
+      const expectedPromptTotal = targetPromptCount + (targetIncludeCTA ? 2 : 0);
+
+      if (parsed.prompts.length > expectedPromptTotal) {
+        parsed.prompts = parsed.prompts.slice(0, expectedPromptTotal);
       } else if (parsed.prompts.length < targetPromptCount) {
         const fallback = generateLocalScript(
           theme || 'Exterminar e Afastar Baratas Definitivamente', 
@@ -1591,9 +1594,37 @@ Lembre-se:
         productType,
         giantModelPreference
       );
-        while (parsed.prompts.length < targetPromptCount) {
+        while (parsed.prompts.length < expectedPromptTotal) {
           const idx = parsed.prompts.length;
           parsed.prompts.push(fallback.prompts[idx] || fallback.prompts[fallback.prompts.length - 1]);
+        }
+      } else if (targetIncludeCTA && parsed.prompts.length < expectedPromptTotal) {
+        // A IA entregou todo o conteudo, mas deixou de fora os 2 prompts extras de CTA.
+        // Completa com os extras do motor local (revelacao do produto + "Comenta EU QUERO").
+        const fallback = generateLocalScript(
+          theme || 'Exterminar e Afastar Baratas Definitivamente',
+          referenceText,
+          hookActionType,
+          solutionIngredients,
+          customCharacterDescription,
+          customSettingDescription,
+          characterImageBase64,
+          settingImageBase64,
+          customBookTitle,
+          bookImageBase64,
+          bookImageMimeType,
+          referenceVideoBase64,
+          videoFileName,
+          targetPromptCount,
+          targetIncludeCTA,
+          productType,
+          giantModelPreference
+        );
+
+        const extraCtaSteps = targetIncludeCTA ? fallback.prompts.slice(-2) : [];
+
+        while (parsed.prompts.length < expectedPromptTotal && extraCtaSteps.length > 0) {
+          parsed.prompts.push(extraCtaSteps.shift());
         }
       }
 

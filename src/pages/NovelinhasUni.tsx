@@ -830,6 +830,25 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
     localStorage.setItem(historyKey, JSON.stringify(nextHistory));
   };
 
+  // Na Parte 2 a IA precisa saber (1) a historia inteira e (2) ONDE ela parou.
+  // Mandar o texto bruto truncado fazia a IA repetir o comeco da parte 1.
+  const buildContinuationPayload = (fullResult: string) => {
+    const storyMatch = fullResult.match(
+      /(?:HIST.RIA COMPLETA DA NOVELINHA|HIST.RIA COMPLETA|ETAPA 1:\s*HIST.RIA COMPLETA)[^\n:]*:\s*\n?([\s\S]*?)(?=(?:PROMPT\s+00|PROMPT\s+GANCHO|PROMPT\s+CENA|LEVANTAMENTO|AUDITORIA|MASTER CHARACTER IDENTIT|PROMPT MODEL SHEET|SEO|$))/i
+    );
+
+    const synopsis = storyMatch ? storyMatch[1].trim() : '';
+    const tail = fullResult.trim().slice(-3500);
+
+    return [
+      '=== SINOPSE COMPLETA DA PARTE 1 (apenas para manter continuidade - NAO repita) ===',
+      synopsis ? synopsis : '(sinopse nao identificada; use o trecho final abaixo)',
+      '',
+      '=== ULTIMOS ACONTECIMENTOS DA PARTE 1 (continue exatamente a partir daqui, sem repetir) ===',
+      tail,
+    ].join('\n');
+  };
+
   const generateScript = async (previousResult?: string) => {
     if (!canGenerate) return;
 
@@ -858,7 +877,7 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
           skinRealism,
           scenes,
           context,
-          previousStory: previousResult || '',
+          previousStory: previousResult ? buildContinuationPayload(previousResult) : '',
           userScript: ownScript.trim(),
           userScriptMode: ownScript.trim() ? ownScriptMode : '',
         }),

@@ -357,12 +357,19 @@ ${
   hasOwnScript
     ? `ATENÇÃO SUPREMA: o roteiro do usuário acima é a FONTE CANÔNICA desta história e sua prioridade é ABSOLUTA MAIOR do que qualquer sugestão de tema, estrutura, engine ou regra anti-clichê desta minha diretriz. Você NÃO cria uma nova história: você executa o roteiro dele, na ordem dele, com as falas dele, até o final que ele escreveu. As regras de formato (numeração de cenas, PROMPT 00, ficha física, Subject & Character Consistency, SEO) continuam OBRIGATÓRIAS — elas mudam COMO o roteiro é entregue, nunca O QUE acontece.`
     : isContinuing
-      ? `ATENÇÃO: Esta é uma PARTE 2 que dá continuidade direta ao enredo anterior no tema '${theme}'.
-História anterior:
+      ? `ATENÇÃO: Esta é a PARTE 2 da MESMA história (continuação direta) no tema '${theme}'.
+
+CONTEÚDO DA PARTE 1 (JÁ ENTREGUE AO PÚBLICO - use só como referência de continuidade):
 """
-${previousStory.slice(0, 3000)}
+${previousStory.slice(0, 7000)}
 """
-Continue imediatamente após os acontecimentos anteriores, mantendo rigorosamente a mesma continuidade visual dos personagens e do universo de '${theme}'.`
+
+REGRA OBRIGATÓRIA DA PARTE 2 - PROIBIDO REPETIR:
+1. É TERMINANTEMENTE PROIBIDO recontar, resumir, reformular, "melhorar" ou reescrever QUALQUER TRECHO que já foi escrito na parte 1. O público JÁ viu isso. Não comece recontando o que aconteceu antes.
+2. A CENA 1 desta parte 2 deve começar EXATAMENTE no ponto em que a parte 1 terminou (veja "ULTIMOS ACONTECIMENTOS DA PARTE 1"), nunca antes dele.
+3. Traga SOMENTE acontecimentos NOVOS e um arco novo: novo conflito, nova escalada, nova reviravolta e um desfecho novo que feche ESTA parte.
+4. Marque a passagem do tempo na primeira cena ("MAIS TARDE...", "NA MANHA SEGUINTE...", "TRES DIAS DEPOIS...") e reative o gancho em 1 segundo.
+5. Mantenha rigorosamente a mesma continuidade visual (mesma ficha física dos personagens, mesmo figurino, mesma ambientação e mesmas regras do universo de '${theme}').`
       : `Desenvolva uma história dramática inédita e comovente EXCLUSIVAMENTE sobre o tema '${theme}', com gancho chocante logo na primeira cena, escalada de conflito no miolo e uma resolução memorável e reflexiva.`
 }
 

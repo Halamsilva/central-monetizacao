@@ -13,6 +13,18 @@
             "destination": "/api/emails-handler?action=password-reset"
         },
         {
+            "source": "/privacy",
+            "destination": "/privacy.html"
+        },
+        {
+            "source": "/terms",
+            "destination": "/terms.html"
+        },
+        {
+            "source": "/blog",
+            "destination": "/blog.html"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

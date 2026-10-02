@@ -43,6 +43,10 @@ const platformCta = `<p style="margin:28px 0 0;">
                     <a href="${appUrl}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;border-radius:12px;padding:12px 18px;font-weight:700;">Abrir plataforma</a>
                   </p>`;
 
+const registerCta = `<p style="margin:28px 0 0;">
+                    <a href="${appUrl}/register" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;border-radius:12px;padding:12px 18px;font-weight:700;">Criar minha conta agora</a>
+                  </p>`;
+
 const baseEmailHtml = (title: string, preview: string, body: string, ctaHtml: string = platformCta) => `
   <!doctype html>
   <html>
@@ -109,9 +113,10 @@ Acesse: ${appUrl}`,
 
 Compras do curso sao liberadas automaticamente apos o prazo de garantia de 7 dias.${releaseDate ? `\nPrevisao de liberacao: ${releaseDate}.` : ''}
 
-Quando o prazo terminar, entre na plataforma com este mesmo e-mail para ativar o acesso.
+Crie sua conta na plataforma com o MESMO e-mail da compra:
+${appUrl}/register
 
-Acesse: ${appUrl}`,
+Quando o prazo terminar, entre na plataforma com este mesmo e-mail para ativar o acesso.`,
       html: baseEmailHtml(
         'Compra confirmada',
         'Sua compra foi confirmada e o acesso sera liberado apos 7 dias (curso).',
@@ -119,8 +124,9 @@ Acesse: ${appUrl}`,
           <p>Oi, ${firstName}. Encontramos sua compra na Kiwify.</p>
           <p>Compras do curso sao liberadas automaticamente apos o prazo de garantia de 7 dias. Assinaturas da plataforma liberam na hora.</p>
           ${releaseDate ? `<p><strong>Previsao de liberacao:</strong> ${escapeHtml(releaseDate)}.</p>` : ''}
-          <p>Quando o prazo terminar, entre na plataforma com este mesmo e-mail para ativar o acesso.</p>
-        `
+          <p>Para ja deixar tudo pronto, <strong>crie sua conta com o MESMO e-mail da compra</strong> clicando no botao abaixo:</p>
+        `,
+        registerCta
       ),
     };
   }
@@ -156,8 +162,8 @@ Se voce nao pediu isso, pode ignorar este e-mail: sua senha continua a mesma.`,
     text: `Oi, ${rawName}. Seu acesso foi liberado!
 
 Para entrar:
-1. Acesse ${appUrl}
-2. Faca login ou crie sua conta usando o MESMO e-mail desta compra.
+1. Crie sua conta aqui: ${appUrl}/register
+2. Use o MESMO e-mail desta compra.
 3. Pronto: o acesso e liberado automaticamente.
 
 Importante: use o mesmo e-mail da compra. Se o e-mail for diferente, o acesso nao e liberado sozinho.`,
@@ -168,12 +174,13 @@ Importante: use o mesmo e-mail da compra. Se o e-mail for diferente, o acesso na
         <p>Oi, ${firstName}. Seu acesso foi liberado!</p>
         <p><strong>Para entrar, e simples:</strong></p>
         <p>
-          1. Acesse <a href="${appUrl}" style="color:#2563eb;font-weight:700;">${appUrl}</a><br/>
-          2. Faca login ou <strong>crie sua conta usando o MESMO e-mail desta compra</strong><br/>
+          1. <strong>Clique no botao abaixo para criar sua conta:</strong><br/>
+          2. Use o <strong>MESMO e-mail desta compra</strong><br/>
           3. Pronto: o acesso e liberado automaticamente.
         </p>
         <p style="color:#b45309;">Importante: use o mesmo e-mail da compra. Se o e-mail for diferente, o acesso nao e liberado sozinho.</p>
-      `
+      `,
+      registerCta
     ),
   };
 };

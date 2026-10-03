@@ -91,6 +91,8 @@ const buildEmail = (kind: EmailKind, input: SendAccessEmailInput) => {
       subject: 'Cadastro recebido na Central Monetizacao',
       text: `Oi, ${rawName}. Recebemos seu cadastro na Central Monetizacao.
 
+ATENCAO: este e-mail e da CENTRAL MONETIZACAO. Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta SPAM / lixo eletronico.
+
 Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente apos a confirmacao: a assinatura da plataforma libera na hora e a compra do curso libera apos o prazo de garantia de 7 dias.
 
 Acesse: ${appUrl}`,
@@ -99,6 +101,10 @@ Acesse: ${appUrl}`,
         'Recebemos seu cadastro na Central Monetizacao.',
         `
           <p>Oi, ${firstName}. Recebemos seu cadastro com sucesso.</p>
+          <p style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:12px 14px;color:#92400e;font-size:14px;line-height:1.6;">
+            <strong>Atencao:</strong> este e-mail e da <strong>Central Monetizacao</strong>.
+            Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta <strong>SPAM / lixo eletronico</strong>.
+          </p>
           <p>Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente apos a confirmacao: a assinatura da plataforma libera na hora e a compra do curso libera apos o prazo de garantia de 7 dias.</p>
           <p>Se voce acabou de comprar, nao precisa pedir aprovacao manual: o sistema vai conferir sua compra sozinho.</p>
         `
@@ -108,20 +114,26 @@ Acesse: ${appUrl}`,
 
   if (kind === 'purchase_pending') {
     return {
-      subject: 'Compra confirmada: acesso em liberacao',
+      subject: 'Acao necessaria: crie sua conta na Central Monetizacao',
       text: `Oi, ${rawName}. Encontramos sua compra na Kiwify.
 
-Compras do curso sao liberadas automaticamente apos o prazo de garantia de 7 dias.${releaseDate ? `\nPrevisao de liberacao: ${releaseDate}.` : ''}
+ATENCAO: este e-mail e da CENTRAL MONETIZACAO e e DIFERENTE do e-mail automatico da Kiwify. Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta SPAM / lixo eletronico.
 
 Crie sua conta na plataforma com o MESMO e-mail da compra:
 ${appUrl}/register
 
+Compras do curso sao liberadas automaticamente apos o prazo de garantia de 7 dias.${releaseDate ? `\nPrevisao de liberacao: ${releaseDate}.` : ''}
+
 Quando o prazo terminar, entre na plataforma com este mesmo e-mail para ativar o acesso.`,
       html: baseEmailHtml(
-        'Compra confirmada',
-        'Sua compra foi confirmada e o acesso sera liberado apos 7 dias (curso).',
+        'Crie sua conta na Central Monetizacao',
+        'Sua compra foi confirmada. Crie sua conta com o mesmo e-mail da compra.',
         `
           <p>Oi, ${firstName}. Encontramos sua compra na Kiwify.</p>
+          <p style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:12px 14px;color:#92400e;font-size:14px;line-height:1.6;">
+            <strong>Atencao:</strong> este e-mail e da <strong>Central Monetizacao</strong> e e <strong>diferente</strong> do e-mail automatico da Kiwify.
+            Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta <strong>SPAM / lixo eletronico</strong>.
+          </p>
           <p>Compras do curso sao liberadas automaticamente apos o prazo de garantia de 7 dias. Assinaturas da plataforma liberam na hora.</p>
           ${releaseDate ? `<p><strong>Previsao de liberacao:</strong> ${escapeHtml(releaseDate)}.</p>` : ''}
           <p>Para ja deixar tudo pronto, <strong>crie sua conta com o MESMO e-mail da compra</strong> clicando no botao abaixo:</p>
@@ -158,8 +170,10 @@ Se voce nao pediu isso, pode ignorar este e-mail: sua senha continua a mesma.`,
   }
 
   return {
-    subject: 'Seu acesso esta liberado - Central Monetizacao',
+    subject: 'Seu acesso foi liberado: crie sua conta na Central Monetizacao',
     text: `Oi, ${rawName}. Seu acesso foi liberado!
+
+ATENCAO: este e-mail e da CENTRAL MONETIZACAO e e DIFERENTE do e-mail automatico da Kiwify. Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta SPAM / lixo eletronico.
 
 Para entrar:
 1. Crie sua conta aqui: ${appUrl}/register
@@ -168,10 +182,14 @@ Para entrar:
 
 Importante: use o mesmo e-mail da compra. Se o e-mail for diferente, o acesso nao e liberado sozinho.`,
     html: baseEmailHtml(
-      'Acesso liberado',
+      'Crie sua conta na Central Monetizacao',
       'Seu acesso a Central Monetizacao foi liberado.',
       `
         <p>Oi, ${firstName}. Seu acesso foi liberado!</p>
+        <p style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:12px 14px;color:#92400e;font-size:14px;line-height:1.6;">
+          <strong>Atencao:</strong> este e-mail e da <strong>Central Monetizacao</strong> e e <strong>diferente</strong> do e-mail automatico da Kiwify.
+          Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta <strong>SPAM / lixo eletronico</strong>.
+        </p>
         <p><strong>Para entrar, e simples:</strong></p>
         <p>
           1. <strong>Clique no botao abaixo para criar sua conta:</strong><br/>

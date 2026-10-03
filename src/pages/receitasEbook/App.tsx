@@ -8,6 +8,7 @@ import { RulesModal } from './components/RulesModal';
 import { PRESET_SCRIPTS } from './data/presets';
 import { VideoScript, PromptGenerationRequest } from './types';
 import { supabase } from '../../lib/supabase';
+import { describeHttpError } from '../../lib/httpError';
 import { AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
 
 export default function App() {
@@ -44,14 +45,7 @@ export default function App() {
       });
 
       if (!response.ok) {
-        let errorDetail = 'Falha na resposta do servidor.';
-        try {
-          const errJson = await response.json();
-          if (errJson.error) errorDetail = errJson.error;
-        } catch {
-          // ignore non-json error responses
-        }
-        throw new Error(errorDetail);
+        throw new Error(await describeHttpError(response));
       }
 
       const data = await response.json();

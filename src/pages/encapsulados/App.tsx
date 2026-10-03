@@ -8,6 +8,7 @@ import { RulesModal } from './components/RulesModal';
 import { PRESET_SCRIPTS } from './data/presets';
 import { VideoScript, PromptGenerationRequest } from './types';
 import { supabase } from '../../lib/supabase';
+import { describeHttpError } from '../../lib/httpError';
 import { AlertCircle, Sparkles, RefreshCw } from 'lucide-react';
 
 export default function App() {
@@ -44,25 +45,7 @@ export default function App() {
       });
 
       if (!response.ok) {
-        let errorDetail = 'Falha na resposta do servidor.';
-        try {
-          const rawText = await response.text();
-          try {
-            const errJson = JSON.parse(rawText);
-            if (errJson.error) errorDetail = errJson.error;
-          } catch {
-            if (response.status === 413) {
-              errorDetail = 'O arquivo enviado (imagem ou vídeo) excedeu o limite de tamanho. Envie uma foto menor ou comprima o vídeo.';
-            } else if (response.status === 504 || response.status === 502) {
-              errorDetail = 'Tempo limite excedido na conexão. Clique em "Tentar Novamente" abaixo para reprocessar instantaneamente.';
-            } else if (rawText && rawText.length < 200 && !rawText.includes('<html')) {
-              errorDetail = rawText;
-            }
-          }
-        } catch {
-          // ignore parsing error
-        }
-        throw new Error(errorDetail);
+        throw new Error(await describeHttpError(response));
       }
 
       const data = await response.json();

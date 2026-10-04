@@ -44,7 +44,7 @@ const platformCta = `<p style="margin:28px 0 0;">
                   </p>`;
 
 const registerCta = `<p style="margin:28px 0 0;">
-                    <a href="${appUrl}/register" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;border-radius:12px;padding:12px 18px;font-weight:700;">Criar minha conta agora</a>
+                    <a href="${appUrl}/boas-vindas" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;border-radius:12px;padding:12px 18px;font-weight:700;">Criar minha conta agora</a>
                   </p>`;
 
 const baseEmailHtml = (title: string, preview: string, body: string, ctaHtml: string = platformCta) => `
@@ -120,7 +120,7 @@ Acesse: ${appUrl}`,
 ATENCAO: este e-mail e da CENTRAL MONETIZACAO e e DIFERENTE do e-mail automatico da Kiwify. Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta SPAM / lixo eletronico.
 
 Crie sua conta na plataforma com o MESMO e-mail da compra:
-${appUrl}/register
+${appUrl}/boas-vindas
 
 Compras do curso sao liberadas automaticamente apos o prazo de garantia de 7 dias.${releaseDate ? `\nPrevisao de liberacao: ${releaseDate}.` : ''}
 
@@ -176,7 +176,7 @@ Se voce nao pediu isso, pode ignorar este e-mail: sua senha continua a mesma.`,
 ATENCAO: este e-mail e da CENTRAL MONETIZACAO e e DIFERENTE do e-mail automatico da Kiwify. Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta SPAM / lixo eletronico.
 
 Para entrar:
-1. Crie sua conta aqui: ${appUrl}/register
+1. Crie sua conta aqui: ${appUrl}/boas-vindas
 2. Use o MESMO e-mail desta compra.
 3. Pronto: o acesso e liberado automaticamente.
 

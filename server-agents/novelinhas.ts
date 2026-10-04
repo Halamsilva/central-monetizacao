@@ -117,7 +117,20 @@ A história DEVE se passar na mitologia grega, com divindades do Olimpo (Zeus, H
 A história DEVE girar obrigatoriamente em torno de animais (resgate, abandono, lealdade de um cão/gato, proteção animal, reviravolta onde o animal desmascara um vilão ou salva alguém).`,
 
       'Vida de Jesus': `O TEMA OBRIGATÓRIO É 'VIDA DE JESUS' 🙏✝️.
-A narrativa DEVE ser ambientada nos tempos bíblicos de Jesus Cristo, retratando ensinamentos de amor, compaixão, perdão e lições de fé.`,
+
+AMBIENTAÇÃO OBRIGATÓRIA - NOS DIAS DE HOJE NO BRASIL (NUNCA TEMPOS BÍBLICOS):
+- A história DEVE se passar na ATUALIDADE, no cotidiano humano do povo brasileiro: periferia, comunidade, interior, cidade grande, família, trabalho, feira, ônibus, hospital público, salão, oficina, escola, grupo da família no WhatsApp, dívida, desemprego, briga por herança, problema real de gente real.
+- É TERMINANTEMENTE PROIBIDO ambientar em tempos bíblicos: nada de túnicas, deserto, jumento, templos romanos, cenário de época, multidões de época ou vilas antigas.
+
+REGRA SUPREMA DO PERSONAGEM JESUS (PRESENÇA OBRIGATÓRIA):
+- O PERSONAGEM JESUS DEVE APARECER OBRIGATORIAMENTE em TODAS as histórias deste tema, como um homem simples e reconhecível, com aparência terrena, roupas simples e atuais (ex.: camisa simples, calça, sandália ou tênis gasto, barba, cabelo longo ou preso), idade adulta.
+- Jesus DEVE ter participação ativa: entra em cena, fala, aconselha, ouve, age e transforma a situação com amor, perdão, compaixão e sabedoria. Ele NÃO é figurante: a presença dele muda o rumo da história.
+- Jesus fala de forma simples, humana e direta, com exemplos do dia a dia - NUNCA com discurso de sermão longo, linguagem arcaica ("vós", "verily") ou frase de púlpito.
+
+PROIBIÇÃO DE CLICHÊ BÍBLICO - MILAGRES SÃO GESTOS REAIS DO COTIDIANO:
+- É PROIBIDO milagre espetacular literal (multiplicar pães e peixes, andar sobre a água, transformar água em vinho, curar de forma mágica). Os "milagres" desta história são GESTOS HUMANOS REAIS e filmáveis: o emprego que aparece na hora certa, o perdão que desarma uma briga, uma dívida paga por um ato de bondade, a reconciliação de uma família, o vizinho que ajuda, a decisão que muda a vida.
+- A lição de fé, amor e esperança DEVE vir dos ACONTECIMENTOS e das escolhas, sem pregação e sem pieguice: o público sente a mensagem, não recebe um sermão.
+- A história segue o padrão das novelinhas: problema concreto e atual, escalada, reviravolta e final com emoção verdadeira e lição de fé que aquece o coração.`,
 
       'Jesus: Milagres e Ressurreição': `O TEMA OBRIGATÓRIO É 'JESUS: MILAGRES E RESSURREIÇÃO' 🙏✨.
 A história DEVE retratar milagres bíblicos de Cristo, cura dos aflitos, acolhimento dos humildes e o poder transformador da fé.`,
@@ -672,10 +685,12 @@ const handleIdeas = async (req: any, res: any) => {
   try {
     const { theme = 'Dramas Emocionantes', country = 'Brasil', count = 5 } = req.body || {};
 
-const extraThemeGuidance =
+    const extraThemeGuidance =
       theme === 'Frutas'
         ? `IMPORTANTE PARA O TEMA FRUTAS: Todos os personagens DEVEM ser FRUTAS HUMANIZADAS / ANTROPOMÓRFICAS (ex: Moranguinha a protagonista romântica com vestido rosa e sementes douradas, Bananão o playboy de terno, Uva Vitória a vilã invejosa de vestido de gala, Maçãzinho o jovem herdeiro, Cereza sedutora, etc.). Crie dilemas novelescos de traição, ciúmes, vingança, romance proibido e superação no mundo das frutas em animação 3D.`
-        : '';
+        : theme === 'Vida de Jesus'
+          ? `IMPORTANTE PARA O TEMA VIDA DE JESUS: TODAS as ideias devem se passar NOS DIAS DE HOJE, no cotidiano humano do Brasil (periferia, comunidade, interior, família, trabalho, feira, ônibus, hospital público, dívida, briga de família, grupo do WhatsApp). O PERSONAGEM JESUS DEVE APARECER EM TODAS AS IDEIAS, como um homem simples e atual (roupas simples de hoje, barba, cabelo longo ou preso) que cruza o caminho dos personagens e transforma a situação com amor, perdão, compaixão e sabedoria. É PROIBIDO cenário bíblico de época (túnicas, deserto, templos) e milagre literal/espetacular (multiplicar pães, andar sobre a água): os "milagres" são GESTOS HUMANOS REAIS do cotidiano (o emprego que aparece, o perdão que desarma a briga, a dívida resolvida por bondade, a família reconciliada).`
+          : '';
 
     const antiClicheIdeasGuidance =
       theme === 'Gordos'

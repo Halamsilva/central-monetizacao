@@ -318,3 +318,38 @@ export function adaptSpeechPreservingCharacters(rawPrompt: string, includeSkinRe
     dialogues: [{ characterName: charName, speech: cleanSpeech }],
   }, includeSkinRealism);
 }
+
+/**
+ * Separa o gancho em DOIS prompts independentes (um por falante), cada um com a
+ * estrutura tecnica completa e identificando claramente quem fala.
+ */
+export function buildSpeakerPrompts(
+  data: ScenePromptData,
+  includeSkinRealism: boolean = true
+): { speaker: string; label: string; prompt: string }[] {
+  const dialogues =
+    data.dialogues && data.dialogues.length > 0
+      ? data.dialogues
+      : data.spokenDialogue
+        ? [{ characterName: data.characterName, speech: data.spokenDialogue }]
+        : [];
+
+  if (dialogues.length < 2) return [];
+
+  return dialogues.map((dialogue, index) => {
+    const single = formatPromptText(
+      { ...data, dialogues: [dialogue], spokenDialogue: dialogue.speech },
+      includeSkinRealism
+    );
+
+    const lines = single.split('\n');
+    const title = lines[0];
+    const header = `QUEM FALA: ${dialogue.characterName.trim()} (FALA ${index + 1} DE ${dialogues.length})`;
+
+    return {
+      speaker: dialogue.characterName.trim(),
+      label: `PROMPT ${index + 1} - QUEM FALA: ${dialogue.characterName.trim()}`,
+      prompt: `${title} - FALA ${index + 1}\n${header}\n${lines.slice(1).join('\n')}`,
+    };
+  });
+}

@@ -9,6 +9,7 @@ import { PromptViewer } from './components/PromptViewer';
 import { PromptEditor } from './components/PromptEditor';
 import { TemplateLibraryModal } from './components/TemplateLibraryModal';
 import { RulesBanner } from './components/RulesBanner';
+import { SplitPromptsCard } from './components/SplitPromptsCard';
 import { PRESET_TEMPLATES, SKIN_REALISM_COMMAND } from './data/templates';
 import { ScenePromptData, PresetTemplate } from './types/prompt';
 import { parsePromptText, formatPromptText } from './utils/promptParser';
@@ -225,6 +226,16 @@ export default function App() {
             />
           </div>
         </div>
+
+        {/* Separacao em dois prompts: um por falante */}
+        <SplitPromptsCard
+          promptText={currentPrompt}
+          skinRealismActive={skinRealismActive}
+          onCopy={(text, label) => {
+            navigator.clipboard.writeText(text);
+            showToast(`${label} copiado!`);
+          }}
+        />
       </main>
 
       {/* Footer */}

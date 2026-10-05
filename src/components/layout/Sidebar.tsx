@@ -35,6 +35,7 @@ import {
   Heart,
   MessageCircle,
   Sprout,
+  Sparkles,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -176,6 +177,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const testAgentsMenu: MenuItem[] = [
     { title: 'Vídeos de Plantações', icon: Sprout, path: '/plantacoes' },
+    { title: 'Vídeos de Limpeza', icon: Sparkles, path: '/limpeza' },
   ];
 
   const renderMenuItem = (item: MenuItem) => {

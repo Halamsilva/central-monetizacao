@@ -135,6 +135,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const newAgentsMenu: MenuItem[] = [
     { title: 'Gordo para Magro', icon: Scale, path: '/avatar-scale' },
     { title: 'Reflexão do Velho da Roça', icon: Heart, path: '/reflexao-velho-roca' },
+    { title: 'Vídeos de Plantações', icon: Sprout, path: '/plantacoes' },
+    { title: 'Vídeos de Limpeza', icon: Sparkles, path: '/limpeza' },
     { title: 'Novelinhas Gordos', icon: HeartHandshake, path: '/novelinhas-gordos' },
     { title: 'Upscale de Imagem', icon: ImageIcon, path: '/lumina-8k' },
     { title: 'TikTok Shop & Shopee', icon: ShoppingBag, path: '/tiktok-shop-shopee' },
@@ -173,11 +175,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Gerenciar Alunos', icon: Users, path: '/admin/students' },
     { title: 'Gerenciar Blog', icon: FileText, path: '/admin/blog' },
     { title: 'Página de Assinatura', icon: CircleDollarSign, path: '/admin/assinatura' },
-  ];
-
-  const testAgentsMenu: MenuItem[] = [
-    { title: 'Vídeos de Plantações', icon: Sprout, path: '/plantacoes' },
-    { title: 'Vídeos de Limpeza', icon: Sparkles, path: '/limpeza' },
   ];
 
   const renderMenuItem = (item: MenuItem) => {
@@ -291,7 +288,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         {renderSection('Estratégias', primaryStrategyMenu)}
         {renderSection('Vídeos', videoToolsMenu)}
         {renderSection('Novos Agentes', newAgentsMenu)}
-        {isAdmin && renderSection('Agentes em Teste', testAgentsMenu)}
         {renderSection('Redes Sociais', socialToolsMenu)}
         {renderSection('Ferramentas', utilityMenu)}
         {renderSection('Conta', accountMenu)}

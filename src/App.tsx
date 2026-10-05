@@ -305,8 +305,8 @@ export default function App() {
           <Route path="tiktok-shop-shopee" element={<TiktokShopShopee />} />
           <Route path="lumina-8k" element={<Lumina8k />} />
           <Route path="reflexao-velho-roca" element={<ReflexaoVelhoRoca />} />
-          <Route path="plantacoes" element={<AdminRoute><Plantacoes /></AdminRoute>} />
-          <Route path="limpeza" element={<AdminRoute><Limpeza /></AdminRoute>} />
+          <Route path="plantacoes" element={<Plantacoes />} />
+          <Route path="limpeza" element={<Limpeza />} />
           <Route path="novelinhas-gordos" element={<NovelinhasUni lockedTheme="Gordos" />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />

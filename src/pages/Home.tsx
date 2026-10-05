@@ -28,6 +28,7 @@ import {
   Play,
   X,
   MessageCircle,
+  Sprout,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
@@ -147,6 +148,20 @@ const tools: Tool[] = [
     path: '/radar-tiktok-shop',
     icon: TrendingUp,
     accent: 'bg-blue-100 text-blue-600',
+  },
+  {
+    title: 'Vídeos de Plantações',
+    description: 'Roteiros de horta realista com prompts cinematográficos.',
+    path: '/plantacoes',
+    icon: Sprout,
+    accent: 'bg-lime-100 text-lime-600',
+  },
+  {
+    title: 'Vídeos de Limpeza',
+    description: 'Campanhas de limpeza com prompts, roteiro e teleprompter.',
+    path: '/limpeza',
+    icon: Sparkles,
+    accent: 'bg-emerald-100 text-emerald-600',
   },
 ];
 

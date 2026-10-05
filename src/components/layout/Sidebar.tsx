@@ -34,6 +34,7 @@ import {
   Image as ImageIcon,
   Heart,
   MessageCircle,
+  Sprout,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -173,6 +174,10 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Página de Assinatura', icon: CircleDollarSign, path: '/admin/assinatura' },
   ];
 
+  const testAgentsMenu: MenuItem[] = [
+    { title: 'Vídeos de Plantações', icon: Sprout, path: '/plantacoes' },
+  ];
+
   const renderMenuItem = (item: MenuItem) => {
     const Icon = item.icon;
     const active = location.pathname === item.path;
@@ -284,6 +289,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         {renderSection('Estratégias', primaryStrategyMenu)}
         {renderSection('Vídeos', videoToolsMenu)}
         {renderSection('Novos Agentes', newAgentsMenu)}
+        {isAdmin && renderSection('Agentes em Teste', testAgentsMenu)}
         {renderSection('Redes Sociais', socialToolsMenu)}
         {renderSection('Ferramentas', utilityMenu)}
         {renderSection('Conta', accountMenu)}

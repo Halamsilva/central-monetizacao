@@ -33,6 +33,7 @@ const RadarTikTokShop = lazy(() => import('./pages/RadarTikTokShop'));
 const TiktokShopShopee = lazy(() => import('./pages/tiktokShopShopee/App'));
 const Lumina8k = lazy(() => import('./pages/lumina8k/App'));
 const ReflexaoVelhoRoca = lazy(() => import('./pages/reflexaoVelhoRoca/App'));
+const Plantacoes = lazy(() => import('./pages/plantacoes/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -303,6 +304,7 @@ export default function App() {
           <Route path="tiktok-shop-shopee" element={<TiktokShopShopee />} />
           <Route path="lumina-8k" element={<Lumina8k />} />
           <Route path="reflexao-velho-roca" element={<ReflexaoVelhoRoca />} />
+          <Route path="plantacoes" element={<AdminRoute><Plantacoes /></AdminRoute>} />
           <Route path="novelinhas-gordos" element={<NovelinhasUni lockedTheme="Gordos" />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />

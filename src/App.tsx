@@ -35,6 +35,7 @@ const Lumina8k = lazy(() => import('./pages/lumina8k/App'));
 const ReflexaoVelhoRoca = lazy(() => import('./pages/reflexaoVelhoRoca/App'));
 const Plantacoes = lazy(() => import('./pages/plantacoes/App'));
 const Limpeza = lazy(() => import('./pages/limpeza/App'));
+const Ganchos = lazy(() => import('./pages/ganchos/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -307,6 +308,7 @@ export default function App() {
           <Route path="reflexao-velho-roca" element={<ReflexaoVelhoRoca />} />
           <Route path="plantacoes" element={<Plantacoes />} />
           <Route path="limpeza" element={<Limpeza />} />
+          <Route path="ganchos" element={<Ganchos />} />
           <Route path="novelinhas-gordos" element={<NovelinhasUni lockedTheme="Gordos" />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />

@@ -29,6 +29,7 @@ import {
   X,
   MessageCircle,
   Sprout,
+  Flame,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
@@ -162,6 +163,13 @@ const tools: Tool[] = [
     path: '/limpeza',
     icon: Sparkles,
     accent: 'bg-emerald-100 text-emerald-600',
+  },
+  {
+    title: 'Gerador de Ganchos',
+    description: 'Reescreve ganchos de novelinhas com falas de 9 segundos.',
+    path: '/ganchos',
+    icon: Flame,
+    accent: 'bg-orange-100 text-orange-600',
   },
 ];
 

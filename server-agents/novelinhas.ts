@@ -470,6 +470,26 @@ I) TESTE DE LOGICA (responda mentalmente ANTES de escrever, nao escreva o texto)
    - Se qualquer resposta nao existir, a historia esta sem sentido. Refaca antes de escrever as cenas.
 
 ================================================================================
+AJUSTE FINO DA NARRATIVA: LIGACAO DO MEIO (DETALHE + EMOCAO) E REVIRAVOLTA (TENSAO)
+================================================================================
+
+J) CONSTRUCAO DO MEIO DA HISTORIA (LIGACAO EM CORRENTE, DETALHE E EMOCAO - OBRIGATORIO):
+   - LIGACAO EM CORRENTE: cada cena do meio DEVE abrir reagindo DIRETAMENTE ao que aconteceu na cena anterior (mesmo lugar, mesma pessoa, mesmo objeto, mesma consequencia). O espectador tem que sentir que aquela cena SO EXISTE por causa da anterior. É PROIBIDO escrever cena que poderia estar em qualquer ordem.
+   - DETALHE CONCRETO QUE CONTINUA: cada cena do meio carrega UM detalhe fisico especifico que atravessa para a cena seguinte (o boleto amassado, a xicara rachada, o hematoma no braco, a alianca fora do dedo, a mancha no vestido, a conta no celular) e esse detalhe DEVE reaparecer ou ser cobrado depois.
+   - APROFUNDAMENTO EMOCIONAL: no meio da historia mostre o protagonista POR DENTRO - o que ele mais teme perder, a memoria que ainda dói, a decisao impossivel que ele adia. Cada cena do meio aumenta a PRESSÃO: o cerco fecha um pouco mais, a humilhacao custa mais caro, a alternativa vai ficando mais estreita.
+   - CURVA DA EMOCAO: comece pelo choque do gancho, passe pela humilhacao, pela perda e pelo desespero, e chegue na virada com o personagem no FUNDO DO POCO. Quanto mais fundo o poco, maior o payoff da revirada.
+   - FALSA VITORIA: coloque no meio um pequeno alivio verdadeiro (um respiro) que logo em seguida PIORA a situacao (dano -> alivio -> ameaca maior). O meio NUNCA pode ficar parado, repetindo o mesmo tipo de conflito.
+   - TRANSICAO EMOCIONAL ENTRE CENAS: a ultima frase/fala de cada cena do meio planta o gancho da seguinte (uma promessa, uma ameaca, uma pergunta sem resposta). Nada de cena que simplesmente "acaba".
+
+K) A REVIRAVOLTA COM TENSAO E EMOCAO MAXIMAS (NAS CENAS FINAIS):
+   - PLANTA E PAGA: a revirada DEVE ser plantada antes (um detalhe, um objeto, uma frase dita de passagem no meio da historia) e o publico so entende o valor disso NO MOMENTO da revelacao. Quando a virada cai, ela responde a algo que o espectador ja viu.
+   - REVELACAO EM GESTO FISICO: a virada vira a mesa com uma ACAO filmavel (abrir a gaveta, virar o celular na tela, entregar o envelope, arrancar a peruca, apontar o documento), NUNCA apenas com explicacao em dialogo.
+   - TENSAO ANTES DO ESTOURO: um segundo de silencio/pausa antes da revelacao (respiração presa, olhar fixo, ambiente silencioso) para a virada cair como um estalo.
+   - EMOCAO EXPLICITA NO PROMPT: descreva a reacao fisica de CADA personagem no instante da virada (olhos marejados, maxilar tremendo, maos cerradas ou tremulas, um passo para tras, voz embargada, choro contido) para o motor de video conseguir atuar a cena.
+   - DUAS CENAS FINAIS: a penultima entrega a revelacao com FORCA TOTAL (tensao maxima) e a ULTIMA entrega o desfecho emocional mostrando o efeito da virada (reversao publica na frente de testemunhas + licao/emocao memoravel).
+   - É PROIBIDO revelar a virada cedo, explica-la demais ou entregar um final que apenas "anuncia" a vitoria sem mostrar o efeito emocional nos personagens.
+
+================================================================================
 REGRA CRÍTICA: DESCRIÇÃO PROFUNDA DOS PERSONAGENS & IDENTIFICAÇÃO DE QUEM VAI FALAR
 ================================================================================
 1. IDENTIFICAÇÃO RIGOROSA E DETALHADA DE QUEM VAI FALAR (SEM DIÁLOGO SUGERIDO - APENAS DIÁLOGO REAL):

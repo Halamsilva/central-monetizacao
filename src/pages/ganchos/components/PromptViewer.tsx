@@ -34,7 +34,7 @@ export const PromptViewer: React.FC<PromptViewerProps> = ({
   const [copySectionFeedback, setCopySectionFeedback] = useState<string | null>(null);
 
   // Extract dialogue text to simulate 8-second speech
-  const dialogueMatch = promptText.match(/fala no idioma e estilo de Brasil:\s*“?([^”"]+)”?/i) || promptText.match(/“([^”"]{10,})”/);
+  const dialogueMatch = promptText.match(/fala no idioma e estilo de [^\n:]+:\s*“?([^”"]+)”?/i) || promptText.match(/“([^”"]{10,})”/);
   const speechText = dialogueMatch ? dialogueMatch[1].trim() : '';
   const timing = estimateDialogueTiming(speechText);
 
@@ -315,9 +315,9 @@ function renderFormattedPrompt(text: string, skinRealismActive: boolean) {
           trimmed === 'PERFIL PSICOLÓGICO:' ||
           trimmed.startsWith('Motivação:') ||
           trimmed.startsWith('Medo:') ||
-          trimmed.includes('fala no idioma e estilo de Brasil:')
+          trimmed.includes('fala no idioma e estilo de')
         ) {
-          const isDialogueLabel = trimmed.includes('fala no idioma e estilo de Brasil:');
+          const isDialogueLabel = trimmed.includes('fala no idioma e estilo de');
           return (
             <div
               key={idx}

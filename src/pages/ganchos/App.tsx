@@ -12,8 +12,8 @@ import { RulesBanner } from './components/RulesBanner';
 import { SplitPromptsCard } from './components/SplitPromptsCard';
 import { PRESET_TEMPLATES, SKIN_REALISM_COMMAND } from './data/templates';
 import { ScenePromptData, PresetTemplate } from './types/prompt';
-import { parsePromptText, formatPromptText } from './utils/promptParser';
-import { Check, Sparkles, Copy, Sliders, AlertCircle } from 'lucide-react';
+import { parsePromptText, formatPromptText, getGanchosLanguage, setGanchosLanguage, GanchosLanguage } from './utils/promptParser';
+import { Check, Sparkles, Copy, Sliders, AlertCircle, Languages } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { describeHttpError } from '../../lib/httpError';
 
@@ -38,6 +38,17 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState<boolean>(false);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [language, setLanguage] = useState<GanchosLanguage>(() => getGanchosLanguage());
+
+  const handleLanguageChange = (next: GanchosLanguage) => {
+    setLanguage(next);
+    setGanchosLanguage(next);
+    showToast(
+      next === 'mexico'
+        ? 'Idioma das falas: Espanhol (México). Clique em "Nova Variação de Fala" para gerar em espanhol.'
+        : 'Idioma das falas: Português (Brasil). Clique em "Nova Variação de Fala" para gerar em português.'
+    );
+  };
 
   // Save changes to localStorage
   useEffect(() => {
@@ -122,6 +133,7 @@ export default function App() {
           addRealisticSkinTexture: skinRealismActive,
           sceneNumber: parsedCurrent.sceneNumber || '01',
           preserveCharacters: true,
+          language,
         }),
       });
 
@@ -200,6 +212,39 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
         {/* Rules and Mandatory Structure Banner */}
         <RulesBanner />
+
+        {/* Idioma das falas */}
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 px-4 py-3">
+          <span className="flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-slate-400 sm:text-xs">
+            <Languages size={15} className="text-rose-400" />
+            Idioma das falas
+          </span>
+
+          <div className="flex items-center gap-1 rounded-xl border border-slate-800 bg-slate-950 p-1">
+            <button
+              type="button"
+              onClick={() => handleLanguageChange('brasil')}
+              className={`rounded-lg px-3 py-1.5 text-[11px] font-bold transition sm:text-xs ${
+                language === 'brasil'
+                  ? 'bg-rose-500 text-white'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              🇧🇷 Português (Brasil)
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLanguageChange('mexico')}
+              className={`rounded-lg px-3 py-1.5 text-[11px] font-bold transition sm:text-xs ${
+                language === 'mexico'
+                  ? 'bg-rose-500 text-white'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              🇲🇽 Español (México)
+            </button>
+          </div>
+        </div>
 
         {/* Studio Workspace: Editor and Viewer Side-by-Side */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

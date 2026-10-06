@@ -1,6 +1,40 @@
 import { ScenePromptData } from '../types/prompt';
 import { SKIN_REALISM_COMMAND } from '../data/templates';
 
+export type GanchosLanguage = 'brasil' | 'mexico';
+
+const LANGUAGE_STORAGE_KEY = 'ganchos_language';
+
+export const getGanchosLanguage = (): GanchosLanguage => {
+  try {
+    if (typeof window === 'undefined') return 'brasil';
+    return window.localStorage.getItem(LANGUAGE_STORAGE_KEY) === 'mexico' ? 'mexico' : 'brasil';
+  } catch {
+    return 'brasil';
+  }
+};
+
+export const setGanchosLanguage = (language: GanchosLanguage) => {
+  try {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    }
+  } catch {
+    // ignora falha de storage
+  }
+};
+
+export const getGanchosLanguageLabel = () =>
+  getGanchosLanguage() === 'mexico' ? 'México' : 'Brasil';
+
+const LANGUAGE_TAG = 'fala no idioma e estilo de [^\\n:]+?:';
+
+const buildMultiFalaRegex = () =>
+  new RegExp(
+    `([^\\n:]+?)\\s+${LANGUAGE_TAG}\\s*["“']?([\\s\\S]*?)(?:["”'](?=\\s*(?:[^\\n:]+?\\s+${LANGUAGE_TAG}|$))|(?=\\n\\s*[^\\n:]+?\\s+${LANGUAGE_TAG})|\\s*$)`,
+    'gi'
+  );
+
 export function parsePromptText(raw: string): ScenePromptData {
   const text = raw.trim();
 
@@ -85,14 +119,14 @@ export function parsePromptText(raw: string): ScenePromptData {
   if (motivMatch) motivation = motivMatch[1].trim();
 
   let fear = '';
-  const medoMatch = text.match(/Medo:\s*([\s\S]*?)(?=(?:.*fala no idioma e estilo de Brasil:)|$)/i);
+  const medoMatch = text.match(new RegExp(`Medo:\\s*([\\s\\S]*?)(?=(?:.*${LANGUAGE_TAG})|$)`, 'i'));
   if (medoMatch) fear = medoMatch[1].trim();
 
   // Dialogues extraction
   const dialogues: { characterName: string; speech: string }[] = [];
 
-  // 1. Try explicit "[Nome] fala no idioma e estilo de Brasil:"
-  const multiFalaRegex = /([^\n:]+?)\s+fala no idioma e estilo de Brasil:\s*["“']?([\s\S]*?)(?:["”'](?=\s*(?:[^\n:]+?\s+fala no idioma e estilo de Brasil:|$))|(?=\n\s*[^\n:]+?\s+fala no idioma e estilo de Brasil:)|\s*$)/gi;
+  // 1. Try explicit "[Nome] fala no idioma e estilo de [Brasil/México]:"
+  const multiFalaRegex = buildMultiFalaRegex();
   let match: RegExpExecArray | null;
   while ((match = multiFalaRegex.exec(text)) !== null) {
     const rawName = match[1].trim().replace(/^[-*•\s]+/, '');
@@ -143,7 +177,7 @@ export function parsePromptText(raw: string): ScenePromptData {
   // Fallback single dialogue if still empty
   let spokenDialogue = dialogues.length > 0 ? dialogues[0].speech : '';
   if (!spokenDialogue) {
-    const singleMatch = text.match(/fala no idioma e estilo de Brasil:\s*["“']?([^"”\n\r]+)["”']?/i);
+    const singleMatch = text.match(/fala no idioma e estilo de [^\n:]+:\s*["“']?([^"”\n\r]+)["”']?/i);
     if (singleMatch && singleMatch[1].trim()) {
       spokenDialogue = singleMatch[1].trim();
       if (dialogues.length === 0) {
@@ -199,23 +233,29 @@ export function formatPromptText(data: ScenePromptData, includeSkinRealism: bool
   }
 
   // Render dialogues separately for each character - NEVER EMPTY
+  const languageLabel = getGanchosLanguageLabel();
+  const emptySpeechFallback =
+    languageLabel === 'México'
+      ? `¡Cállate la boca ahora mismo! ¡No eres nadie para hablarme así! ¡Lárgate de mi vista antes de que te destruya!`
+      : `CALA ESSA BOCA AGORA! Você não passa de um derrotado patético! Some da minha frente antes que eu destrua você!`;
+
   let dialoguesBlock = '';
   if (data.dialogues && data.dialogues.length > 0) {
     dialoguesBlock = data.dialogues
       .map(d => {
         let clean = (d.speech || '').replace(/^["“]+/, '').replace(/["”]+$/, '').trim();
         if (!clean) {
-          clean = `Olha pra mim! Cala essa boca agora antes que eu destrua o resto da sua dignidade! Some da minha frente!`;
+          clean = emptySpeechFallback;
         }
-        return `${d.characterName.trim()} fala no idioma e estilo de Brasil:\n“${clean}”`;
+        return `${d.characterName.trim()} fala no idioma e estilo de ${languageLabel}:\n“${clean}”`;
       })
       .join('\n\n');
   } else {
     let cleanDialogue = (data.spokenDialogue || '').replace(/^["“]+/, '').replace(/["”]+$/, '').trim();
     if (!cleanDialogue) {
-      cleanDialogue = `CALA ESSA BOCA AGORA! Você não passa de um derrotado patético! Some da minha frente antes que eu destrua você!`;
+      cleanDialogue = emptySpeechFallback;
     }
-    dialoguesBlock = `${data.characterName.trim()} fala no idioma e estilo de Brasil:\n“${cleanDialogue}”`;
+    dialoguesBlock = `${data.characterName.trim()} fala no idioma e estilo de ${languageLabel}:\n“${cleanDialogue}”`;
   }
 
   return `PROMPT GANCHO CHAMATIVO CENA ${data.sceneNumber || '01'}
@@ -279,24 +319,37 @@ export function estimateDialogueTiming(text: string): {
 
 export function adaptSpeechPreservingCharacters(rawPrompt: string, includeSkinRealism: boolean = true): string {
   const parsed = parsePromptText(rawPrompt);
-  
+  const isSpanish = getGanchosLanguage() === 'mexico';
+
+  const fallbacks = isSpanish
+    ? {
+        firstShort: '¡Óyeme bien, miserable! ¡No tienes derecho ni de mirarme a la cara! ¡Lárgate de aquí ahora antes de que llame a la policía y acabe contigo!',
+        secondShort: '¡Por favor, escúchame! ¡Te juro por mis hijos que no hice nada malo! ¡Estoy trabajando honesto, no me hagas esta injusticia!',
+        firstAngry: '¡Mírame bien, ratero! ¡Tu lugar es la cárcel! ¡Lárgate de mi calle ahora antes de que llame a la policía y te destroce la cara!',
+        secondDesperate: '¡Por favor, escúchame! ¡Te juro por mis hijos que no robé nada esta vez! ¡Estoy trabajando honesto, no me hagas esta injusticia!',
+        single: '¡Cállate la boca ahora mismo! ¿No te da vergüenza desafiarme así? ¡Recoge lo que queda de tu dignidad y lárgate antes de que te destruya!',
+      }
+    : {
+        firstShort: 'Olha aqui pro meu rosto, seu marginal miserável! Você não tem autorização pra pisar nessa rua! Vaza daqui agora antes que eu chame a polícia e acabe com você!',
+        secondShort: 'Pelo amor de Deus, me escuta! Eu juro pelos meus filhos que não fiz nada de errado! Eu tô trabalhando honesto, não faz essa injustiça covarde comigo!',
+        firstAngry: 'Olha bem pra mim, seu marginal! Lugar de ladrão é na cadeia! Some da minha rua agora antes que eu chame a polícia e arrebente a sua cara!',
+        secondDesperate: 'Pelo amor de Deus, me escuta! Eu juro pelos meus filhos que não roubei nada dessa vez! Eu tô trabalhando honesto, não faz essa injustiça comigo!',
+        single: 'CALA ESSA BOCA AGORA! Você não tem vergonha de me desafiar desse jeito? Recolha o que sobrou da sua dignidade e desaparece da minha frente antes que eu destrua você!',
+      };
+
   // If dialogues already exist in the input, build intensified, high-impact speech for each speaker (~9 seconds)
   if (parsed.dialogues && parsed.dialogues.length > 0) {
     const updatedDialogues = parsed.dialogues.map((d, index) => {
       let cleanSpeech = (d.speech || '').replace(/^["“]+/, '').replace(/["”]+$/, '').trim();
       const lower = cleanSpeech.toLowerCase();
 
-      // If speech is empty or short, generate punchy viral Brazilian line of ~9 seconds
+      // If speech is empty or short, generate punchy viral line of ~9 seconds
       if (!cleanSpeech || cleanSpeech.length < 15) {
-        if (index === 0) {
-          cleanSpeech = `Olha aqui pro meu rosto, seu marginal miserável! Você não tem autorização pra pisar nessa rua! Vaza daqui agora antes que eu chame a polícia e acabe com você!`;
-        } else {
-          cleanSpeech = `Pelo amor de Deus, me escuta! Eu juro pelos meus filhos que não fiz nada de errado! Eu tô trabalhando honesto, não faz essa injustiça covarde comigo!`;
-        }
-      } else if (index === 0 && (lower.includes('ladrão') || lower.includes('some'))) {
-        cleanSpeech = `Olha bem pra mim, seu marginal! Lugar de ladrão é na cadeia! Some da minha rua agora antes que eu chame a polícia e arrebente a sua cara!`;
-      } else if (index === 1 && (lower.includes('juro') || lower.includes('roubei'))) {
-        cleanSpeech = `Pelo amor de Deus, Seu Valdir, me escuta! Eu juro pelos meus filhos que não roubei nada dessa vez! Eu tô trabalhando honesto, não faz essa injustiça comigo!`;
+        cleanSpeech = index === 0 ? fallbacks.firstShort : fallbacks.secondShort;
+      } else if (index === 0 && (lower.includes('ladrão') || lower.includes('some') || lower.includes('ratero') || lower.includes('lárgate'))) {
+        cleanSpeech = fallbacks.firstAngry;
+      } else if (index === 1 && (lower.includes('juro') || lower.includes('roubei') || lower.includes('robé'))) {
+        cleanSpeech = fallbacks.secondDesperate;
       }
 
       return {
@@ -310,7 +363,7 @@ export function adaptSpeechPreservingCharacters(rawPrompt: string, includeSkinRe
 
   // Single character fallback
   const charName = parsed.characterName.trim();
-  const cleanSpeech = `CALA ESSA BOCA AGORA! Você não tem vergonha de me desafiar desse jeito? Recolha o que sobrou da sua dignidade e desaparece da minha frente antes que eu destrua você!`;
+  const cleanSpeech = fallbacks.single;
 
   return formatPromptText({
     ...parsed,

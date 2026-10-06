@@ -55,7 +55,25 @@ function generateDynamicPrompt(params: {
   rawText: string;
   sceneNumber?: string;
   addRealisticSkinTexture?: boolean;
+  languageLabel?: string;
 }) {
+  const languageLabel = params.languageLabel || 'Brasil';
+  const isSpanish = languageLabel.toLowerCase().startsWith('m');
+
+  const phrases = isSpanish
+    ? {
+        firstAngryShort: `“¡Mírame bien, ratero! ¡Tu lugar es la cárcel! ¡Lárgate de mi calle ahora antes de que llame a la policía!”`,
+        firstAngry: `“¡CÁLLATE LA BOCA AHORA! ¡No tienes derecho ni de mirarme a la cara! ¡Recoge tu vergüenza y lárgate antes de que te destruya!”`,
+        secondDesperateShort: `“¡Por favor, escúchame un minuto! ¡Soy inocente, no hice nada malo! ¡No seas cruel conmigo delante de todos!”`,
+        secondDesperate: `“¡Por favor, escúchame! ¡Te juro por mis hijos que no robé nada esta vez! ¡Estoy trabajando honesto, no me hagas esta injusticia!”`,
+      }
+    : {
+        firstAngryShort: `“Olha bem pra mim, seu marginal! Lugar de ladrão é na cadeia! Some da minha rua agora antes que eu chame a polícia e arrebente a sua cara!”`,
+        firstAngry: `“CALA ESSA BOCA AGORA! Você não tem autorização nem pra me encarar! Recolha a sua vergonha e desaparece da minha frente antes que eu destrua você!”`,
+        secondDesperateShort: `“Pelo amor de Deus, me escuta um minuto! Eu sou inocente e não fiz nada de errado! Não seja cruel comigo na frente de todo mundo!”`,
+        secondDesperate: `“Pelo amor de Deus, me escuta! Eu juro pelos meus filhos que não roubei nada dessa vez! Eu tô trabalhando honesto, não faz essa injustiça comigo!”`,
+      };
+
   const text = (params.rawText || '').trim();
 
   // Scene Number
@@ -157,7 +175,7 @@ function generateDynamicPrompt(params: {
   if (!motivacao) motivacao = `Destruir a moral do oponente e impor humilhação pública.`;
 
   let medo = '';
-  const medoMatch = text.match(/Medo:\s*([\s\S]*?)(?=(?:.*fala no idioma e estilo de Brasil:)|$)/i);
+  const medoMatch = text.match(/Medo:\s*([\s\S]*?)(?=(?:.*fala no idioma e estilo de [^\n:]+:)|$)/i);
   if (medoMatch) medo = medoMatch[1].trim();
   if (!medo) medo = `Perder a autoridade e ser desmascarado diante de todos.`;
 
@@ -167,31 +185,31 @@ function generateDynamicPrompt(params: {
 
   if (dialogoRealMatch) {
     const raw = dialogoRealMatch[1].trim().replace(/^["“']+/, '').replace(/["”']+$/, '').trim();
-    if (raw.toLowerCase().includes('ladrão') || raw.toLowerCase().includes('some')) {
-      fala1 = `“Olha bem pra mim, seu marginal! Lugar de ladrão é na cadeia! Some da minha rua agora antes que eu chame a polícia e arrebente a sua cara!”`;
+    if (raw.toLowerCase().includes('ladrão') || raw.toLowerCase().includes('some') || raw.toLowerCase().includes('ratero')) {
+      fala1 = phrases.firstAngryShort;
     } else {
-      fala1 = `“CALA ESSA BOCA AGORA! Você não tem autorização nem pra me encarar! Recolha a sua vergonha e desaparece da minha frente antes que eu destrua você!”`;
+      fala1 = phrases.firstAngry;
     }
   } else {
-    fala1 = `“CALA ESSA BOCA AGORA! Você não tem vergonha de me desafiar desse jeito? Recolha a sua vergonha e desaparece da minha frente antes que eu destrua você!”`;
+    fala1 = phrases.firstAngry;
   }
 
   if (char2Name) {
     if (respostaMatch) {
       const raw2 = respostaMatch[1].trim().replace(/^["“']+/, '').replace(/["”]+$/, '').trim();
-      if (raw2.toLowerCase().includes('roubei') || raw2.toLowerCase().includes('valdir')) {
-        fala2 = `“Pelo amor de Deus, ${char1Name}, me escuta! Eu juro pelos meus filhos que não roubei nada dessa vez! Eu tô trabalhando honesto, não faz essa injustiça comigo!”`;
+      if (raw2.toLowerCase().includes('roubei') || raw2.toLowerCase().includes('valdir') || raw2.toLowerCase().includes('robé')) {
+        fala2 = phrases.secondDesperate;
       } else {
-        fala2 = `“Pelo amor de Deus, me escuta um minuto! Eu sou inocente e não fiz nada de errado! Não seja cruel comigo na frente de todo mundo!”`;
+        fala2 = phrases.secondDesperateShort;
       }
     } else {
-      fala2 = `“Pelo amor de Deus, me escuta um minuto! Eu sou inocente e não fiz nada de errado! Não seja cruel comigo na frente de todo mundo!”`;
+      fala2 = phrases.secondDesperateShort;
     }
   }
 
-  let dialoguesText = `${char1Name} fala no idioma e estilo de Brasil:\n${fala1}`;
+  let dialoguesText = `${char1Name} fala no idioma e estilo de ${languageLabel}:\n${fala1}`;
   if (char2Name) {
-    dialoguesText += `\n\n${char2Name} fala no idioma e estilo de Brasil:\n${fala2}`;
+    dialoguesText += `\n\n${char2Name} fala no idioma e estilo de ${languageLabel}:\n${fala2}`;
   }
 
   return `PROMPT GANCHO CHAMATIVO CENA ${sceneNum}
@@ -220,17 +238,19 @@ ${dialoguesText}`;
 
 const modelsToTry = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-3.1-pro-preview', 'gemini-flash-latest'];
 
-const systemPrompt = `Você é um diretor e roteirista sênior especializado em criar PROMPTS CINEMATOGRÁFICOS DE ALTA RETENÇÃO VIRAL para vídeos dramáticos curtos (estilo novelas de choque e reels virais).
+const buildSystemPrompt = (languageLabel: string, languageName: string) => `Você é um diretor e roteirista sênior especializado em criar PROMPTS CINEMATOGRÁFICOS DE ALTA RETENÇÃO VIRAL para vídeos dramáticos curtos (estilo novelas de choque e reels virais).
+
+IDIOMA OBRIGATÓRIO DAS FALAS: ${languageName}. TODAS as falas DEVEM ser escritas nesse idioma, com gírias e naturalidade locais. É PROIBIDO misturar outro idioma nas falas.
 
 REGRAS ABSOLUTAS E INVIOLÁVEIS:
 1. NUNCA invente personagens prontos genéricos (como gerente de loja ou segurança) se o usuário forneceu personagens específicos. USE ESTRITAMENTE OS PERSONAGENS E NOMES DO USUÁRIO.
 2. NUNCA gere falas vazias ("" ou “”). Todas as falas DEVEM SER PREENCHIDAS com diálogos inéditos, viscerais e ultra-agressivos calibrados para EXATAMENTE 9 SEGUNDOS por fala (aproximadamente 27 a 30 palavras para cada personagem).
 3. IDENTIFICAÇÃO INDIVIDUAL OBRIGATÓRIA: Identifique EXATAMENTE quem fala em parágrafos separados para cada personagem:
-[Nome do Personagem 1] fala no idioma e estilo de Brasil:
-"[Fala com raiva extrema, preconceito ou agressividade nos primeiros 4 segundos, totalizando cerca de 9 segundos (27-30 palavras)]"
+[Nome do Personagem 1] fala no idioma e estilo de ${languageLabel}:
+"[Fala com raiva extrema, preconceito ou agressividade nos primeiros 4 segundos, totalizando cerca de 9 segundos (27-30 palavras), em ${languageName}]"
 
-[Nome do Personagem 2] fala no idioma e estilo de Brasil:
-"[Fala de desespero, defesa ou humilhação nos primeiros 4 segundos, totalizando cerca de 9 segundos (27-30 palavras)]"
+[Nome do Personagem 2] fala no idioma e estilo de ${languageLabel}:
+"[Fala de desespero, defesa ou humilhação nos primeiros 4 segundos, totalizando cerca de 9 segundos (27-30 palavras), em ${languageName}]"
 
 4. PRESERVE E ENTREGUE EXATAMENTE esta estrutura formal técnica de prompt:
 
@@ -259,11 +279,11 @@ Motivação:
 Medo:
 [medo de cada um]
 
-[Nome 1] fala no idioma e estilo de Brasil:
-"[Fala adaptada, cruel e visceral de exatamente 9 segundos (27 a 30 palavras)]"
+[Nome 1] fala no idioma e estilo de ${languageLabel}:
+"[Fala adaptada em ${languageName}, cruel e visceral, de exatamente 9 segundos (27 a 30 palavras)]"
 
-[Nome 2 se houver] fala no idioma e estilo de Brasil:
-"[Fala adaptada de resposta de exatamente 9 segundos (27 a 30 palavras)]"
+[Nome 2 se houver] fala no idioma e estilo de ${languageLabel}:
+"[Fala adaptada de resposta em ${languageName}, de exatamente 9 segundos (27 a 30 palavras)]"
 
 5. NUNCA gere imagens. Retorne apenas o prompt técnico completo.`;
 
@@ -288,6 +308,11 @@ export default async function handler(req: any, res: any) {
   const originalPrompt = clean(req.body?.originalPrompt);
   const addRealisticSkinTexture = req.body?.addRealisticSkinTexture !== false;
   const sceneNumber = clean(req.body?.sceneNumber, 20) || '01';
+  const isSpanish = String(req.body?.language || '').toLowerCase() === 'mexico';
+
+  const languageLabel = isSpanish ? 'México' : 'Brasil';
+  const languageName = isSpanish ? 'ESPANHOL LATINO (México / neutro)' : 'PORTUGUÊS DO BRASIL';
+  const languageTag = `fala no idioma e estilo de ${languageLabel}:`;
 
   const rawInput = originalPrompt.trim();
 
@@ -296,7 +321,7 @@ export default async function handler(req: any, res: any) {
     httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
   });
 
-  const userMessage = `Reescreva o prompt completo preservando rigorosamente todos os personagens, a cena e o enredo do usuário, gerando falas INÉDITAS, impactantes e completas com EXATAMENTE 9 SEGUNDOS de duração cada (~27 a 30 palavras), identificando quem fala em cada momento:
+  const userMessage = `Reescreva o prompt completo preservando rigorosamente todos os personagens, a cena e o enredo do usuário, gerando falas INÉDITAS, impactantes e completas EM ${languageName} com EXATAMENTE 9 SEGUNDOS de duração cada (~27 a 30 palavras), identificando quem fala em cada momento. Use a etiqueta "${languageTag}" antes da fala de cada personagem:
 
 Prompt do usuário:
 ${rawInput}`;
@@ -307,7 +332,7 @@ ${rawInput}`;
         model: modelName,
         contents: userMessage,
         config: {
-          systemInstruction: systemPrompt,
+          systemInstruction: buildSystemPrompt(languageLabel, languageName),
           temperature: 0.8,
         },
       });
@@ -316,7 +341,7 @@ ${rawInput}`;
       if (
         generatedText.trim() &&
         !generatedText.includes('“”') &&
-        generatedText.includes('fala no idioma e estilo de Brasil:')
+        generatedText.includes(languageTag)
       ) {
         return res.status(200).json({ prompt: generatedText, source: modelName });
       }
@@ -330,6 +355,7 @@ ${rawInput}`;
     rawText: rawInput,
     sceneNumber,
     addRealisticSkinTexture,
+    languageLabel,
   });
 
   return res.status(200).json({ prompt: fallback, source: 'dynamic_engine' });

@@ -13,7 +13,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { ScenePromptData } from '../types/prompt';
-import { formatPromptText, parsePromptText, estimateDialogueTiming } from '../utils/promptParser';
+import { formatPromptText, parsePromptText, estimateDialogueTiming, getGanchosLanguageLabel } from '../utils/promptParser';
 import { SKIN_REALISM_COMMAND } from '../data/templates';
 
 interface PromptEditorProps {
@@ -435,7 +435,7 @@ export const PromptEditor: React.FC<PromptEditorProps> = ({
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
                   <Flame className="w-3.5 h-3.5 text-rose-400" />
-                  {formData.characterName || 'Personagem'} fala no idioma e estilo de Brasil:
+                  {formData.characterName || 'Personagem'} fala no idioma e estilo de {getGanchosLanguageLabel()}:
                 </label>
                 <span className="text-[11px] font-mono text-slate-300">
                   {timing.wordCount} palavras • ~{timing.durationSeconds}s

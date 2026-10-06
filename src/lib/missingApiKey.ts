@@ -5,12 +5,14 @@ const MISSING_API_KEY_MARKERS = ['ia nao configurada'];
 
 const QUOTA_MARKERS = [
   'limite de uso da ia',
+  'limite de ia',
+  'limite de uso',
   'cota diaria',
-  'cota di',
+  'cota',
+  'quota',
   'resource_exhausted',
   'insufficient account funds',
-  'quota exceeded',
-  '429',
+  'exceeded your current quota',
 ];
 
 const includesAnyMarker = (raw: string, markers: string[]) => {
@@ -30,11 +32,30 @@ const stringifyPayload = (payload: unknown) => {
   }
 };
 
+// Para cota, olhamos SOMENTE a mensagem que o usuario ve (error/message).
+// O campo "detail" traz o texto cru do Google e podia conter "429" em erros que
+// nao eram de cota, causando falso positivo no aviso.
+const messageOnly = (payload: unknown) => {
+  if (!payload) return '';
+  if (typeof payload === 'string') return payload;
+
+  try {
+    const record = payload as Record<string, unknown>;
+    const message = record.error || record.message;
+
+    if (typeof message === 'string' && message.trim()) return message;
+  } catch {
+    return '';
+  }
+
+  return stringifyPayload(payload);
+};
+
 export const isMissingApiKeyPayload = (payload: unknown) =>
   includesAnyMarker(stringifyPayload(payload), MISSING_API_KEY_MARKERS);
 
 export const isQuotaExceededPayload = (payload: unknown) =>
-  includesAnyMarker(stringifyPayload(payload), QUOTA_MARKERS);
+  includesAnyMarker(messageOnly(payload), QUOTA_MARKERS);
 
 const dispatch = (eventName: string) => {
   if (typeof window === 'undefined') return;

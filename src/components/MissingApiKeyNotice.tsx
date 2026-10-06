@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { KeyRound, Settings, X } from 'lucide-react';
 import { MISSING_API_KEY_EVENT, QUOTA_EXCEEDED_EVENT } from '../lib/missingApiKey';
+import { supabase } from '../lib/supabase';
 
-type NoticeMode = 'missing' | 'quota' | 'timeout';
+type NoticeMode = 'missing' | 'quota' | 'quotaOwn' | 'timeout';
 
 const copy: Record<
   NoticeMode,
@@ -29,6 +30,16 @@ const copy: Record<
       '3. Volte aqui e continue usando sem interrupcao.',
     ],
   },
+  quotaOwn: {
+    title: 'A cota da sua chave de IA acabou',
+    description:
+      'A sua chave do Google AI Studio atingiu o limite de uso gratuito. O Google limita poucas geracoes por dia para cada chave/Conta Google (a cota renova automaticamente todo dia).',
+    steps: [
+      '1. Aguarde a renovacao diaria da cota gratuita e tente novamente.',
+      '2. Ou crie uma chave nova em OUTRA Conta Google e cole em Configuracoes.',
+      '3. Para uso intenso, ative o faturamento (plano pago) no Google AI Studio.',
+    ],
+  },
   timeout: {
     title: 'A geracao demorou demais',
     description:
@@ -43,13 +54,36 @@ const copy: Record<
 
 const EDGE_TIMEOUT_EVENT = 'halamsilva:edge-timeout';
 
+const userHasOwnKey = async () => {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userId = sessionData?.session?.user?.id;
+    if (!userId) return false;
+
+    const { data } = await supabase
+      .from('user_secrets')
+      .select('gemini_api_key')
+      .eq('id', userId)
+      .maybeSingle();
+
+    return Boolean(String(data?.gemini_api_key || '').trim());
+  } catch {
+    return false;
+  }
+};
+
 const MissingApiKeyNotice: React.FC = () => {
   const [mode, setMode] = useState<NoticeMode | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleMissing = () => setMode('missing');
-    const handleQuota = () => setMode('quota');
+
+    const handleQuota = async () => {
+      const hasOwn = await userHasOwnKey();
+      setMode(hasOwn ? 'quotaOwn' : 'quota');
+    };
+
     const handleTimeout = () => setMode('timeout');
 
     window.addEventListener(MISSING_API_KEY_EVENT, handleMissing);

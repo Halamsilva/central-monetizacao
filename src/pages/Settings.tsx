@@ -235,7 +235,7 @@ const Settings: React.FC = () => {
     setKeyLoading(true);
     setKeyMessage(null);
 
-    const { error } = await supabase.from('user_secrets').insert({
+    const { error } = await supabase.from('user_secrets').upsert({
       id: user.id,
       gemini_api_key: value,
       updated_at: new Date().toISOString(),
@@ -244,6 +244,7 @@ const Settings: React.FC = () => {
     setKeyLoading(false);
 
     if (error) {
+      console.error('Erro ao salvar chave da IA:', error);
       setKeyMessage({
         type: 'error',
         text: 'Não foi possível salvar a chave. Tente novamente.',
@@ -265,7 +266,7 @@ const Settings: React.FC = () => {
     setKeyLoading(true);
     setKeyMessage(null);
 
-    const { error } = await supabase.from('user_secrets').insert({
+    const { error } = await supabase.from('user_secrets').upsert({
       id: user.id,
       gemini_api_key: '',
       updated_at: new Date().toISOString(),
@@ -274,6 +275,7 @@ const Settings: React.FC = () => {
     setKeyLoading(false);
 
     if (error) {
+      console.error('Erro ao remover chave da IA:', error);
       setKeyMessage({
         type: 'error',
         text: 'Não foi possível remover a chave. Tente novamente.',

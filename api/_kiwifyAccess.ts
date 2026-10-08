@@ -207,8 +207,13 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   const paidAt = paidAtValue ? new Date(String(paidAtValue)) : new Date();
   const basePaidAt = Number.isNaN(paidAt.getTime()) ? new Date() : paidAt;
   const isSubscription = isSubscriptionProduct(product);
-  const releaseDelayDays = Math.max(0, Number(process.env.KIWIFY_RELEASE_DELAY_DAYS || 7));
-  const releaseAt = isSubscription ? basePaidAt : addDays(basePaidAt, releaseDelayDays);
+  // Liberacao IMEDIATA por padrao (compra aprovada = acesso na hora, sem os 7 dias).
+  // Se quiser reativar o prazo de garantia no futuro, basta definir a variavel
+  // KIWIFY_RELEASE_DELAY_DAYS no painel da Vercel (ex.: 7).
+  const rawReleaseDelay = Number(process.env.KIWIFY_RELEASE_DELAY_DAYS);
+  const releaseDelayDays =
+    Number.isFinite(rawReleaseDelay) && rawReleaseDelay > 0 ? Math.floor(rawReleaseDelay) : 0;
+  const releaseAt = releaseDelayDays > 0 ? addDays(basePaidAt, releaseDelayDays) : basePaidAt;
   const isReleased = releaseAt.getTime() <= Date.now();
 
   const revokedEvents = [
@@ -381,10 +386,17 @@ export const handleAccessSync = async (authorization?: string) => {
   const matchesSubscription = purchaseProductKey
     ? isSubscriptionProduct({ id: purchaseProductKey, name: purchaseProductKey })
     : false;
+
+  // Mesma regra do webhook: sem prazo configurado, libera na hora (inclusive os
+  // alunos que ficaram pendentes pela regra antiga dos 7 dias).
+  const rawSyncDelay = Number(process.env.KIWIFY_RELEASE_DELAY_DAYS);
+  const syncDelayDays =
+    Number.isFinite(rawSyncDelay) && rawSyncDelay > 0 ? Math.floor(rawSyncDelay) : 0;
+
   const nextStatus: KiwifyAccessStatus =
     purchase.purchase_status === 'blocked'
       ? 'blocked'
-      : matchesSubscription || releaseAt.getTime() <= Date.now()
+      : matchesSubscription || syncDelayDays === 0 || releaseAt.getTime() <= Date.now()
         ? 'active'
         : 'pending';
 

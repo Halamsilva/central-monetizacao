@@ -337,6 +337,18 @@ REGRAS ANTI-MAGREZA (VIOLAR É PROIBIDO):
 Você é o mais consagrado diretor cinematográfico e roteirista de novelinhas curtas dramáticas ultra-virais para redes sociais (Kwai, TikTok, Instagram Reels, YouTube Shorts).
 Você cria descrições de cenas completas e prompts visuais ultra-realistas no padrão oficial do SEEDANCE 2.5 (ByteDance / Dreamina / CapCut) e GOOGLE FLOW.
 
+################################################################
+REGRA #0 - IDIOMA DE DESTINO (PRIORIDADE MÁXIMA - VALE ACIMA DE TUDO, SEM EXCEÇÃO)
+################################################################
+IDIOMA DE DESTINO OBRIGATÓRIO: ${currentLang.langName} (${currentLang.locale}).
+
+1. TUDO o que o público lê e ouve DEVE estar em ${currentLang.langName}: a HISTÓRIA, as descrições das cenas, as ações, as falas ("DIÁLOGO REAL:" e "RESPOSTA:"), o áudio nativo, o Título Sugerido, a Legenda e as Hashtags.
+2. É TERMINANTEMENTE PROIBIDO entregar história, descrições de cena ou falas em português quando o idioma de destino for ${currentLang.langName} (a única exceção é se o destino for o próprio Português do Brasil).
+3. Os RÓTULOS TÉCNICOS do formato ("PROMPT CENA N (SEEDANCE 2.5)", "QUEM FALA:", "TOM E INTENÇÃO DA FALA:", "DIÁLOGO REAL:", "QUEM RESPONDE:", "RESPOSTA:", "INSTRUÇÕES VISUAIS", "[Subject & Character Consistency]", "[Dialogue & Native Audio]" etc.) DEVEM ser mantidos EXATAMENTE como no template (NÃO traduza os rótulos) - mas TODO o conteúdo dentro deles vai em ${currentLang.langName}.
+4. Se o roteiro de referência (roteiro do usuário ou história anterior) estiver em outro idioma, mantenha a história IDÊNTICA (fatos, personagens, ordem dos acontecimentos e desfecho) e apenas ESCREVA todo o conteúdo e as falas em ${currentLang.langName} (traduza/adapte as falas para o idioma de destino).
+5. ANTES DE ENTREGAR, revise CADA fala e CADA título do SEO e confirme que estão em ${currentLang.langName}. Entrega no idioma errado = tarefa inválida (nota zero).
+################################################################
+
 DIRETRIZ SOBERANA DE IDIOMA E LOCALIZAÇÃO CULTURAL:
 - País Selecionado: ${country}
 - Idioma Obrigatório do Roteiro e Diálogos: ${currentLang.langName} (${currentLang.locale})
@@ -349,7 +361,8 @@ Por isso, É ESTRITAMENTE OBRIGATÓRIO que:
 2. REGRA DE DIÁLOGO: NUNCA adicione "diálogo sugerido", coloque SOMENTE O DIÁLOGO REAL que os personagens falam em cena! Diálogos autênticos, impactantes, coloquiais e perfeitamente pontuados.
 3. No bloco do Seedance 2.5, a linha "[Dialogue & Native Audio]" DEVE conter o diálogo real no idioma ${currentLang.langName} para que o modelo de IA gere a dublagem e o sincronismo labial nativo no idioma ${currentLang.langName} de ${country}.
 4. Título Sugerido, Legenda e Gatilho no SEO final DEVEM ser escritos no idioma ${currentLang.langName}.
-5. NUNCA gere diálogos em português se o país escolhido for ${country} (exceto se o país for Brasil).
+5. A HISTÓRIA e as descrições de cena TAMBÉM devem ser escritas no idioma ${currentLang.langName} (o público de ${country} lê tudo nesse idioma).
+6. NUNCA gere textos em português se o país escolhido for ${country} (exceto se o país for Brasil).
 
 DIRETRIZ MÁXIMA DE TEMA (REGRA INVIOLÁVEL):
 ${themeDirective}
@@ -708,6 +721,21 @@ const handleIdeas = async (req: any, res: any) => {
   try {
     const { theme = 'Dramas Emocionantes', country = 'Brasil', count = 5 } = req.body || {};
 
+    const ideasLanguage =
+      country === 'Estados Unidos' || country === 'Reino Unido'
+        ? 'inglês (English)'
+        : country === 'Espanha' || country === 'México'
+          ? 'espanhol (Español)'
+          : country === 'França'
+            ? 'francês (Français)'
+            : country === 'Itália'
+              ? 'italiano (Italiano)'
+              : country === 'Alemanha'
+                ? 'alemão (Deutsch)'
+                : 'português do Brasil';
+
+    const ideasLanguageGuidance = `IDIOMA OBRIGATÓRIO DAS IDEIAS: escreva TODAS as ideias em ${ideasLanguage}. É proibido escrever as ideias em português quando o país escolhido for ${country} (exceto se o país for Brasil).`;
+
     const extraThemeGuidance =
       theme === 'Frutas'
         ? `IMPORTANTE PARA O TEMA FRUTAS: Todos os personagens DEVEM ser FRUTAS HUMANIZADAS / ANTROPOMÓRFICAS (ex: Moranguinha a protagonista romântica com vestido rosa e sementes douradas, Bananão o playboy de terno, Uva Vitória a vilã invejosa de vestido de gala, Maçãzinho o jovem herdeiro, Cereza sedutora, etc.). Crie dilemas novelescos de traição, ciúmes, vingança, romance proibido e superação no mundo das frutas em animação 3D.`
@@ -731,6 +759,7 @@ IMPORTANTE — COTIDIANO BRASILEIRO REAL (obrigatório para o tema GORDOS):
 Você é o principal criador e roteirista de novelinhas curtas ultra-virais para redes sociais (TikTok, Kwai, Reels, YouTube Shorts).
 Gere exatamente ${count} ideias curtas, inéditas, dramáticas, viciantes e com ganchos emocionais fortes para o tema '${theme}' ambientado em '${country}'.
 ${extraThemeGuidance}${antiClicheIdeasGuidance}
+${ideasLanguageGuidance}
 REGRA ANTI-CLICHÊ (obrigatória): NUNCA use tramas batidas/genéricas (marido traindo com a empregada, madrasta malvada, herança disputada, "segredo do passado" vazio, vingança de ex, vilão genérico). Cada ideia parte de um PROBLEMA CONCRETO e específico, não de um conflito abstrato.
 Cada ideia deve ter entre 1 e 2 frases de alto impacto:
 - Apresentar personagens nítidos (com nomes e personalidades marcantes)

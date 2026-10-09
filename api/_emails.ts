@@ -93,7 +93,7 @@ const buildEmail = (kind: EmailKind, input: SendAccessEmailInput) => {
 
 ATENCAO: este e-mail e da CENTRAL MONETIZACAO. Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta SPAM / lixo eletronico.
 
-Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente apos a confirmacao: a assinatura da plataforma libera na hora e a compra do curso libera apos o prazo de garantia de 7 dias.
+Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente apos a confirmacao: a assinatura da plataforma e a compra do curso liberam na hora.
 
 Acesse: ${appUrl}`,
       html: baseEmailHtml(
@@ -105,7 +105,7 @@ Acesse: ${appUrl}`,
             <strong>Atencao:</strong> este e-mail e da <strong>Central Monetizacao</strong>.
             Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta <strong>SPAM / lixo eletronico</strong>.
           </p>
-          <p>Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente apos a confirmacao: a assinatura da plataforma libera na hora e a compra do curso libera apos o prazo de garantia de 7 dias.</p>
+          <p>Para liberar seu acesso, use o mesmo e-mail da compra na Kiwify. A liberacao acontece automaticamente apos a confirmacao: a assinatura da plataforma e a compra do curso liberam na hora.</p>
           <p>Se voce acabou de comprar, nao precisa pedir aprovacao manual: o sistema vai conferir sua compra sozinho.</p>
         `
       ),
@@ -122,9 +122,9 @@ ATENCAO: este e-mail e da CENTRAL MONETIZACAO e e DIFERENTE do e-mail automatico
 Crie sua conta na plataforma com o MESMO e-mail da compra:
 ${appUrl}/boas-vindas
 
-Compras do curso sao liberadas automaticamente apos o prazo de garantia de 7 dias.${releaseDate ? `\nPrevisao de liberacao: ${releaseDate}.` : ''}
+Compras do curso sao liberadas automaticamente assim que a Kiwify confirma o pagamento.${releaseDate ? `\nPrevisao de liberacao: ${releaseDate}.` : ''}
 
-Quando o prazo terminar, entre na plataforma com este mesmo e-mail para ativar o acesso.`,
+Entre na plataforma com este mesmo e-mail para ativar o acesso.`,
       html: baseEmailHtml(
         'Crie sua conta na Central Monetizacao',
         'Sua compra foi confirmada. Crie sua conta com o mesmo e-mail da compra.',
@@ -134,7 +134,7 @@ Quando o prazo terminar, entre na plataforma com este mesmo e-mail para ativar o
             <strong>Atencao:</strong> este e-mail e da <strong>Central Monetizacao</strong> e e <strong>diferente</strong> do e-mail automatico da Kiwify.
             Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta <strong>SPAM / lixo eletronico</strong>.
           </p>
-          <p>Compras do curso sao liberadas automaticamente apos o prazo de garantia de 7 dias. Assinaturas da plataforma liberam na hora.</p>
+          <p>Compras do curso sao liberadas automaticamente assim que a Kiwify confirma o pagamento. Assinaturas da plataforma tambem liberam na hora.</p>
           ${releaseDate ? `<p><strong>Previsao de liberacao:</strong> ${escapeHtml(releaseDate)}.</p>` : ''}
           <p>Para ja deixar tudo pronto, <strong>crie sua conta com o MESMO e-mail da compra</strong> clicando no botao abaixo:</p>
         `,

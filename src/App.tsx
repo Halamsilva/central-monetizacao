@@ -185,7 +185,7 @@ const PendingAccessScreen = () => {
       <p className="mt-4 leading-relaxed text-slate-500">
         Seu cadastro foi recebido. Use o <strong>mesmo e-mail da compra</strong> na Kiwify:
         o acesso é liberado automaticamente após a confirmação da compra. A assinatura da
-        plataforma libera na hora; compras do curso são liberadas após o prazo de garantia de 7 dias.
+        plataforma e a compra do curso liberam na hora.
       </p>
       <a
         href="/assinar"

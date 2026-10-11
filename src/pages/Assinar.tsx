@@ -252,18 +252,24 @@ const Assinar: React.FC = () => {
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {/* Curso completo */}
-            <div className="flex flex-col rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-7">
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400">
+            <div className="relative flex flex-col rounded-[1.75rem] border-2 border-[#f27d26] bg-gradient-to-b from-[#f27d26]/10 to-transparent p-7 shadow-[0_0_60px_-20px_rgba(242,125,38,0.6)]">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#f27d26] px-3 py-1 text-[10px] font-black uppercase tracking-wide text-black">
+                  <Star size={12} fill="currentColor" /> Mais vantajoso
+                </span>
+              </div>
+
+              <p className="text-xs font-black uppercase tracking-widest text-[#f27d26]">
                 Curso completo
               </p>
               <p className="mt-3 text-4xl font-black text-white">{offer.coursePrice}</p>
-              <p className="mt-1 text-sm text-slate-500">pagamento único</p>
+              <p className="mt-1 text-sm text-slate-400">pagamento único</p>
 
               <div className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-400">
                 <InfinityIcon size={12} /> Acesso vitalício
               </div>
 
-              <ul className="mt-6 space-y-2 text-sm text-slate-400">
+              <ul className="mt-6 space-y-2 text-sm text-slate-300">
                 <li className="flex items-center gap-2">
                   <Check size={15} className="text-emerald-400" /> Curso completo do zero ao avançado
                 </li>
@@ -282,12 +288,12 @@ const Assinar: React.FC = () => {
                   href={offer.courseCheckoutUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-8 flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 text-sm font-black text-white transition hover:bg-white/10"
+                  className="mt-8 flex h-14 items-center justify-center gap-2 rounded-2xl bg-[#f27d26] text-sm font-black text-black transition hover:brightness-110"
                 >
                   Quero o curso completo
                 </a>
               ) : (
-                <div className="mt-8 flex h-14 items-center justify-center rounded-2xl border border-dashed border-white/20 text-sm font-bold text-slate-500">
+                <div className="mt-8 flex h-14 items-center justify-center rounded-2xl border border-dashed border-[#f27d26]/40 text-sm font-bold text-[#f27d26]/80">
                   Em breve
                 </div>
               )}
@@ -329,22 +335,16 @@ const Assinar: React.FC = () => {
             </div>
 
             {/* Anual */}
-            <div className="relative flex flex-col rounded-[1.75rem] border-2 border-[#f27d26] bg-gradient-to-b from-[#f27d26]/10 to-transparent p-7 shadow-[0_0_60px_-20px_rgba(242,125,38,0.6)]">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#f27d26] px-3 py-1 text-[10px] font-black uppercase tracking-wide text-black">
-                  <Star size={12} fill="currentColor" /> Mais vantajoso
-                </span>
-              </div>
-
-              <p className="text-xs font-black uppercase tracking-widest text-[#f27d26]">
+            <div className="flex flex-col rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-7">
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">
                 Anual
               </p>
               <p className="mt-3 text-4xl font-black text-white">{offer.annualPrice}</p>
-              <p className="mt-1 text-sm text-slate-400">
-                equivale a <strong className="text-slate-200">{offer.annualMonthly}</strong> · economize muito
+              <p className="mt-1 text-sm text-slate-500">
+                equivale a <strong className="text-slate-300">{offer.annualMonthly}</strong> · economize muito
               </p>
 
-              <ul className="mt-6 space-y-2 text-sm text-slate-300">
+              <ul className="mt-6 space-y-2 text-sm text-slate-400">
                 <li className="flex items-center gap-2">
                   <Check size={15} className="text-emerald-400" /> Tudo do plano mensal
                 </li>
@@ -363,12 +363,12 @@ const Assinar: React.FC = () => {
                   href={offer.annualCheckoutUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-8 flex h-14 items-center justify-center gap-2 rounded-2xl bg-[#f27d26] text-sm font-black text-black transition hover:brightness-110"
+                  className="mt-8 flex h-14 items-center justify-center gap-2 rounded-2xl border border-white/15 bg-white/5 text-sm font-black text-white transition hover:bg-white/10"
                 >
                   Assinar anual
                 </a>
               ) : (
-                <div className="mt-8 flex h-14 items-center justify-center rounded-2xl border border-dashed border-[#f27d26]/40 text-sm font-bold text-[#f27d26]/80">
+                <div className="mt-8 flex h-14 items-center justify-center rounded-2xl border border-dashed border-white/20 text-sm font-bold text-slate-500">
                   Em breve
                 </div>
               )}

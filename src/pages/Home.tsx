@@ -30,6 +30,7 @@ import {
   MessageCircle,
   Sprout,
   Flame,
+  Clapperboard,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
@@ -170,6 +171,13 @@ const tools: Tool[] = [
     path: '/ganchos',
     icon: Flame,
     accent: 'bg-orange-100 text-orange-600',
+  },
+  {
+    title: 'Estúdio de Vídeos IA',
+    description: 'Gere vídeos com IA usando a sua própria conta (Magic Hour).',
+    path: '/video-studio',
+    icon: Clapperboard,
+    accent: 'bg-rose-100 text-rose-600',
   },
 ];
 

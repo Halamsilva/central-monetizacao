@@ -16,6 +16,7 @@ import reflexaoVelhoRocaHandler from '../server-agents/reflexaoVelhoRoca.js';
 import plantacoesHandler from '../server-agents/plantacoes.js';
 import limpezaHandler from '../server-agents/limpeza.js';
 import ganchosHandler from '../server-agents/ganchos.js';
+import videoStudioHandler from '../server-agents/videoStudio.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
@@ -36,6 +37,7 @@ const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   plantacoes: plantacoesHandler,
   limpeza: limpezaHandler,
   ganchos: ganchosHandler,
+  'video-studio': videoStudioHandler,
 };
 
 export default function handler(req: any, res: any) {

@@ -37,6 +37,7 @@ import {
   Sprout,
   Sparkles,
   Flame,
+  Clapperboard,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -136,6 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const newAgentsMenu: MenuItem[] = [
     { title: 'Gordo para Magro', icon: Scale, path: '/avatar-scale' },
     { title: 'Reflexão do Velho da Roça', icon: Heart, path: '/reflexao-velho-roca' },
+    { title: 'Estúdio de Vídeos IA', icon: Clapperboard, path: '/video-studio' },
     { title: 'Gerador de Ganchos', icon: Flame, path: '/ganchos' },
     { title: 'Vídeos de Plantações', icon: Sprout, path: '/plantacoes' },
     { title: 'Vídeos de Limpeza', icon: Sparkles, path: '/limpeza' },

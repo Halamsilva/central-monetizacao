@@ -605,7 +605,7 @@ const VideoStudio: React.FC = () => {
             <video
               src={resultVideoUrl}
               controls
-              className="mt-4 w-full rounded-2xl border border-slate-800 bg-black"
+              className="mx-auto mt-4 block max-h-[70vh] w-auto max-w-full rounded-2xl border border-slate-800 bg-black"
             />
             <p className="mt-2 text-[11px] font-semibold text-slate-500">
               Dica: baixe agora — os links dos provedores podem expirar depois de alguns dias.

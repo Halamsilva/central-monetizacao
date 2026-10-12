@@ -186,7 +186,19 @@ const VideoStudio: React.FC = () => {
 
     if (saveError) {
       console.error('Erro ao salvar chave de video:', saveError);
-      setKeyMessage({ type: 'error', text: 'Nao consegui salvar a chave. Tente novamente.' });
+
+      const detail = String(saveError.message || '');
+      const tableMissing =
+        detail.toLowerCase().includes('does not exist') ||
+        detail.toLowerCase().includes('schema cache') ||
+        detail.toLowerCase().includes('could not find the table');
+
+      setKeyMessage({
+        type: 'error',
+        text: tableMissing
+          ? 'O sistema de videos ainda nao foi ativado no banco de dados (falta rodar o SQL de instalacao no Supabase). Se voce e o dono da plataforma, rode o arquivo sql/video-studio.sql no SQL Editor do Supabase e tente novamente.'
+          : `Nao consegui salvar a chave (${saveError.code || 'erro'}: ${detail || 'sem detalhe'}). Tente novamente.`,
+      });
       return;
     }
 

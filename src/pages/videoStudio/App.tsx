@@ -49,6 +49,9 @@ const CREDIT_RATES: Record<string, Record<string, number>> = {
 
 const DURATIONS = [5, 6, 8, 10, 15, 20, 30];
 
+const MAGIC_HOUR_SIGNUP_URL = 'https://magichour.ai/sign-up?invite=cmv5vkmys01ejko01majf0rjc';
+const MAGIC_HOUR_API_KEYS_URL = 'https://magichour.ai/developer?tab=api-keys';
+
 const callAgent = async (action: string, payload: Record<string, unknown> = {}) => {
   const { data } = await supabase.auth.getSession();
   const token = data?.session?.access_token || '';
@@ -390,18 +393,35 @@ const VideoStudio: React.FC = () => {
 
             <p className="mt-2 text-xs leading-relaxed text-slate-400">
               O Estudio usa a <strong className="text-slate-200">sua propria conta</strong> de geracao de videos — assim voce
-              usa os seus creditos gratuitos e a plataforma nao paga nada por voce. Crie a conta em{' '}
+              usa os seus creditos gratuitos e a plataforma nao paga nada por voce. Sao 2 passos rapidos:
+            </p>
+
+            <div className="mt-4 flex flex-col gap-3">
               <a
-                href="https://magichour.ai/developer?tab=api-keys"
+                href={MAGIC_HOUR_SIGNUP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-bold text-orange-300 underline"
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 text-sm font-black text-black transition hover:brightness-110 sm:w-auto"
               >
-                magichour.ai/developer <ExternalLink size={11} className="inline" />
-              </a>{' '}
-              (nao pede cartao), clique em <strong className="text-slate-200">Create key</strong> e cole a chave aqui. Ela
-              fica guardada com seguranca e so o sistema usa (nunca aparece para outros alunos).
-            </p>
+                <Sparkles size={17} />
+                1. Criar minha conta na Magic Hour (gratis, sem cartao)
+              </a>
+
+              <p className="text-xs leading-relaxed text-slate-400">
+                2. Com a conta criada, entre no{' '}
+                <a
+                  href={MAGIC_HOUR_API_KEYS_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-orange-300 underline"
+                >
+                  painel do desenvolvedor <ExternalLink size={11} className="inline" />
+                </a>
+                , clique em <strong className="text-slate-200">Create key</strong>, copie a chave (comeca com{' '}
+                <strong className="text-slate-200">mhk_</strong>) e cole no campo abaixo. Ela fica guardada com seguranca e so
+                o sistema usa — nunca aparece para outros alunos.
+              </p>
+            </div>
 
             <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <input

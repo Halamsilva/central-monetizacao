@@ -31,6 +31,7 @@ import {
   Sprout,
   Flame,
   Clapperboard,
+  Workflow,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
@@ -182,6 +183,7 @@ const tools: Tool[] = [
 ];
 
 const quickLinks = [
+  { title: 'Automações do FLOW', description: 'Materiais, templates e automações prontas.', path: '/automacoes-flow', icon: Workflow, accent: 'bg-orange-100 text-orange-600' },
   { title: 'Loja VIP', description: 'Materiais e pacotes exclusivos.', path: '/shop-vip', icon: ShoppingBag, accent: 'bg-indigo-100 text-indigo-600' },
   { title: 'Downloads', description: 'Aplicativos e ferramentas prontas.', path: '/downloads', icon: Download, accent: 'bg-teal-100 text-teal-600' },
   { title: 'Tutoriais', description: 'Aulas passo a passo em vídeo.', path: '/tutoriais', icon: Youtube, accent: 'bg-red-100 text-red-600' },

@@ -37,6 +37,7 @@ const Plantacoes = lazy(() => import('./pages/plantacoes/App'));
 const Limpeza = lazy(() => import('./pages/limpeza/App'));
 const Ganchos = lazy(() => import('./pages/ganchos/App'));
 const VideoStudio = lazy(() => import('./pages/videoStudio/App'));
+const FlowAutomations = lazy(() => import('./pages/flowAutomations/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -287,6 +288,7 @@ export default function App() {
               }
             >
               <Route index element={<Home />} />
+          <Route path="automacoes-flow" element={<FlowAutomations />} />
               <Route path="agents" element={<AdminRoute><Agents /></AdminRoute>} />
               <Route path="viral-prompts" element={<ViralPrompts />} />
               <Route path="tiktok-shop" element={<TikTokShop />} />

@@ -38,6 +38,7 @@ import {
   Sparkles,
   Flame,
   Clapperboard,
+  Workflow,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -116,6 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const mainMenu: MenuItem[] = [
     { title: 'Início', icon: Home, path: '/' },
+    { title: 'Automações do FLOW', icon: Workflow, path: '/automacoes-flow' },
   ];
 
   const primaryStrategyMenu: MenuItem[] = [

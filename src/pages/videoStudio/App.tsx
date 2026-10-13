@@ -120,12 +120,12 @@ const VideoStudio: React.FC = () => {
 
     try {
       const { data } = await supabase
-        .from('user_video_keys')
-        .select('provider, updated_at')
+        .from('user_secrets')
+        .select('video_api_key')
         .eq('id', user.id)
         .maybeSingle();
 
-      setHasKey(Boolean(data));
+      setHasKey(Boolean(String(data?.video_api_key || '').trim()));
     } catch {
       setHasKey(false);
     }
@@ -175,10 +175,10 @@ const VideoStudio: React.FC = () => {
     setKeySaving(true);
     setKeyMessage(null);
 
-    const { error: saveError } = await supabase.from('user_video_keys').upsert({
+    const { error: saveError } = await supabase.from('user_secrets').upsert({
       id: user.id,
-      provider: 'magichour',
-      api_key: value,
+      video_api_key: value,
+      video_provider: 'magichour',
       updated_at: new Date().toISOString(),
     });
 
@@ -188,16 +188,9 @@ const VideoStudio: React.FC = () => {
       console.error('Erro ao salvar chave de video:', saveError);
 
       const detail = String(saveError.message || '');
-      const tableMissing =
-        detail.toLowerCase().includes('does not exist') ||
-        detail.toLowerCase().includes('schema cache') ||
-        detail.toLowerCase().includes('could not find the table');
-
       setKeyMessage({
         type: 'error',
-        text: tableMissing
-          ? 'O sistema de videos ainda nao foi ativado no banco de dados (falta rodar o SQL de instalacao no Supabase). Se voce e o dono da plataforma, rode o arquivo sql/video-studio.sql no SQL Editor do Supabase e tente novamente.'
-          : `Nao consegui salvar a chave (${saveError.code || 'erro'}: ${detail || 'sem detalhe'}). Tente novamente.`,
+        text: `Nao consegui salvar a chave (${saveError.code || 'erro'}: ${detail || 'sem detalhe'}). Tente novamente.`,
       });
       return;
     }
@@ -213,8 +206,8 @@ const VideoStudio: React.FC = () => {
     if (!user?.id) return;
 
     const { error: removeError } = await supabase
-      .from('user_video_keys')
-      .update({ api_key: '', updated_at: new Date().toISOString() })
+      .from('user_secrets')
+      .update({ video_api_key: '', updated_at: new Date().toISOString() })
       .eq('id', user.id);
 
     if (removeError) {

@@ -56,16 +56,16 @@ const checkAccess = async (serviceSupabase: any, req: any, res: any) => {
 
 const getUserVideoKey = async (serviceSupabase: any, userId: string) => {
   const { data, error } = await serviceSupabase
-    .from('user_video_keys')
-    .select('provider, api_key')
+    .from('user_secrets')
+    .select('video_api_key')
     .eq('id', userId)
     .maybeSingle();
 
   if (error) return { apiKey: '', provider: 'magichour' };
 
   return {
-    apiKey: String(data?.api_key || '').trim(),
-    provider: String(data?.provider || 'magichour'),
+    apiKey: String(data?.video_api_key || '').trim(),
+    provider: 'magichour',
   };
 };
 

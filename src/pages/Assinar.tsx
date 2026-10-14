@@ -70,7 +70,7 @@ const FAQ = [
   },
   {
     q: 'Posso cancelar quando quiser?',
-    a: 'Sim, você pode cancelar quando quiser. Em até 7 dias você tem direito ao reembolso. Depois desse prazo, o cancelamento encerra o seu acesso à plataforma, sem reembolso.',
+    a: 'Sim, sem burocracia — o cancelamento é feito direto na Kiwify, quando você quiser. E nos primeiros 7 dias você tem garantia total: se achar que não é pra você, devolvemos o valor.',
   },
   {
     q: 'Tem limite de uso?',
@@ -390,9 +390,9 @@ const Assinar: React.FC = () => {
           <div>
             <h3 className="text-xl font-black text-white">Garantia de 7 dias</h3>
             <p className="mt-1 text-sm leading-relaxed text-slate-400">
-              Assine sem risco: se em até 7 dias você achar que não é pra você, é só pedir o
-              reembolso e devolvemos o valor. Depois desse prazo, o cancelamento encerra o
-              acesso e não gera reembolso.
+              Assine sem risco: você tem 7 dias de garantia. Se nesse período achar que não é
+              pra você, é só pedir o reembolso e devolvemos o valor — sem burocracia. Depois
+              disso, é só cancelar direto na Kiwify quando quiser.
             </p>
           </div>
         </div>

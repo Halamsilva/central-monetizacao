@@ -593,6 +593,17 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
   const [showOwnScript, setShowOwnScript] = useState(false);
   const [ownScript, setOwnScript] = useState('');
   const [ownScriptMode, setOwnScriptMode] = useState<'continue' | 'adapt'>('continue');
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setElapsedSeconds(0);
+      return;
+    }
+
+    const timer = window.setInterval(() => setElapsedSeconds((value) => value + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [loading]);
 
   const effectiveTheme = lockedTheme || (theme === 'Outro' ? customThemeTitle.trim() || 'Tema personalizado' : theme);
   const visibleThemes = lockedTheme ? [{ label: lockedTheme, icon: '🍔' }] : themes;
@@ -1587,6 +1598,17 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
               Vídeo longo detectado: a IA cria primeiro a ficha de personagens e o plano de continuidade e
               depois gera as {scenes} cenas em blocos, todos alimentados pelo mesmo contrato. Leva mais
               tempo, mas mantém figurino, cenário, nomes e ritmo iguais da cena 1 até a cena {scenes}.
+            </p>
+          )}
+
+          {loading && (
+            <p className="mt-4 text-center text-xs font-semibold leading-relaxed text-orange-200/80">
+              {scenes > 8
+                ? `Montando a ficha de personagens e o plano de continuidade e gerando as ${scenes} cenas em blocos. Vídeo longo leva cerca de 1 a 2 minutos — não feche a página.`
+                : 'Escrevendo o roteiro e as cenas. Isso costuma levar de 30 a 60 segundos.'}
+              <span className="mt-1 block text-zinc-400">
+                {Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, '0')} de espera
+              </span>
             </p>
           )}
         </section>

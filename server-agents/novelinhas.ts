@@ -2,23 +2,45 @@ import { GoogleGenAI } from '@google/genai';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 import { getActiveGeminiApiKey } from './gemini-key.js';
 
+const withTimeout = <T>(promise: Promise<T>, ms: number, label: string) =>
+  Promise.race([
+    promise,
+    new Promise<T>((_resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(Object.assign(new Error(`Tempo de resposta esgotado no modelo ${label}.`), { code: 'TIMEOUT' }));
+      }, ms);
+      (timer as any).unref?.();
+    }),
+  ]);
+
 // Helper with retry and fallback across multiple models for high demand resilience
-async function generateWithModelFallback(promptInstructions: string, apiKey: string, temperature = 0.85) {
-  const models = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
+async function generateWithModelFallback(
+  promptInstructions: string,
+  apiKey: string,
+  temperature = 0.85,
+  options: { attemptsPerModel?: number; timeoutMs?: number } = {},
+) {
+  const models = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+  const attemptsPerModel = options.attemptsPerModel ?? 2;
+  const timeoutMs = options.timeoutMs ?? 120000;
   let lastError: any = null;
   const ai = new GoogleGenAI({ apiKey });
 
   for (const model of models) {
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < attemptsPerModel; attempt++) {
       try {
-        const response = await ai.models.generateContent({
+        const response = await withTimeout(
+          ai.models.generateContent({
+            model,
+            contents: promptInstructions,
+            config: {
+              temperature,
+              topP: 0.95,
+            },
+          }),
+          timeoutMs,
           model,
-          contents: promptInstructions,
-          config: {
-            temperature,
-            topP: 0.95,
-          },
-        });
+        );
 
         const generatedText = response.text || '';
         if (generatedText && generatedText.trim().length > 0) {
@@ -32,21 +54,21 @@ async function generateWithModelFallback(promptInstructions: string, apiKey: str
           err?.status === 429 ||
           err?.code === 503 ||
           err?.code === 429 ||
+          err?.code === 'TIMEOUT' ||
           errMessage.includes('503') ||
           errMessage.includes('high demand') ||
           errMessage.includes('UNAVAILABLE') ||
           errMessage.includes('overloaded') ||
           errMessage.includes('Resource has been exhausted');
 
-        if (isHighDemandOrUnavailable && attempt === 0) {
-          // Wait 1.5s before retry on same model
-          await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 500));
-          continue;
+        if (isHighDemandOrUnavailable && attempt === attemptsPerModel - 1) {
+          break;
         }
 
         if (isHighDemandOrUnavailable) {
-          // Switch to next fallback model
-          break;
+          // Wait 1.5s before retry on same model
+          await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 500));
+          continue;
         }
 
         throw err;
@@ -70,7 +92,6 @@ const SINGLE_CALL_MAX_SCENES = 8;
 const LONG_VIDEO_BLOCK_SIZE = 5;
 
 type LongVideoContext = {
-  master: string;
   apiKey: string;
   theme: string;
   country: string;
@@ -142,10 +163,10 @@ const buildBeatMap = (total: number) => {
 };
 
 const buildBiblePrompt = (ctx: LongVideoContext) => `
-Você é o mais consagrado diretor cinematográfico e roteirista de novelinhas curtas dramáticas ultra-virais para redes sociais (Kwai, TikTok, Instagram Reels, YouTube Shorts). Você cria prompts visuais ultra-realistas no padrão SEEDANCE 2.5 (ByteDance / Dreamina / CapCut) e GOOGLE FLOW.
+Você é o mais consagrado diretor cinematográfico e roteirista de novelinhas curtas dramáticas ultra-virais para redes sociais (Kwai, TikTok, Instagram Reels, YouTube Shorts).
 
 REGRA #0 - IDIOMA DE DESTINO (PRIORIDADE MÁXIMA):
-Tudo o que o público lê e ouve (história, descrições, falas, título, legenda e hashtags) DEVE estar em ${ctx.langName} (${ctx.locale}). É TERMINANTEMENTE PROIBIDO entregar conteúdo em português quando o idioma de destino for ${ctx.langName} (a única exceção é quando o destino for o próprio Português do Brasil). Os rótulos técnicos (PROMPT CENA, QUEM FALA, [Subject & Character Consistency], etc.) permanecem exatamente como no padrão.
+Tudo o que o público lê e ouve (história, descrições, falas, título, legenda e hashtags) DEVE estar em ${ctx.langName} (${ctx.locale}). É TERMINANTEMENTE PROIBIDO entregar conteúdo em português quando o idioma de destino for ${ctx.langName} (a única exceção é quando o destino for o próprio Português do Brasil). Os rótulos técnicos (PROMPT CENA, PLANO - CENA, etc.) permanecem exatamente como no padrão.
 
 DIRETRIZ SOBERANA DE TEMA:
 ${ctx.themeDirective}
@@ -196,6 +217,41 @@ ${buildBeatMap(ctx.numScenes)}
 11. TODO o conteúdo (fichas, plano, falas) em ${ctx.langName}, exceto os rótulos técnicos em português.
 `;
 
+const buildBlockFormatSpec = (ctx: LongVideoContext) => `
+VOCÊ É O MAIOR CONSAGRADO DIRETOR CINEMATOGRÁFICO E ROTEIRISTA DE NOVELINHAS ULTRA-VIRAIS (Kwai, TikTok, Reels, YouTube Shorts). Você escreve prompts visuais fotorrealistas 4K no padrão SEEDANCE 2.5 (ByteDance / Dreamina / CapCut) e GOOGLE FLOW, com áudio nativo e lip-sync.
+
+IDIOMA (PRIORIDADE MÁXIMA): tudo que o público lê e ouve (descrições, ações, falas, título, legenda, hashtags) em ${ctx.langName} (${ctx.locale}). É TERMINANTEMENTE PROIBIDO escrever conteúdo em português quando o idioma de destino for ${ctx.langName}. Os rótulos técnicos do formato permanecem exatamente como no padrão (em português).
+
+TEMA OBRIGATÓRIO: '${ctx.theme}' (${ctx.country}). Tom: ${ctx.tone}. Emoção dominante: ${ctx.emotion}. Realismo de imagem: ${ctx.skinDirective}.
+
+FORMATO EXATO DE CADA CENA (repita idêntico em todas, sem pular nenhuma linha):
+PROMPT CENA N (SEEDANCE 2.5):
+QUEM FALA: [Nome + FICHA FÍSICA FIXA COMPLETA (idade, altura, porte, tom/textura de pele, cabelo/barba, ROUPA exata com peças/tecidos/cores, CALÇADOS e ACESSÓRIOS) + papel dramático, expressão facial, postura e estado emocional]
+TOM E INTENÇÃO DA FALA: [tom vocal, cadência, ritmo e respiração em ${ctx.langName}]
+DIÁLOGO REAL: "[diálogo real e curto]" (máx. 18 palavras; com réplica, máx. 10 palavras cada e soma das duas nunca passa de 20)
+QUEM RESPONDE: [Nome + FICHA FÍSICA FIXA COMPLETA + reação física imediata]
+RESPOSTA: "[réplica real e curta]"
+INSTRUÇÕES VISUAIS (PROMPT SEEDANCE 2.5 & GOOGLE FLOW):
+[Subject & Character Consistency]: Subject N - Nome (ficha por extenso, idêntica ao PROMPT 00). NUNCA escreva "mesmo personagem".
+[Environment & Scene Setting]: cenário 3D real e detalhado da cena (piso, paredes, janelas, móveis de fundo, iluminação, profundidade).
+[Background Override]: CRITICAL: the reference image has a white studio background. COMPLETELY DISCARD AND OVERRIDE THE WHITE BACKGROUND. Ground the characters inside the 3D environment with contact shadows. No empty white studio void.
+[Action & First-Frame Blocking]: posição inicial, movimento orgânico com causa antes do efeito, postura e respiração.
+[Optics & Camera Movement]: two-shot médio (50-85mm, f/1.8, slow push-in) mantendo NA FOTO o rosto e a boca dos DOIS personagens da conversa. PROIBIDO alternating close-ups ou corte para um único personagem durante o diálogo (quebra o lip-sync).
+[Dialogue & Native Audio]: FIRST Character [Nome] (ficha completa) speaks: "[diálogo]" with precision lip-sync and [tom]; THEN Character [Nome] (ficha completa) responds: "[resposta]" with precision lip-sync and [tom]. Apenas quem fala move a boca; o outro permanece calado e reagindo; nunca sobreponha as vozes.
+[Lighting & Atmosphere]: direção e motivação das luzes coerentes com o cenário.
+[Audio & Ambience (SFX)]): paisagem sonora e foley nativos do local.
+[Global Style & Physical Realism]: 4K fotorrealista, ${ctx.skinDirective}, física natural, 24fps.
+[Negative Prompt]: white background, blank white void, studio cyclorama, plain backdrop, floating characters, artificial studio setup, empty white space.
+
+REGRAS INEGOCIÁVEIS:
+1. Cada fala pertence ao personagem declarado em QUEM FALA/RESPOSTA (nunca troque os papéis) e o vocabulário combina com a idade e o papel dele.
+2. Cada cena tem UM SÓ turno e termina em mini-cliffhanger (corte na pergunta, nunca na resposta).
+3. A cena N+1 nasce da cena N: mesmo lugar, mesmo objeto, mesma consequência. Proibido repetir ação, fala ou virada já existente.
+4. Cenhas de diálogo devem coerir: quem conversa está no MESMO ambiente, se olhando (nada de "ao telefone" numa conversa frente a frente).
+5. Fala curta, seca e filmável, em ${ctx.langName}. Proibido discurso, monólogo ou frase genérica de novela.
+6. Nenhum "..." ou "mesmo de antes": cada cena sai completa, com o mesmo nível de detalhe.
+`;
+
 const buildBlockPrompt = (opts: {
   ctx: LongVideoContext;
   start: number;
@@ -210,26 +266,26 @@ const buildBlockPrompt = (opts: {
   const expected = end - start + 1;
   const previousContext = extractPlanLines(plan, Math.max(1, start - 2), start - 1);
 
-  return `${ctx.master}
-
+  return `${buildBlockFormatSpec(ctx)}
+${ctx.themeDirective ? `\nDIRETRIZ OBRIGATÓRIA DO TEMA '${ctx.theme}':\n${ctx.themeDirective}\n` : ''}${ctx.extremeWeightDirective}
 ################################################################
-ETAPA 2 DE 2 - BLOCO ${index} DE ${totalBlocks}: VOCÊ ESCREVE AS CENAS ${start} A ${end}
+ETAPA 2 DE 2 - BLOCO ${index} DE ${totalBlocks}: ESCREVA SOMENTE AS CENAS ${start} A ${end}
 ################################################################
-A história inteira tem ${ctx.numScenes} cenas e JÁ FOI PLANEJADA. Outros blocos estão sendo escritos em paralelo agora. SUA TAREFA É ESCREVER SOMENTE AS CENAS ${start}, ${Array.from({ length: Math.max(0, expected - 2) }, (_, offset) => start + offset + 1).join(', ')}${expected >= 2 ? ` e ${end}` : ''} (${expected} cenas) no formato técnico completo.
+A história inteira tem ${ctx.numScenes} cenas e JÁ FOI PLANEJADA (outros blocos estão sendo escritos em paralelo agora). SUA TAREFA É ESCREVER SOMENTE AS CENAS ${start} A ${end} (${expected} cenas) no formato técnico acima.
 
 CONTRATO DE IDENTIDADE (PROMPT 00) - FONTE CANÔNICA, REPITA IDENTICO E PALAVRA POR PALAVRA:
 """
 ${referenceSheet || '(Use o plano abaixo como referência de identidade.)'}
 """
 
-PLANO COMPLETO DO EPISÓDIO (NÃO escreva cenas fora do seu bloco de ${start} a ${end}):
+PLANO COMPLETO DO EPISÓDIO (é a bíblia da história: escreva exatamente o que o plano define, sem inventar outra trama):
 """
 ${plan}
 """
 ${
   previousContext
     ? `
-CONTEXTO IMEDIATO (as cenas anteriores do seu bloco JA foram escritas, com base neste mesmo plano):
+CONTEXTO IMEDIATO (as cenas anteriores deste bloco JA foram escritas a partir deste mesmo plano):
 """
 ${previousContext}
 """
@@ -237,23 +293,27 @@ A cena ${start} DEVE abrir exatamente do ponto em que a cena ${start - 1} termin
     : ''
 }
 
-REGRAS BLOCO ${index}/${totalBlocks} (OBRIGATÓRIAS, PRIORIDADE MÁXIMA):
-1. COMECE DIRETO em "PROMPT CENA ${start} (SEEDANCE 2.5):". É TERMINANTEMENTE PROIBIDO reescrever o PROMPT 00, o plano de continuidade ou qualquer cena fora da faixa ${start}-${end}. Quem escreve a cena 1 é outro bloco.
-2. Escreva as ${expected} cenas em sequência (${start}, ${start + 1}${expected > 2 ? `, ... ${end}` : ''}), sem pular nem repetir números, com TODOS os rótulos na MESMA ordem e TODAS as 10 seções entre colchetes ([Subject & Character Consistency], [Environment & Scene Setting], [Background Override], [Action & First-Frame Blocking], [Optics & Camera Movement], [Dialogue & Native Audio], [Lighting & Atmosphere], [Audio & Ambience (SFX)], [Global Style & Physical Realism], [Negative Prompt]). NUNCA encurte uma cena: o nível de detalhe tem que ser idêntico em todas.
-3. CONSISTÊNCIA CANÔNICA: em [Subject & Character Consistency] de cada cena, repita a ficha do PROMPT 00 por extenso (idade, altura, porte, tom/textura de pele, rosto, cabelo, roupa peça por peça com cores e tecidos, calçados e acessórios). Nunca escreva "mesmo personagem" nem "personagem anterior". A identidade é a mesma da cena 1 até a cena ${end}.
-4. CONTINUIDADE DE CENÁRIO: mantenha o cenário mestre do PROMPT 00 e o ambiente da cena anterior. Passagens de tempo só com marcação curta ("MAIS TARDE...") e sem trocar de figurino.
-5. NÃO repita nenhuma fala, ação ou virada que já estejam no plano antes da cena ${start}, e NÃO use falas genéricas de novela.
-6. Mantenha o tom, o idioma (${ctx.langName}) e o ritmo do episódio inteiro.
+REGRAS BLOCO ${index}/${totalBlocks} (PRIORIDADE MÁXIMA):
+1. COMECE DIRETO em "PROMPT CENA ${start} (SEEDANCE 2.5):". É TERMINANTEMENTE PROIBIDO reescrever o PROMPT 00, o plano de continuidade, os CHARACTER MODEL SHEETS ou qualquer cena fora da faixa ${start}-${end}.
+2. Escreva as ${expected} cenas em sequência, sem pular nem repetir números, com TODOS os rótulos na MESMA ordem e TODAS as 10 seções entre colchetes em cada cena.
+3. CONSISTÊNCIA CANÔNICA: em [Subject & Character Consistency] e em QUEM FALA/QUEM RESPONDE, repita a ficha do PROMPT 00 por extenso (idade, altura, porte, tom/textura de pele, rosto, cabelo, roupa peça por peça com cores e tecidos, calçados e acessórios). A identidade é a mesma da cena 1 até a cena ${ctx.numScenes}.
+4. CONTINUIDADE: mantenha o cenário mestre do PROMPT 00 e o ambiente da cena anterior. Passagem de tempo só com marcação curta ("MAIS TARDE...") e sem trocar de figurino.
+5. Não repita nenhuma fala, ação ou virada já existente no plano antes da cena ${start}.
 ${
   isLastBlock
-    ? `7. COMO ESTE É O ÚLTIMO BLOCO, ao final das cenas ${start}-${end} entregue também: (a) os CHARACTER MODEL SHEETS (fundo branco puro, 6 ângulos de corpo inteiro + 3 retratos de rosto) de TODOS os personagens que apareceram NO EPISÓDIO INTEIRO (consulte o contrato e o plano para não esquecer nenhum); (b) o bloco final "---SEO-START---" com Título Sugerido, Legenda, Gatilho de Engajamento e Hashtags em ${ctx.langName}.`
-    : `7. Este NÃO é o último bloco: não gere model sheets nem SEO aqui. Entregue somente as cenas ${start} a ${end}.`
+    ? `6. COMO ESTE É O ÚLTIMO BLOCO, ao final das cenas ${start}-${end} entregue também: (a) os CHARACTER MODEL SHEETS (fundo branco puro, 6 ângulos de corpo inteiro + 3 retratos de rosto) de TODOS os personagens que apareceram NO EPISÓDIO INTEIRO; (b) o bloco final "---SEO-START---" com Título Sugerido, Legenda, Gatilho de Engajamento e Hashtags em ${ctx.langName}.`
+    : `6. Este NÃO é o último bloco: não gere model sheets nem SEO aqui. Entregue somente as cenas ${start} a ${end}.`
 }`;
 };
 
 const generateLongVideo = async (ctx: LongVideoContext) => {
   const biblePrompt = buildBiblePrompt(ctx);
-  let bible = (await generateWithModelFallback(biblePrompt, ctx.apiKey, 0.7)).text || '';
+  let bible = (
+    await generateWithModelFallback(biblePrompt, ctx.apiKey, 0.7, {
+      attemptsPerModel: 1,
+      timeoutMs: 90000,
+    })
+  ).text || '';
 
   if (!bible.trim()) {
     throw new Error('Nenhum texto foi gerado pelo modelo.');
@@ -275,6 +335,7 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
 - a seção "ROTEIRO DE CONTINUIDADE (${ctx.numScenes} CENAS)" com EXATAMENTE ${ctx.numScenes} linhas, uma para cada cena, no formato "PLANO - CENA N | LOCAL: ... | PERSONAGENS: ... | ACAO: ... | FALA PRINCIPAL: "..." | GANCHO PARA A PROXIMA: ...".`,
       ctx.apiKey,
       0.6,
+      { attemptsPerModel: 1, timeoutMs: 90000 },
     );
 
     const retryText = retry.text || '';
@@ -306,7 +367,13 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
         plan,
       });
 
-      let blockText = (await generateWithModelFallback(blockPrompt, ctx.apiKey, 0.75)).text || '';
+      let blockText =
+        (
+          await generateWithModelFallback(blockPrompt, ctx.apiKey, 0.75, {
+            attemptsPerModel: 1,
+            timeoutMs: 150000,
+          })
+        ).text || '';
 
       const isComplete =
         countSceneBlocks(blockText) >= expected &&
@@ -324,6 +391,7 @@ CORRECAO OBRIGATORIA DO BLOCO
 Reescreva APENAS as cenas ${range.start} a ${range.end} (${expected} cenas), todas completas, numeradas em sequencia e com TODAS as 10 secoes entre colchetes em cada cena. Comece direto em "PROMPT CENA ${range.start} (SEEDANCE 2.5):" e nao inclua o PROMPT 00 nem o plano.`,
           ctx.apiKey,
           0.7,
+          { attemptsPerModel: 1, timeoutMs: 150000 },
         );
 
         if (retry.text && countSceneBlocks(retry.text) >= countSceneBlocks(blockText)) {
@@ -936,7 +1004,6 @@ Hashtags Recomendadas: #novelinhas #cenas #dramatiktok #historiasreais #viralvid
 
     if (numScenes > SINGLE_CALL_MAX_SCENES) {
       const longText = await generateLongVideo({
-        master: promptInstructions,
         apiKey: req.geminiApiKey,
         theme: String(theme),
         country: String(country),

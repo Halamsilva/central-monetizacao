@@ -66,7 +66,7 @@ const Register: React.FC = () => {
           (await supabase.auth.getSession()).data.session?.access_token;
 
         if (sessionToken) {
-          fetch('/api/emails/registration', {
+          fetch('/api/emails/verification', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ const Register: React.FC = () => {
             },
             body: JSON.stringify({ email: email.trim().toLowerCase(), name }),
           }).catch((emailError) => {
-            console.error('Erro ao enviar e-mail de cadastro:', emailError);
+            console.error('Erro ao enviar e-mail de confirmacao:', emailError);
           });
         }
       }

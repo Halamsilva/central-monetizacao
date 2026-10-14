@@ -1,7 +1,7 @@
 import { getAuth } from 'firebase-admin/auth';
 import { createServiceClient, isFirebaseAdminConfigured, getAdminApp } from './_firebase.js';
 
-type EmailKind = 'registration' | 'purchase_pending' | 'access_released' | 'password_reset';
+type EmailKind = 'registration' | 'purchase_pending' | 'access_released' | 'password_reset' | 'verification';
 
 type SendAccessEmailInput = {
   to: string;
@@ -9,6 +9,7 @@ type SendAccessEmailInput = {
   releaseAt?: string | null;
   idempotencyKey?: string;
   resetUrl?: string | null;
+  verifyUrl?: string | null;
 };
 
 const appName = 'Central Monetizacao';
@@ -169,6 +170,37 @@ Se voce nao pediu isso, pode ignorar este e-mail: sua senha continua a mesma.`,
     };
   }
 
+  if (kind === 'verification') {
+    const verifyUrl = input.verifyUrl || appUrl;
+
+    return {
+      subject: 'Confirme seu e-mail para acessar a Central Monetizacao',
+      text: `Oi, ${rawName}. Falta 1 passo: confirme seu e-mail para acessar a plataforma.
+
+ATENCAO: este e-mail e da CENTRAL MONETIZACAO. Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta SPAM / lixo eletronico e marque como "nao e spam".
+
+Confirme aqui (link valido por algumas horas):
+${verifyUrl}
+
+Depois de confirmar, entre com o MESMO e-mail da compra na Kiwify: a liberacao acontece automaticamente.`,
+      html: baseEmailHtml(
+        'Confirme seu e-mail',
+        'Falta 1 passo para acessar a plataforma.',
+        `
+          <p>Oi, ${firstName}. Falta <strong>1 passo</strong>: confirme seu e-mail para acessar a plataforma.</p>
+          <p style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:12px 14px;color:#92400e;font-size:14px;line-height:1.6;">
+            <strong>Atencao:</strong> este e-mail e da <strong>Central Monetizacao</strong>. Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta <strong>SPAM / lixo eletronico</strong> e marque como "nao e spam".
+          </p>
+          <p>Depois de confirmar, entre com o <strong>mesmo e-mail da compra na Kiwify</strong> — a liberacao do acesso acontece automaticamente.</p>
+        `,
+        `<p style="margin:28px 0 0;">
+          <a href="${escapeHtml(verifyUrl)}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;border-radius:12px;padding:12px 18px;font-weight:700;">Confirmar meu e-mail</a>
+        </p>
+        <p style="margin:14px 0 0;font-size:12px;color:#64748b;word-break:break-all;">Se o botao nao funcionar, copie e cole este link no navegador:<br/>${escapeHtml(verifyUrl)}</p>`
+      ),
+    };
+  }
+
   return {
     subject: 'Seu acesso foi liberado: crie sua conta na Central Monetizacao',
     text: `Oi, ${rawName}. Seu acesso foi liberado!
@@ -213,7 +245,7 @@ export const sendAccessEmail = async (kind: EmailKind, input: SendAccessEmailInp
     return { ok: false, skipped: true, reason: 'missing_resend_api_key' };
   }
 
-  const from = process.env.RESEND_FROM_EMAIL || 'Central Monetizacao <nao-responda@halamsilva.com.br>';
+  const from = process.env.RESEND_FROM_EMAIL || 'Central Monetizacao <contato@halamsilva.com.br>';
   const email = buildEmail(kind, input);
   const headers: Record<string, string> = {
     Authorization: `Bearer ${resendApiKey}`,
@@ -274,8 +306,68 @@ export const sendPasswordResetEmail = async (email: string) => {
   return sendAccessEmail('password_reset', { to, resetUrl: directUrl });
 };
 
-export const handleRegistrationEmail = async (authorization: string | undefined, body: any) => {
+export const sendVerificationEmail = async (email: string, name?: string | null) => {
+  const to = normalizeEmail(email);
+  if (!to) return { ok: false, skipped: true, reason: 'missing_email' };
+
+  if (!isFirebaseAdminConfigured()) {
+    console.warn('Firebase Admin nao configurado. Nao foi possivel gerar o link de verificacao.');
+    return { ok: false, skipped: true, reason: 'missing_admin' };
+  }
+
+  let verifyUrl = '';
+
+  try {
+    verifyUrl = await getAuth(getAdminApp()).generateEmailVerificationLink(to, {
+      url: `${appUrl}/login`,
+    });
+  } catch (error: any) {
+    if (String(error?.code || '').includes('user-not-found')) {
+      return { ok: true, skipped: true, reason: 'user_not_found' };
+    }
+
+    console.error('Falha ao gerar link de verificacao:', error?.message || error);
+    return { ok: false, error: String(error?.message || error) };
+  }
+
+  return sendAccessEmail('verification', { to, name, verifyUrl });
+};
+
+export const handleVerificationEmail = async (authorization: string | undefined, body: any) => {
   const serviceSupabase = getServiceSupabase();
+  if (!serviceSupabase) {
+    return { status: 500, body: { error: 'SUPABASE_SERVICE_ROLE_KEY is not configured' } };
+  }
+
+  const token = authorization?.replace(/^Bearer\s+/i, '');
+  if (!token) {
+    return { status: 401, body: { error: 'Missing authorization token' } };
+  }
+
+  const {
+    data: { user },
+    error,
+  } = await serviceSupabase.auth.getUser(token);
+
+  if (error || !user?.email) {
+    return { status: 401, body: { error: 'Invalid session' } };
+  }
+
+  const result: any = await sendVerificationEmail(user.email, body?.name || user.user_metadata?.full_name);
+
+  return {
+    status: 200,
+    body: {
+      ok: true,
+      email_sent: Boolean(result?.ok),
+      skipped: Boolean(result?.skipped),
+      reason: result?.reason || null,
+      error: result?.error || null,
+    },
+  };
+};
+
+export const handleRegistrationEmail = async (authorization: string | undefined, body: any) => {  const serviceSupabase = getServiceSupabase();
   if (!serviceSupabase) {
     return { status: 500, body: { error: 'SUPABASE_SERVICE_ROLE_KEY is not configured' } };
   }

@@ -4,7 +4,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
 import WhatsAppFloat from './components/common/WhatsAppFloat';
 import { firebaseAuth, isFirebaseConfigured } from './lib/supabase';
-import { reload, sendEmailVerification } from 'firebase/auth';
 import { MessageCircle } from 'lucide-react';
 import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from './lib/support';
 
@@ -113,65 +112,6 @@ const LoadingScreen = () => (
   </div>
 );
 
-const VerifyEmailScreen = () => {
-  const [message, setMessage] = React.useState('');
-  const [busy, setBusy] = React.useState(false);
-
-  const resend = async () => {
-    if (!firebaseAuth.currentUser) return;
-    setBusy(true);
-    try {
-      await sendEmailVerification(firebaseAuth.currentUser);
-      setMessage('Enviamos um novo link de confirmação para seu e-mail.');
-    } catch {
-      setMessage('Não foi possível enviar agora. Aguarde alguns minutos e tente novamente.');
-    } finally { setBusy(false); }
-  };
-
-  const check = async () => {
-    if (!firebaseAuth.currentUser) return;
-    setBusy(true);
-    try {
-      await reload(firebaseAuth.currentUser);
-      if (firebaseAuth.currentUser.emailVerified) window.location.reload();
-      else setMessage('Ainda não recebemos a confirmação. Confira o link no seu e-mail.');
-    } catch { setMessage('Não foi possível conferir agora. Tente novamente.'); }
-    finally { setBusy(false); }
-  };
-
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] p-6">
-      <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h1 className="text-2xl font-bold text-slate-900">Confirme seu e-mail</h1>
-        <p className="mt-3 text-slate-600">Enviamos um link para {firebaseAuth.currentUser?.email}. Confirme o endereço para acessar a plataforma.</p>
-
-        <div className="mt-5 rounded-xl border border-amber-100 bg-amber-50 p-4 text-left text-sm leading-relaxed text-amber-900">
-          <strong>Não achou o e-mail?</strong> Confira a caixa de <strong>spam</strong> (ou lixo
-          eletrônico) e marque como "não é spam" para receber os próximos.
-        </div>
-
-        <a
-          href={whatsappLink(
-            'Ola! Fiz meu cadastro na Central Monetizacao e nao achei o e-mail de verificacao. Pode me ajudar?'
-          )}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] text-sm font-bold text-white transition hover:brightness-105"
-        >
-          <MessageCircle size={18} />
-          Falar com o suporte no WhatsApp
-        </a>
-
-        {message && <p role="status" className="mt-4 text-sm text-slate-700">{message}</p>}
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <button type="button" disabled={busy} onClick={check} className="rounded-md bg-blue-600 px-4 py-2 font-semibold text-white disabled:opacity-50">Já confirmei</button>
-          <button type="button" disabled={busy} onClick={resend} className="rounded-md border border-slate-300 px-4 py-2 font-semibold text-slate-800 disabled:opacity-50">Reenviar e-mail</button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // Tela de Cadastro em Análise
 const PendingAccessScreen = () => {
   const { profile } = useAuth();
@@ -233,8 +173,6 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   if (!user && isFirebaseConfigured) {
     return <Navigate to="/login" replace />;
   }
-
-  if (user && !user.emailVerified) return <VerifyEmailScreen />;
 
   if (profile?.access_status === 'blocked') {
     return <BlockedAccessScreen />;

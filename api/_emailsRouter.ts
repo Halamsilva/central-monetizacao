@@ -1,4 +1,4 @@
-import { handleRegistrationEmail, sendPasswordResetEmail } from './_emails.js';
+import { handleRegistrationEmail, handleVerificationEmail, sendPasswordResetEmail } from './_emails.js';
 
 export const handleEmailRoute = async (action: string | undefined, req: any, res: any) => {
   if (req.method !== 'POST') {
@@ -7,6 +7,11 @@ export const handleEmailRoute = async (action: string | undefined, req: any, res
 
   if (action === 'registration') {
     const result = await handleRegistrationEmail(req.headers?.authorization, req.body);
+    return res.status(result.status).json(result.body);
+  }
+
+  if (action === 'verification') {
+    const result = await handleVerificationEmail(req.headers?.authorization, req.body);
     return res.status(result.status).json(result.body);
   }
 

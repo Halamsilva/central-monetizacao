@@ -1,7 +1,7 @@
 import { getApps, initializeApp } from 'firebase/app';
 import {
   browserLocalPersistence, createUserWithEmailAndPassword, getAuth,
-  GoogleAuthProvider, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail,
+  GoogleAuthProvider, onAuthStateChanged, sendPasswordResetEmail,
   setPersistence, signInWithEmailAndPassword, signInWithPopup,
   signOut as firebaseSignOut, updatePassword, updateProfile,
   type User as FirebaseUser,
@@ -247,8 +247,6 @@ const auth = {
       try {
         const result = await createUserWithEmailAndPassword(firebaseAuth, email, password);
         if (options?.data?.full_name) await updateProfile(result.user, { displayName: options.data.full_name });
-        try { await sendEmailVerification(result.user); }
-        catch (error) { console.error('Nao foi possivel enviar verificacao:', error); }
         return { data: { user: toUser(result.user), session: await toSession(result.user) }, error: null };
       } catch (error) { return { data: { user: null, session: null }, error: makeError(error) }; }
     });

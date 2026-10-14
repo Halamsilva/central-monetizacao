@@ -9,6 +9,10 @@
             "destination": "/api/emails-handler?action=registration"
         },
         {
+            "source": "/api/emails/verification",
+            "destination": "/api/emails-handler?action=verification"
+        },
+        {
             "source": "/api/emails/password-reset",
             "destination": "/api/emails-handler?action=password-reset"
         },

@@ -70,11 +70,56 @@ export const getUserGeminiApiKey = async (serviceSupabase: any, userId?: string)
 // Prioridade: a chave do proprio aluno. Sem chave propria, usa a chave da plataforma
 // (admin). Quando a cota da plataforma acabar, o aluno cadastra a sua em Configuracoes.
 export const getActiveGeminiApiKey = async (serviceSupabase?: any, userId?: string) => {
+  const candidates = await getGeminiApiKeyCandidates(serviceSupabase, userId);
+  return candidates[0] || '';
+};
+
+// Lista ordenada de chaves para tentar uma apos a outra: chave do aluno, chave da
+// plataforma e, por ultimo, a variavel de ambiente. Se o Google negar o acesso a uma
+// delas (PERMISSION_DENIED), o agente tenta a proxima em vez de quebrar.
+export const getGeminiApiKeyCandidates = async (serviceSupabase?: any, userId?: string) => {
   const supabase = serviceSupabase || getServiceSupabase();
 
   const userKey = await getUserGeminiApiKey(supabase, userId);
-  if (userKey) return userKey;
-
   const storedKey = await getStoredGeminiApiKey(supabase);
-  return storedKey || cleanApiKey(process.env.GEMINI_API_KEY);
+  const envKey = cleanApiKey(process.env.GEMINI_API_KEY);
+
+  return Array.from(new Set([userKey, storedKey, envKey].filter((key) => key.length > 20)));
+};
+
+const GEMINI_FRIENDLY_MESSAGES: Array<{ test: (value: string) => boolean; message: string }> = [
+  {
+    test: (value) => /PERMISSION_DENIED|denied access|403/i.test(value),
+    message:
+      'A chave de IA em uso foi negada pelo Google (acesso ao Gemini negado neste projeto). Cadastre uma nova chave do Google AI Studio em Configuracoes ou aguarde a troca da chave da plataforma.',
+  },
+  {
+    test: (value) => /API_KEY_INVALID|API key not valid|invalid api key|400/i.test(value),
+    message:
+      'A chave de IA cadastrada e invalida. Gere uma nova chave do Google AI Studio e salve em Configuracoes.',
+  },
+  {
+    test: (value) => /RESOURCE_EXHAUSTED|quota|429/i.test(value),
+    message:
+      'A cota da chave de IA acabou neste momento. Use sua propria chave do Google AI Studio em Configuracoes ou tente novamente mais tarde.',
+  },
+  {
+    test: (value) => /503|UNAVAILABLE|high demand|overloaded/i.test(value),
+    message:
+      'Os servidores do Google estao com alta demanda temporaria. Tentamos modelos alternativos; tente novamente em instantes.',
+  },
+];
+
+export const describeGeminiError = (error: any) => {
+  const raw = String(error?.message || error || '');
+  const code = String(error?.status || error?.code || '');
+  const hit = GEMINI_FRIENDLY_MESSAGES.find(({ test }) => test(raw) || test(code));
+
+  return {
+    code: /PERMISSION_DENIED/.test(raw) ? 'PERMISSION_DENIED' : code || 'GEMINI_ERROR',
+    accessDenied: /PERMISSION_DENIED|denied access/i.test(raw) || Number(error?.status || error?.code) === 403,
+    retryable: /503|UNAVAILABLE|high demand|overloaded|429|RESOURCE_EXHAUSTED/i.test(raw),
+    message: hit?.message || 'Nao foi possivel gerar agora com a IA. Tente novamente em instantes.',
+    raw: raw.slice(0, 400),
+  };
 };

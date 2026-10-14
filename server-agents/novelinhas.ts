@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { getActiveGeminiApiKey, getGeminiApiKeyCandidates, describeGeminiError } from './gemini-key.js';
 
 const withTimeout = <T>(promise: Promise<T>, ms: number, label: string) =>
   Promise.race([
@@ -13,65 +13,63 @@ const withTimeout = <T>(promise: Promise<T>, ms: number, label: string) =>
     }),
   ]);
 
-// Helper with retry and fallback across multiple models for high demand resilience
+// Helper with retry and fallback across multiple models for high demand resilience.
+// Tenta varias chaves (a do aluno e a da plataforma): se o Google negar uma delas,
+// passa para a proxima em vez de derrubar a geracao.
 async function generateWithModelFallback(
   promptInstructions: string,
-  apiKey: string,
+  apiKeys: string | string[],
   temperature = 0.85,
   options: { attemptsPerModel?: number; timeoutMs?: number } = {},
 ) {
+  const keys = (Array.isArray(apiKeys) ? apiKeys : [apiKeys]).filter(Boolean);
   const models = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
   const attemptsPerModel = options.attemptsPerModel ?? 2;
   const timeoutMs = options.timeoutMs ?? 120000;
   let lastError: any = null;
-  const ai = new GoogleGenAI({ apiKey });
 
-  for (const model of models) {
-    for (let attempt = 0; attempt < attemptsPerModel; attempt++) {
-      try {
-        const response = await withTimeout(
-          ai.models.generateContent({
+  for (const apiKey of keys) {
+    const ai = new GoogleGenAI({ apiKey });
+
+    for (const model of models) {
+      for (let attempt = 0; attempt < attemptsPerModel; attempt++) {
+        try {
+          const response = await withTimeout(
+            ai.models.generateContent({
+              model,
+              contents: promptInstructions,
+              config: {
+                temperature,
+                topP: 0.95,
+              },
+            }),
+            timeoutMs,
             model,
-            contents: promptInstructions,
-            config: {
-              temperature,
-              topP: 0.95,
-            },
-          }),
-          timeoutMs,
-          model,
-        );
+          );
 
-        const generatedText = response.text || '';
-        if (generatedText && generatedText.trim().length > 0) {
-          return { text: generatedText, modelUsed: model };
+          const generatedText = response.text || '';
+          if (generatedText && generatedText.trim().length > 0) {
+            return { text: generatedText, modelUsed: model };
+          }
+        } catch (err: any) {
+          lastError = err;
+          const description = describeGeminiError(err);
+
+          // Chave negada pelo Google: nao adianta tentar outros modelos, proxima chave.
+          if (description.accessDenied) {
+            console.warn(`[novelinhas] chave negada pelo Google (${model}): ${description.raw}`);
+            break;
+          }
+
+          if (description.retryable && attempt < attemptsPerModel - 1) {
+            await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 500));
+            continue;
+          }
+
+          if (description.retryable) break;
+
+          throw err;
         }
-      } catch (err: any) {
-        lastError = err;
-        const errMessage = String(err?.message || '');
-        const isHighDemandOrUnavailable =
-          err?.status === 503 ||
-          err?.status === 429 ||
-          err?.code === 503 ||
-          err?.code === 429 ||
-          err?.code === 'TIMEOUT' ||
-          errMessage.includes('503') ||
-          errMessage.includes('high demand') ||
-          errMessage.includes('UNAVAILABLE') ||
-          errMessage.includes('overloaded') ||
-          errMessage.includes('Resource has been exhausted');
-
-        if (isHighDemandOrUnavailable && attempt === attemptsPerModel - 1) {
-          break;
-        }
-
-        if (isHighDemandOrUnavailable) {
-          // Wait 1.5s before retry on same model
-          await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 500));
-          continue;
-        }
-
-        throw err;
       }
     }
   }
@@ -92,7 +90,7 @@ const SINGLE_CALL_MAX_SCENES = 8;
 const LONG_VIDEO_BLOCK_SIZE = 5;
 
 type LongVideoContext = {
-  apiKey: string;
+  apiKey: string | string[];
   theme: string;
   country: string;
   tone: string;
@@ -1004,7 +1002,7 @@ Hashtags Recomendadas: #novelinhas #cenas #dramatiktok #historiasreais #viralvid
 
     if (numScenes > SINGLE_CALL_MAX_SCENES) {
       const longText = await generateLongVideo({
-        apiKey: req.geminiApiKey,
+        apiKey: req.geminiApiKeys,
         theme: String(theme),
         country: String(country),
         tone: String(tone),
@@ -1078,21 +1076,20 @@ A resposta anterior veio incompleta ou com cenas faltando secao. Gere a historia
 
     res.json({ text: normalizedText });
   } catch (error: any) {
-    console.error('Error generating novelinhas script:', error);
-    const errMsg = String(error?.message || '');
-    const isHighDemand =
-      error?.status === 503 ||
-      error?.code === 503 ||
-      errMsg.includes('503') ||
-      errMsg.includes('high demand') ||
-      errMsg.includes('UNAVAILABLE');
+    console.error('Error generating novelinhas script:', describeGeminiError(error).raw);
+    const description = describeGeminiError(error);
 
-    const clientMessage = isHighDemand
-      ? 'O modelo de IA está com altíssima demanda temporária. Tentamos reconectar com modelos alternativos. Por favor, aguarde alguns instantes e tente novamente.'
-      : errMsg || 'Falha ao gerar o roteiro cinematográfico. Tente novamente.';
+    const clientMessage = description.accessDenied
+      ? description.message
+      : description.retryable
+        ? 'O modelo de IA está com altíssima demanda temporária. Tentamos reconectar com modelos alternativos. Por favor, aguarde alguns instantes e tente novamente.'
+        : description.code === 'GEMINI_ERROR' && !description.raw
+          ? 'Falha ao gerar o roteiro cinematográfico. Tente novamente.'
+          : description.message;
 
-    res.status(isHighDemand ? 503 : 500).json({
+    res.status(description.accessDenied ? 502 : description.retryable ? 503 : 500).json({
       error: clientMessage,
+      code: description.code,
     });
   }
 };
@@ -1185,8 +1182,12 @@ Retorne EXCLUSIVAMENTE um array JSON com ${count} strings, sem formatação mark
 
     res.json({ ideas: ideas.slice(0, 8) });
   } catch (error: any) {
-    console.error('Error generating ideas for novelinhas:', error);
-    res.status(500).json({ error: 'Erro ao gerar novas ideias.' });
+    const description = describeGeminiError(error);
+    console.error('Error generating ideas for novelinhas:', description.raw);
+
+    res
+      .status(description.accessDenied ? 502 : description.retryable ? 503 : 500)
+      .json({ error: description.code === 'GEMINI_ERROR' && !description.raw ? 'Erro ao gerar novas ideias.' : description.message });
   }
 };
 
@@ -1242,12 +1243,13 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const apiKeyCandidates = await getGeminiApiKeyCandidates(serviceSupabase, user.id);
+  if (!apiKeyCandidates.length) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
-  req.geminiApiKey = apiKey;
+  req.geminiApiKey = apiKeyCandidates;
+  req.geminiApiKeys = apiKeyCandidates;
 
   if (String(req.body?.action || '') === 'generate-ideas') {
     return handleIdeas(req, res);

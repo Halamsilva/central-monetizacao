@@ -1,5 +1,7 @@
 import { createServiceClient, isFirebaseAdminConfigured, isVerifiedOwner } from '../_firebase.js';
 import { sendAccessEmail } from '../_emails.js';
+import { getGeminiApiKeyCandidates, describeGeminiError } from '../../server-agents/gemini-key.js';
+import { GoogleGenAI } from '@google/genai';
 
 const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
 
@@ -170,6 +172,58 @@ const getGeminiSettings = async (serviceSupabase: any) => {
   };
 };
 
+// Testa cada chave de Gemini disponivel contra a API do Google e devolve o erro exato.
+// Sem isso, so vemos "PERMISSION_DENIED" na tela e nao sabemos qual chave usar.
+const testGeminiKeys = async (serviceSupabase: any, overrideKey?: string) => {
+  const models = ['gemini-flash-latest', 'gemini-3.1-flash-lite', 'gemini-2.5-flash'];
+  const sources = await getGeminiApiKeyCandidates(serviceSupabase);
+  const keys = overrideKey
+    ? [{ source: 'informada no teste', key: overrideKey }]
+    : [
+        { source: 'chave da plataforma (app_settings)', key: sources[1] || '' },
+        { source: 'variavel GEMINI_API_KEY da Vercel', key: sources[2] || '' },
+      ].filter((entry) => entry.key);
+
+  const results = [];
+
+  for (const { source, key } of keys) {
+    let okModel = '';
+    let lastDetail: any = null;
+
+    for (const model of models) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: key });
+        const response = await ai.models.generateContent({
+          model,
+          contents: 'Responda apenas: ok',
+          config: { temperature: 0, maxOutputTokens: 8 },
+        });
+
+        if (String(response.text || '').trim()) {
+          okModel = model;
+          break;
+        }
+      } catch (error: any) {
+        const description = describeGeminiError(error);
+        lastDetail = description;
+      }
+    }
+
+    results.push({
+      source,
+      maskedKey: maskGeminiApiKey(key),
+      ok: Boolean(okModel),
+      workingModel: okModel || null,
+      code: okModel ? null : lastDetail?.code || 'GEMINI_ERROR',
+      accessDenied: okModel ? false : Boolean(lastDetail?.accessDenied),
+      message: okModel ? `Respondeu normalmente em ${okModel}.` : lastDetail?.message || 'Falhou sem detalhe.',
+      raw: okModel ? null : lastDetail?.raw || null,
+    });
+  }
+
+  return results;
+};
+
 const getMenuSettings = async (serviceSupabase: any) => {
   const value = await readAppSetting(serviceSupabase, 'menu_visibility');
 
@@ -204,6 +258,19 @@ export default async function handler(req: any, res: any) {
 
   // Acao de diagnostico/reenvio: /api/admin/system-status?test_email=aluno@email.com
   const testEmail = String(req.query?.test_email || '').trim().toLowerCase();
+
+  // Diagnostico da chave de IA: /api/admin/system-status?test_gemini=1
+  if (req.method === 'GET' && String(req.query?.test_gemini || '') === '1') {
+    const overrideKey = String(req.body?.apiKey || req.query?.api_key || '').trim();
+
+    return res.status(200).json({
+      ok: true,
+      results: await testGeminiKeys(serviceSupabase, overrideKey),
+      hint: overrideKey
+        ? 'Testando a chave informada.'
+        : 'Testando a chave da plataforma e a da Vercel. Se todas falharem com PERMISSION_DENIED, o projeto do Google negou o acesso: habilite a API Generative Language no projeto da chave ou gere a chave em outro projeto.',
+    });
+  }
 
   if (req.method === 'GET' && testEmail) {
     if (!testEmail.includes('@')) {
@@ -257,6 +324,21 @@ export default async function handler(req: any, res: any) {
 
     if (!apiKey) {
       return res.status(400).json({ error: 'Cole uma chave de API antes de salvar.' });
+    }
+
+    // Testa antes de gravar: nao adianta salvar chave que o Google nega.
+    if (req.body?.testBeforeSave !== false) {
+      const [test] = await testGeminiKeys(serviceSupabase, apiKey);
+
+      if (!test?.ok) {
+        return res.status(400).json({
+          error: 'O Google recusou essa chave. Nada foi salvo.',
+          detail: test?.message || null,
+          code: test?.code || null,
+          accessDenied: Boolean(test?.accessDenied),
+          hint: 'Gere a chave em aistudio.google.com/apikey usando um projeto com a API Generative Language habilitada.',
+        });
+      }
     }
 
     if (apiKey.length < 20) {

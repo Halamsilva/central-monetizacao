@@ -70,7 +70,7 @@ const FAQ = [
   },
   {
     q: 'Posso cancelar quando quiser?',
-    a: 'Sim, você pode cancelar quando quiser. Importante: ao cancelar a assinatura, o acesso à plataforma é encerrado.',
+    a: 'Sim, você pode cancelar quando quiser. Em até 7 dias você tem direito ao reembolso. Depois desse prazo, o cancelamento encerra o seu acesso à plataforma, sem reembolso.',
   },
   {
     q: 'Tem limite de uso?',
@@ -390,9 +390,9 @@ const Assinar: React.FC = () => {
           <div>
             <h3 className="text-xl font-black text-white">Garantia de 7 dias</h3>
             <p className="mt-1 text-sm leading-relaxed text-slate-400">
-              Assine sem risco. Se em até 7 dias você achar que não é pra você, é só
-              pedir o reembolso. E depois disso, pode cancelar quando quiser — sem
-              burocracia.
+              Assine sem risco: se em até 7 dias você achar que não é pra você, é só pedir o
+              reembolso e devolvemos o valor. Depois desse prazo, o cancelamento encerra o
+              acesso e não gera reembolso.
             </p>
           </div>
         </div>

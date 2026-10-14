@@ -70,7 +70,7 @@ const FAQ = [
   },
   {
     q: 'Posso cancelar quando quiser?',
-    a: 'Sim, sem burocracia. Ao cancelar, você mantém o acesso até o fim do período já pago.',
+    a: 'Sim, você pode cancelar quando quiser. Importante: ao cancelar a assinatura, o acesso à plataforma é encerrado.',
   },
   {
     q: 'Tem limite de uso?',

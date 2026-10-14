@@ -1220,6 +1220,51 @@ Retorne em JSON com o mesmo formato do prompt:
   }
 });
 
+// A rota publica do agente e POST /api/agents/limpeza com o "action" no corpo,
+// mas as rotas acima foram registradas no Express em /api/<action>. Sem reescrever
+// a URL, o Express nao casa nenhuma rota e devolve 404 em HTML.
+const LIMPEZA_ACTION_ROUTES: Record<string, string> = {
+  'generate-prompts': '/api/generate-prompts',
+  'refine-prompt': '/api/refine-prompt',
+  'analyze-character': '/api/analyze-character',
+  'analyze-supplement': '/api/analyze-supplement',
+  'autofill-theme': '/api/autofill-theme',
+};
+
+// Resposta em JSON para qualquer rota nao mapeada (evita 404 em HTML, que a tela
+// interpretava como "verificacao de seguranca").
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ error: 'Acao nao encontrada no agente de limpeza.' });
+});
+
+// Garante req.body antes de repassar o request para o Express (na Vercel ele ja vem
+// parseado; em outros hosts o body chega como stream).
+const ensureJsonBody = (req: any) =>
+  new Promise<void>((resolve) => {
+    if (req.body) return resolve();
+    if (typeof req.on !== 'function' || req.readable === false) return resolve();
+
+    const chunks: Buffer[] = [];
+    let size = 0;
+
+    req.on('data', (chunk: any) => {
+      size += chunk?.length || 0;
+      if (size <= 30 * 1024 * 1024) chunks.push(chunk);
+    });
+    req.on('end', () => {
+      try {
+        req.body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {};
+      } catch {
+        req.body = {};
+      }
+      resolve();
+    });
+    req.on('error', () => {
+      req.body = {};
+      resolve();
+    });
+  });
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -1244,6 +1289,17 @@ export default async function handler(req: any, res: any) {
     apiKey,
     httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
   });
+
+  await ensureJsonBody(req);
+
+  const action = String(req.body?.action || '').trim();
+  const route = LIMPEZA_ACTION_ROUTES[action];
+
+  if (!route) {
+    return res.status(400).json({ error: 'Acao invalida no agente de limpeza.' });
+  }
+
+  req.url = route;
 
   return app(req, res);
 }

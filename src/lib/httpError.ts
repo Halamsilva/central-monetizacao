@@ -30,13 +30,13 @@ export const describeHttpError = async (
     detail = '';
   }
 
-  // Se a resposta nao for JSON (ex.: pagina HTML de desafio/verificacao de seguranca),
+  // Se a resposta nao for JSON (ex.: pagina HTML de erro/404/desafio de seguranca),
   // avisa de forma clara em vez de despejar codigo HTML no erro.
   if (!detail) {
     const contentType = String(response.headers.get('content-type') || '').toLowerCase();
 
     if (contentType.includes('text/html')) {
-      return 'O acesso foi interrompido por uma verificacao de seguranca da rede. Tente novamente ou recarregue a pagina.';
+      return 'O servidor devolveu uma pagina HTML em vez da resposta esperada (rota nao encontrada ou bloqueio no meio da rede). Recarregue a pagina e tente novamente.';
     }
   }
 

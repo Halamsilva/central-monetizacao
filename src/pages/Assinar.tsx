@@ -5,7 +5,6 @@ import {
   CreditCard,
   Infinity as InfinityIcon,
   Play,
-  RefreshCw,
   ShieldCheck,
   Sparkles,
   Star,
@@ -69,8 +68,8 @@ const FAQ = [
     a: 'Após assinar, crie sua conta no site com o MESMO e-mail da compra. O acesso é liberado automaticamente.',
   },
   {
-    q: 'Posso cancelar quando quiser?',
-    a: 'Sim, sem burocracia — o cancelamento é feito direto na Kiwify, quando você quiser. E nos primeiros 7 dias você tem garantia total: se achar que não é pra você, devolvemos o valor.',
+    q: 'E se eu não gostar?',
+    a: 'Você tem 7 dias de garantia total: se achar que não é pra você, é só pedir o reembolso e devolvemos o valor, sem burocracia.',
   },
   {
     q: 'Tem limite de uso?',
@@ -169,7 +168,7 @@ const Assinar: React.FC = () => {
               <ShieldCheck size={14} className="text-emerald-400" /> Pagamento seguro
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <RefreshCw size={14} className="text-emerald-400" /> Cancele quando quiser
+              <ShieldCheck size={14} className="text-emerald-400" /> Garantia de 7 dias
             </span>
             <span className="inline-flex items-center gap-1.5">
               <InfinityIcon size={14} className="text-emerald-400" /> Acesso imediato
@@ -391,8 +390,7 @@ const Assinar: React.FC = () => {
             <h3 className="text-xl font-black text-white">Garantia de 7 dias</h3>
             <p className="mt-1 text-sm leading-relaxed text-slate-400">
               Assine sem risco: você tem 7 dias de garantia. Se nesse período achar que não é
-              pra você, é só pedir o reembolso e devolvemos o valor — sem burocracia. Depois
-              disso, é só cancelar direto na Kiwify quando quiser.
+              pra você, é só pedir o reembolso e devolvemos o valor — sem burocracia.
             </p>
           </div>
         </div>

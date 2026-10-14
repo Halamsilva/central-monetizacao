@@ -384,8 +384,90 @@ const updateStudentAccess = async (req: any, res: any, serviceSupabase: any) => 
   });
 };
 
+const deleteStudentAccount = async (req: any, res: any, serviceSupabase: any) => {
+  const id = String(req.body?.id || '').trim();
+  const email = normalizeEmail(req.body?.email);
+  const force = req.body?.force === true;
+
+  if (!id) {
+    return res.status(400).json({ error: 'Informe o aluno que sera removido.' });
+  }
+
+  const { data: profile, error: profileError } = await serviceSupabase
+    .from('profiles')
+    .select('id, email, full_name, role, access_status')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (profileError) {
+    console.error('Delete student profile lookup error:', profileError);
+    return res.status(500).json({ error: 'Erro ao buscar o aluno.' });
+  }
+
+  if (!profile) {
+    return res.status(404).json({ error: 'Aluno nao encontrado na Central.' });
+  }
+
+  if (profile.role === 'admin') {
+    return res.status(403).json({ error: 'Nao e possivel remover conta de administrador.' });
+  }
+
+  const profileEmail = normalizeEmail(profile.email);
+
+  if (email && profileEmail !== email) {
+    return res.status(400).json({ error: 'O e-mail informado nao confere com o aluno.' });
+  }
+
+  const { data: purchases } = await serviceSupabase
+    .from('kiwify_purchases')
+    .select('id, purchase_status, paid_at, release_at')
+    .eq('email', profileEmail);
+
+  const activePurchases = (purchases || []).filter((purchase: any) => purchase.purchase_status === 'active');
+
+  if (activePurchases.length && !force) {
+    return res.status(409).json({
+      error: 'Este aluno tem compra ativa. Confirme a remocao definitiva para continuar.',
+      active_purchase: true,
+      active_purchases: activePurchases,
+    });
+  }
+
+  const { error: authError } = await serviceSupabase.auth.admin.deleteUser(id);
+
+  if (authError && !/user-not-found|no user record|not found/i.test(String(authError?.message || ''))) {
+    console.error('Delete student auth error:', authError);
+    return res.status(500).json({ error: `Nao foi possivel remover o login do aluno: ${authError.message}` });
+  }
+
+  const { error: secretsError } = await serviceSupabase.from('user_secrets').delete().eq('id', id);
+
+  if (secretsError) {
+    console.error('Delete student secrets error:', secretsError);
+  }
+
+  const { error: profileDeleteError } = await serviceSupabase
+    .from('profiles')
+    .delete()
+    .eq('id', id);
+
+  if (profileDeleteError) {
+    console.error('Delete student profile error:', profileDeleteError);
+    return res.status(500).json({ error: 'Login removido, mas o perfil do aluno nao pode ser apagado. Tente de novo.' });
+  }
+
+  return res.status(200).json({
+    ok: true,
+    id,
+    email: profileEmail,
+    access_status: profile.access_status || 'pending',
+    purchases_kept: purchases?.length || 0,
+    forced: activePurchases.length > 0,
+  });
+};
+
 export default async function handler(req: any, res: any) {
-  if (!['GET', 'POST', 'PATCH'].includes(req.method)) {
+  if (!['GET', 'POST', 'PATCH', 'DELETE'].includes(req.method)) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -407,6 +489,10 @@ export default async function handler(req: any, res: any) {
 
   if (req.method === 'PATCH') {
     return updateStudentAccess(req, res, serviceSupabase);
+  }
+
+  if (req.method === 'DELETE') {
+    return deleteStudentAccount(req, res, serviceSupabase);
   }
 
   return importLegacyStudents(req, res, serviceSupabase);

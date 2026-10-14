@@ -13,6 +13,8 @@ import {
     Filter,
     MailSearch,
     Sparkles,
+    Trash2,
+    AlertTriangle,
 } from 'lucide-react';
 
 import { supabase, UserProfile } from '../lib/supabase';
@@ -35,6 +37,10 @@ const AdminStudents: React.FC = () => {
     const [sendingEmail, setSendingEmail] = useState(false);
     const [diagnosticResult, setDiagnosticResult] = useState<any>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [removeTarget, setRemoveTarget] = useState<UserProfile | null>(null);
+    const [removeEmailInput, setRemoveEmailInput] = useState('');
+    const [removeHasActivePurchase, setRemoveHasActivePurchase] = useState(false);
+    const [removing, setRemoving] = useState(false);
 
     useEffect(() => {
         loadStudents();
@@ -125,6 +131,76 @@ const AdminStudents: React.FC = () => {
         await loadStudents();
         setMessage({ type: 'success', text: 'Acesso do aluno atualizado.' });
     };
+
+    const openRemoveDialog = (student: UserProfile) => {
+        setRemoveTarget(student);
+        setRemoveEmailInput('');
+        setRemoveHasActivePurchase(false);
+    };
+
+    const closeRemoveDialog = () => {
+        if (removing) return;
+        setRemoveTarget(null);
+        setRemoveEmailInput('');
+        setRemoveHasActivePurchase(false);
+    };
+
+    const removeStudent = async () => {
+        if (!removeTarget) return;
+
+        setRemoving(true);
+
+        try {
+            const { data } = await supabase.auth.getSession();
+            const token = data.session?.access_token;
+
+            if (!token) {
+                throw new Error('Faca login novamente para remover o aluno.');
+            }
+
+            const response = await fetch('/api/admin/legacy-students', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    id: removeTarget.id,
+                    email: removeTarget.email,
+                    force: removeHasActivePurchase,
+                }),
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (response.status === 409 && result.active_purchase) {
+                setRemoveHasActivePurchase(true);
+                setMessage({ type: 'error', text: result.error });
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Erro ao remover o aluno.');
+            }
+
+            setRemoveTarget(null);
+            setRemoveEmailInput('');
+            setRemoveHasActivePurchase(false);
+            await loadStudents();
+            setMessage({
+                type: 'success',
+                text: `Conta de ${removeTarget.email} removida. Login, perfil e chaves apagados.`,
+            });
+        } catch (err: any) {
+            setMessage({ type: 'error', text: err.message || 'Erro ao remover o aluno.' });
+        } finally {
+            setRemoving(false);
+        }
+    };
+
+    const removeEmailMatches =
+        Boolean(removeTarget) &&
+        removeEmailInput.trim().toLowerCase() === removeTarget?.email?.trim().toLowerCase();
 
     const updateAIAccountsAccess = async (
         studentId: string,
@@ -964,12 +1040,106 @@ const AdminStudents: React.FC = () => {
                                         <Sparkles size={17} />
                                         {aiAccountsAccess[student.id] ? 'Remover IA ilimitado' : 'Liberar IA ilimitado'}
                                     </button>
+
+                                    <button
+                                        onClick={() => openRemoveDialog(student)}
+                                        disabled={updatingId === student.id}
+                                        className="inline-flex h-11 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-bold text-red-600 ring-1 ring-red-200 transition hover:bg-red-50 disabled:opacity-60"
+                                    >
+                                        <Trash2 size={17} />
+                                        Remover
+                                    </button>
                                 </div>
                             </motion.div>
                         ))}
                     </div>
                 )}
             </div>
+
+            {removeTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm">
+                    <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
+                        <div className="flex items-start gap-3">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-100">
+                                <Trash2 className="text-red-600" size={22} />
+                            </div>
+
+                            <div>
+                                <h3 className="text-xl font-black text-slate-900">
+                                    Remover conta do aluno
+                                </h3>
+
+                                <p className="mt-1 text-sm font-semibold text-slate-500">
+                                    {removeTarget.full_name || 'Aluno'} — {removeTarget.email}
+                                </p>
+                            </div>
+                        </div>
+
+                        {removeHasActivePurchase && (
+                            <div className="mt-5 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4">
+                                <AlertTriangle className="mt-0.5 shrink-0 text-red-600" size={18} />
+                                <p className="text-sm font-bold text-red-700">
+                                    Este aluno tem compra ativa na Kiwify. A remoção é definitiva: ele perde o acesso atual e teria que comprar de novo para voltar.
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-600">
+                            <p className="font-black text-slate-800">Sera apagado:</p>
+                            <ul className="mt-2 list-inside list-disc space-y-1">
+                                <li>Login e senha na plataforma</li>
+                                <li>Perfil do aluno na lista</li>
+                                <li>Chaves de API salvas (Gemini e geradores de video)</li>
+                            </ul>
+
+                            <p className="mt-3 font-black text-slate-800">Sera mantido:</p>
+                            <ul className="mt-2 list-inside list-disc space-y-1">
+                                <li>Historico de compras da Kiwify</li>
+                            </ul>
+                        </div>
+
+                        <label className="mt-5 block text-xs font-black uppercase tracking-wide text-slate-500">
+                            Digite o e-mail do aluno para confirmar
+                        </label>
+
+                        <input
+                            type="email"
+                            value={removeEmailInput}
+                            onChange={(event) => setRemoveEmailInput(event.target.value)}
+                            placeholder={removeTarget.email}
+                            autoComplete="off"
+                            className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-700 outline-none transition focus:border-red-400 focus:bg-white focus:ring-4 focus:ring-red-100"
+                        />
+
+                        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                            <button
+                                onClick={closeRemoveDialog}
+                                disabled={removing}
+                                className="inline-flex h-12 items-center justify-center rounded-2xl bg-white px-5 text-sm font-bold text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-60"
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                onClick={removeStudent}
+                                disabled={!removeEmailMatches || removing}
+                                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-red-600 px-5 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-50"
+                            >
+                                {removing ? (
+                                    <RefreshCw className="animate-spin" size={18} />
+                                ) : (
+                                    <Trash2 size={18} />
+                                )}
+                                {removing
+                                    ? 'Removendo...'
+                                    : removeHasActivePurchase
+                                        ? 'Remover mesmo assim'
+                                        : 'Remover definitivamente'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

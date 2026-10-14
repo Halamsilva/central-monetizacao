@@ -183,6 +183,12 @@ export const createServiceClient = () => ({
           return { data: { user: toUser(await getAuth(getAdminApp()).getUser(uid)) }, error: null };
         } catch (error) { return { data: { user: null }, error }; }
       },
+      async deleteUser(uid: string) {
+        try {
+          await getAuth(getAdminApp()).deleteUser(uid);
+          return { data: { success: true }, error: null };
+        } catch (error) { return { data: null, error }; }
+      },
       async listUsers({ page = 1, perPage = 1000 }: { page?: number; perPage?: number } = {}) {
         try {
           let token: string | undefined;

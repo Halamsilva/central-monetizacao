@@ -1,4 +1,9 @@
 {
+    "functions": {
+        "api/agents-router.ts": {
+            "maxDuration": 300
+        }
+    },
     "rewrites": [
         {
             "source": "/api/agents/:agent",

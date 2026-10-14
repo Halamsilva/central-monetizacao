@@ -3,7 +3,7 @@ import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase
 import { getActiveGeminiApiKey } from './gemini-key.js';
 
 // Helper with retry and fallback across multiple models for high demand resilience
-async function generateWithModelFallback(promptInstructions: string, apiKey: string) {
+async function generateWithModelFallback(promptInstructions: string, apiKey: string, temperature = 0.85) {
   const models = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
   let lastError: any = null;
   const ai = new GoogleGenAI({ apiKey });
@@ -15,7 +15,7 @@ async function generateWithModelFallback(promptInstructions: string, apiKey: str
           model,
           contents: promptInstructions,
           config: {
-            temperature: 0.85,
+            temperature,
             topP: 0.95,
           },
         });
@@ -56,6 +56,290 @@ async function generateWithModelFallback(promptInstructions: string, apiKey: str
 
   throw lastError || new Error('Não foi possível gerar o roteiro devido à alta demanda temporária.');
 }
+
+// ---------------------------------------------------------------------------
+// PIPELINE DE VIDEO LONGO (consistencia em 10+ cenas)
+// A geracao em chamada unica trunca a saida e perde a identidade dos personagens
+// no meio do roteiro. Para videos longos o agente trabalha em duas etapas:
+// 1) CONTRATO DE IDENTIDADE (PROMPT 00) + PLANO DE CONTINUIDADE das N cenas
+// 2) GERACAO DAS CENAS EM BLOCOS PARALELOS, todos alimentados pelo mesmo
+//    contrato canonico e pelo mesmo plano, o que mantem figurino, cenarios,
+//    nomes, tom e ritmo iguais da cena 1 ate a ultima.
+// ---------------------------------------------------------------------------
+const SINGLE_CALL_MAX_SCENES = 8;
+const LONG_VIDEO_BLOCK_SIZE = 5;
+
+type LongVideoContext = {
+  master: string;
+  apiKey: string;
+  theme: string;
+  country: string;
+  tone: string;
+  emotion: string;
+  skinDirective: string;
+  langName: string;
+  locale: string;
+  numScenes: number;
+  themeDirective: string;
+  extremeWeightDirective: string;
+  ownScriptDirective: string;
+  context: string;
+  previousStory: string;
+  isContinuing: boolean;
+};
+
+const countSceneBlocks = (value: string) =>
+  (value.match(/PROMPT\s+(?:GANCHO\s+CHAMATIVO\s+)?CENA\s+\d+/gi) || []).length;
+
+const countTag = (value: string, tag: string) =>
+  (value.match(new RegExp(`\\[${tag}\\]`, 'gi')) || []).length;
+
+const extractReferenceSheet = (value: string) => {
+  const match = value.match(
+    /PROMPT\s+00[\s\S]*?(?=\n\s*(?:ROTEIRO\s+DE\s+CONTINUIDADE|PROMPT\s+CENA\s+\d+)|$)/i,
+  );
+  return match ? match[0].trim() : '';
+};
+
+const stripReferenceSheet = (value: string) =>
+  value
+    .replace(/PROMPT\s+00[\s\S]*?(?=\n\s*PROMPT\s+CENA\s+\d+)/i, '')
+    .replace(/ROTEIRO\s+DE\s+CONTINUIDADE[\s\S]*?(?=\n\s*PROMPT\s+CENA\s+\d+)/i, '')
+    .trim();
+
+const extractPlan = (value: string) => {
+  const match = value.match(/ROTEIRO\s+DE\s+CONTINUIDADE[\s\S]*$/i);
+  return match ? match[0].trim() : '';
+};
+
+const extractPlanLines = (plan: string, from: number, to: number) => {
+  const lines = plan.split('\n');
+  const wanted = new Set();
+  for (let scene = from; scene <= to; scene += 1) wanted.add(scene);
+  return lines
+    .filter((line) => {
+      const match = line.match(/CENA\s+(\d+)/i);
+      return Boolean(match) && wanted.has(Number(match[1]));
+    })
+    .join('\n')
+    .trim();
+};
+
+const buildBeatMap = (total: number) => {
+  const hookEnd = Math.max(1, Math.min(2, total - 1));
+  const falseWin = Math.max(hookEnd + 2, Math.round(total * 0.5));
+  const turnEnd = Math.max(falseWin + 1, Math.round(total * 0.75));
+  const accelEnd = Math.max(turnEnd + 1, total - 1);
+
+  return [
+    `GANCHO EXPLOSIVO: cenas 1 a ${hookEnd} (comece ja no conflito, sem rotina).`,
+    `ESCALADA: cenas ${hookEnd + 1} a ${falseWin - 1} (cada cena piora a situação com um fato NOVO).`,
+    `ALIVIO FALSO followed de AMEAÇA MAIOR: cena ${falseWin}.`,
+    `REVIRAVOLTA que re-precifica tudo: cenas ${falseWin + 1} a ${turnEnd} (revelação em gesto filmável, plantada antes).`,
+    `ACELERAÇÃO: cenas ${turnEnd + 1} a ${accelEnd} (segredos à tona, alianças viram, cerco aperta).`,
+    `DESFECHO com REVERSÃO PÚBLICA: cena ${total}.`,
+  ].join('\n');
+};
+
+const buildBiblePrompt = (ctx: LongVideoContext) => `
+Você é o mais consagrado diretor cinematográfico e roteirista de novelinhas curtas dramáticas ultra-virais para redes sociais (Kwai, TikTok, Instagram Reels, YouTube Shorts). Você cria prompts visuais ultra-realistas no padrão SEEDANCE 2.5 (ByteDance / Dreamina / CapCut) e GOOGLE FLOW.
+
+REGRA #0 - IDIOMA DE DESTINO (PRIORIDADE MÁXIMA):
+Tudo o que o público lê e ouve (história, descrições, falas, título, legenda e hashtags) DEVE estar em ${ctx.langName} (${ctx.locale}). É TERMINANTEMENTE PROIBIDO entregar conteúdo em português quando o idioma de destino for ${ctx.langName} (a única exceção é quando o destino for o próprio Português do Brasil). Os rótulos técnicos (PROMPT CENA, QUEM FALA, [Subject & Character Consistency], etc.) permanecem exatamente como no padrão.
+
+DIRETRIZ SOBERANA DE TEMA:
+${ctx.themeDirective}
+
+ATENÇÃO: É ESTRITAMENTE PROIBIDO DESVIAR DO TEMA '${ctx.theme}'. Toda a trama, personagens principais e locações DEVEM ser 100% fiéis ao tema '${ctx.theme}'.
+${ctx.context ? `Contexto opcional do criador (totalmente adaptado para ocorrer DENTRO do tema '${ctx.theme}'): "${ctx.context}"` : ''}
+${ctx.extremeWeightDirective}
+${ctx.ownScriptDirective}
+${ctx.isContinuing ? `ESTA HISTÓRIA É A PARTE 2 (CONTINUAÇÃO). O público JÁ viu a parte 1 e o plano abaixo NÃO pode recontar nada do que já foi entregue. Comece no ponto exato em que a parte 1 terminou.\nCONTEXTO DA PARTE 1 (use só como referência de continuidade):\n"""\n${ctx.previousStory.slice(0, 7000)}\n"""\n` : ''}
+
+PARÂMETROS DA PRODUÇÃO:
+- Tema: ${ctx.theme} | País e idioma: ${ctx.country} (${ctx.langName})
+- Tom do roteiro: ${ctx.tone} | Emoção dominante: ${ctx.emotion}
+- Realismo de pele e imagem: ${ctx.skinDirective}
+- TOTAL DE CENAS DO VÍDEO: ${ctx.numScenes} cenas de 8 segundos (episódio longo de aproximadamente ${Math.round(ctx.numScenes * 8)} segundos).
+
+################################################################
+ETAPA 1 DE 2 - CONTRATO DE IDENTIDADE E PLANO DE CONTINUIDADE
+################################################################
+Este é um VÍDEO LONGO. Você NÃO vai escrever as cenas agora: as ${ctx.numScenes} cenas serão geradas depois, em blocos paralelos, e cada bloco vai ler EXATAMENTE o contrato e o plano que você escrever agora. A consistência do episódio inteiro (mesmo personagem, mesma roupa, mesmo cenário, mesmo tom, sem repetição) depende 100% da qualidade do que você entregar agora.
+
+ENTREGUE EXATAMENTE ESTAS DUAS SEÇÕES, NADA MAIS (proibido escrever cenas prontas, proibido escrever PROMPT MODEL SHEET, proibido escrever bloco SEO):
+
+PROMPT 00 - FICHA DE PERSONAGENS E CENÁRIO MESTRE (REFERENCE SHEET):
+[Reference ID: Subject 1 - Nome]: ficha fixa, completa e IMUTÁVEL: nome, idade exata, altura em cm, porte/biotipo, tom e textura de pele, formato do rosto, cor dos olhos, corte e textura do cabelo (barba/bigode se houver), ROUPA completa peça por peça com tecidos e cores, CALÇADOS e ACESSÓRIOS identificadores.
+[Reference ID: Subject 2 - Nome]: ... (repita o nível de detalhe para cada personagem, sem exceção)
+[Reference ID: Subject N - Nome]: ...
+[Master Environment Specification - Primary Setting]: descrição detalhada e fixa do cenário mestre (materiais, texturas, janelas, móveis, objetos recorrentes e paleta de luz) que será repetida em todas as cenas.
+[Camera, Lighting & Specs]: lente, luz e estilo de imagem fixos do episódio.
+
+ROTEIRO DE CONTINUIDADE (${ctx.numScenes} CENAS):
+PLANO - CENA 1 | LOCAL: ... | PERSONAGENS: ... | ACAO: ... | FALA PRINCIPAL: "..." | GANCHO PARA A PROXIMA: ...
+PLANO - CENA 2 | LOCAL: ... | PERSONAGENS: ... | ACAO: ... | FALA PRINCIPAL: "..." | GANCHO PARA A PROXIMA: ...
+(continua até PLANO - CENA ${ctx.numScenes})
+
+REGRAS INEGOCIÁVEIS DO PLANO (a história inteira tem ${ctx.numScenes} cenas):
+1. DISTRIBUIÇÃO DE BATIMENTOS (obrigatória, use exatamente esta escala):
+${buildBeatMap(ctx.numScenes)}
+2. CADA CENA TEM UM SÓ TURNO: exatamente um momento que vira o jogo (revelação, traição, mudança de aliança ou decisão). Se tiver duas viradas, divida em duas cenas. Cada cena termina em mini-cliffhanger (corte na pergunta, nunca na resposta).
+3. CAUSA E EFEITO: a cena N+1 sempre nasce da cena N (mesmo lugar, mesmo objeto, mesma consequência). É PROIBIDO escrever uma cena que poderia estar em qualquer ordem.
+4. NENHUMA REPETIÇÃO: cada linha do plano traz um fato, objeto ou virada NOVO. Proibido repetir ação, fala, briga ou revelação já descrita em outra linha.
+5. ESCADA DE ROTAÇÃO DOS GANCHOS: alterne o tipo de gancho entre as cenas (identidade / emoção / realização) para o público não sentir repetição.
+6. CUSTO EMOCIONAL CRESCENTE: humilhação, perda e desespero aumentam até a reviravolta; o alívio do meio sempre é seguido de ameaça maior.
+7. PROIBIDO CLICHÊ: nada de marido traindo com a empregada, madrasta malvada, herança disputada, "segredo do passado" genérico, casamento cancelado no altar, vilão genérico. Cada premissa nasce de um PROBLEMA CONCRETO e filmável do cotidiano (uma dívida, um boleto, uma mensagem, um documento, uma humilhação pública).
+8. PASSAGEM DE TEMPO: quando o tempo avançar, crie UMA cena curta de transição marcada com "MAIS TARDE..." / "NA MANHÃ SEGUINTE..." e mantenha o MESMO figurino dos personagens (trocar de roupa só é permitido se o plano justificar explicitamente a troca e isso acontecer uma única vez).
+9. ELENCO FIXO: no máximo 6 personagens no PROMPT 00. Se o plano exigir um personagem novo, ele NASCE com nome, idade e roupa fixos na PRIMEIRA aparição e nunca mais muda.
+10. O PLANO É A BÍBLIA DO EPISÓDIO: as cenas serão escritas por blocos independentes que lerão só este contrato. Se uma linha do plano for vaga, a cena correspondente sairá fraca. Escreva cada linha com detalhe filmável e especifico.
+11. TODO o conteúdo (fichas, plano, falas) em ${ctx.langName}, exceto os rótulos técnicos em português.
+`;
+
+const buildBlockPrompt = (opts: {
+  ctx: LongVideoContext;
+  start: number;
+  end: number;
+  index: number;
+  totalBlocks: number;
+  isLastBlock: boolean;
+  referenceSheet: string;
+  plan: string;
+}) => {
+  const { ctx, start, end, index, totalBlocks, isLastBlock, referenceSheet, plan } = opts;
+  const expected = end - start + 1;
+  const previousContext = extractPlanLines(plan, Math.max(1, start - 2), start - 1);
+
+  return `${ctx.master}
+
+################################################################
+ETAPA 2 DE 2 - BLOCO ${index} DE ${totalBlocks}: VOCÊ ESCREVE AS CENAS ${start} A ${end}
+################################################################
+A história inteira tem ${ctx.numScenes} cenas e JÁ FOI PLANEJADA. Outros blocos estão sendo escritos em paralelo agora. SUA TAREFA É ESCREVER SOMENTE AS CENAS ${start}, ${Array.from({ length: Math.max(0, expected - 2) }, (_, offset) => start + offset + 1).join(', ')}${expected >= 2 ? ` e ${end}` : ''} (${expected} cenas) no formato técnico completo.
+
+CONTRATO DE IDENTIDADE (PROMPT 00) - FONTE CANÔNICA, REPITA IDENTICO E PALAVRA POR PALAVRA:
+"""
+${referenceSheet || '(Use o plano abaixo como referência de identidade.)'}
+"""
+
+PLANO COMPLETO DO EPISÓDIO (NÃO escreva cenas fora do seu bloco de ${start} a ${end}):
+"""
+${plan}
+"""
+${
+  previousContext
+    ? `
+CONTEXTO IMEDIATO (as cenas anteriores do seu bloco JA foram escritas, com base neste mesmo plano):
+"""
+${previousContext}
+"""
+A cena ${start} DEVE abrir exatamente do ponto em que a cena ${start - 1} terminou, reagindo a ela.`
+    : ''
+}
+
+REGRAS BLOCO ${index}/${totalBlocks} (OBRIGATÓRIAS, PRIORIDADE MÁXIMA):
+1. COMECE DIRETO em "PROMPT CENA ${start} (SEEDANCE 2.5):". É TERMINANTEMENTE PROIBIDO reescrever o PROMPT 00, o plano de continuidade ou qualquer cena fora da faixa ${start}-${end}. Quem escreve a cena 1 é outro bloco.
+2. Escreva as ${expected} cenas em sequência (${start}, ${start + 1}${expected > 2 ? `, ... ${end}` : ''}), sem pular nem repetir números, com TODOS os rótulos na MESMA ordem e TODAS as 10 seções entre colchetes ([Subject & Character Consistency], [Environment & Scene Setting], [Background Override], [Action & First-Frame Blocking], [Optics & Camera Movement], [Dialogue & Native Audio], [Lighting & Atmosphere], [Audio & Ambience (SFX)], [Global Style & Physical Realism], [Negative Prompt]). NUNCA encurte uma cena: o nível de detalhe tem que ser idêntico em todas.
+3. CONSISTÊNCIA CANÔNICA: em [Subject & Character Consistency] de cada cena, repita a ficha do PROMPT 00 por extenso (idade, altura, porte, tom/textura de pele, rosto, cabelo, roupa peça por peça com cores e tecidos, calçados e acessórios). Nunca escreva "mesmo personagem" nem "personagem anterior". A identidade é a mesma da cena 1 até a cena ${end}.
+4. CONTINUIDADE DE CENÁRIO: mantenha o cenário mestre do PROMPT 00 e o ambiente da cena anterior. Passagens de tempo só com marcação curta ("MAIS TARDE...") e sem trocar de figurino.
+5. NÃO repita nenhuma fala, ação ou virada que já estejam no plano antes da cena ${start}, e NÃO use falas genéricas de novela.
+6. Mantenha o tom, o idioma (${ctx.langName}) e o ritmo do episódio inteiro.
+${
+  isLastBlock
+    ? `7. COMO ESTE É O ÚLTIMO BLOCO, ao final das cenas ${start}-${end} entregue também: (a) os CHARACTER MODEL SHEETS (fundo branco puro, 6 ângulos de corpo inteiro + 3 retratos de rosto) de TODOS os personagens que apareceram NO EPISÓDIO INTEIRO (consulte o contrato e o plano para não esquecer nenhum); (b) o bloco final "---SEO-START---" com Título Sugerido, Legenda, Gatilho de Engajamento e Hashtags em ${ctx.langName}.`
+    : `7. Este NÃO é o último bloco: não gere model sheets nem SEO aqui. Entregue somente as cenas ${start} a ${end}.`
+}`;
+};
+
+const generateLongVideo = async (ctx: LongVideoContext) => {
+  const biblePrompt = buildBiblePrompt(ctx);
+  let bible = (await generateWithModelFallback(biblePrompt, ctx.apiKey, 0.7)).text || '';
+
+  if (!bible.trim()) {
+    throw new Error('Nenhum texto foi gerado pelo modelo.');
+  }
+
+  const planCount = (bible.match(/PLANO\s+-\s*CENA\s+\d+/gi) || []).length;
+  let referenceSheet = extractReferenceSheet(bible);
+  let plan = extractPlan(bible);
+
+  if (planCount < ctx.numScenes || !referenceSheet || !plan) {
+    const retry = await generateWithModelFallback(
+      `${biblePrompt}
+
+================================================================
+CORRECAO OBRIGATORIA
+================================================================
+A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
+- a seção "PROMPT 00 - FICHA DE PERSONAGENS E CENARIO MESTRE (REFERENCE SHEET)" com TODOS os personagens;
+- a seção "ROTEIRO DE CONTINUIDADE (${ctx.numScenes} CENAS)" com EXATAMENTE ${ctx.numScenes} linhas, uma para cada cena, no formato "PLANO - CENA N | LOCAL: ... | PERSONAGENS: ... | ACAO: ... | FALA PRINCIPAL: "..." | GANCHO PARA A PROXIMA: ...".`,
+      ctx.apiKey,
+      0.6,
+    );
+
+    const retryText = retry.text || '';
+    const retryPlanCount = (retryText.match(/PLANO\s+-\s*CENA\s+\d+/gi) || []).length;
+
+    if (retryPlanCount > planCount || (!referenceSheet && retryText)) {
+      bible = retryText;
+      referenceSheet = extractReferenceSheet(bible) || referenceSheet;
+      plan = extractPlan(bible) || plan;
+    }
+  }
+
+  const ranges: Array<{ start: number; end: number }> = [];
+  for (let start = 1; start <= ctx.numScenes; start += LONG_VIDEO_BLOCK_SIZE) {
+    ranges.push({ start, end: Math.min(ctx.numScenes, start + LONG_VIDEO_BLOCK_SIZE - 1) });
+  }
+
+  const blockTexts = await Promise.all(
+    ranges.map(async (range, index) => {
+      const expected = range.end - range.start + 1;
+      const blockPrompt = buildBlockPrompt({
+        ctx,
+        start: range.start,
+        end: range.end,
+        index: index + 1,
+        totalBlocks: ranges.length,
+        isLastBlock: index === ranges.length - 1,
+        referenceSheet,
+        plan,
+      });
+
+      let blockText = (await generateWithModelFallback(blockPrompt, ctx.apiKey, 0.75)).text || '';
+
+      const isComplete =
+        countSceneBlocks(blockText) >= expected &&
+        countTag(blockText, 'Subject & Character Consistency') >= expected &&
+        countTag(blockText, 'Dialogue & Native Audio') >= expected &&
+        countTag(blockText, 'Negative Prompt') >= expected;
+
+      if (!isComplete) {
+        const retry = await generateWithModelFallback(
+          `${blockPrompt}
+
+================================================================
+CORRECAO OBRIGATORIA DO BLOCO
+================================================================
+Reescreva APENAS as cenas ${range.start} a ${range.end} (${expected} cenas), todas completas, numeradas em sequencia e com TODAS as 10 secoes entre colchetes em cada cena. Comece direto em "PROMPT CENA ${range.start} (SEEDANCE 2.5):" e nao inclua o PROMPT 00 nem o plano.`,
+          ctx.apiKey,
+          0.7,
+        );
+
+        if (retry.text && countSceneBlocks(retry.text) >= countSceneBlocks(blockText)) {
+          blockText = retry.text;
+        }
+      }
+
+      return stripReferenceSheet(blockText);
+    }),
+  );
+
+  const orderedBlocks = blockTexts.filter((block) => block && block.trim());
+  const header = referenceSheet || bible;
+
+  return [header, ...orderedBlocks].join('\n\n');
+};
 
 const handleGenerate = async (req: any, res: any) => {
   try {
@@ -649,6 +933,35 @@ Legenda para Redes Sociais: [Texto envolvente e reflexivo para o post no idioma 
 Gatilho de Engajamento: [Pergunta instigante para gerar debates no idioma ${currentLang.langName}]
 Hashtags Recomendadas: #novelinhas #cenas #dramatiktok #historiasreais #viralvideo #emocionante
 `;
+
+    if (numScenes > SINGLE_CALL_MAX_SCENES) {
+      const longText = await generateLongVideo({
+        master: promptInstructions,
+        apiKey: req.geminiApiKey,
+        theme: String(theme),
+        country: String(country),
+        tone: String(tone),
+        emotion: String(emotion),
+        skinDirective,
+        langName: currentLang.langName,
+        locale: currentLang.locale,
+        numScenes,
+        themeDirective,
+        extremeWeightDirective,
+        ownScriptDirective,
+        context: String(context || ''),
+        previousStory: String(previousStory || ''),
+        isContinuing,
+      });
+
+      let longSceneOrder = 0;
+      const normalizedLongText = longText
+        .replace(/(PROMPT\s+)GANCHO\s+CHAMATIVO\s+(CENA\s+\d+)/gi, '$1$2')
+        .replace(/(PROMPT\s+CENA\s+\d+)(?!\s*\(SEEDANCE)/gi, '$1 (SEEDANCE 2.5)')
+        .replace(/(PROMPT\s+CENA\s+)\d+/gi, (_match, prefix) => `${prefix}${++longSceneOrder}`);
+
+      return res.json({ text: normalizedLongText });
+    }
 
     const countScenes = (value: string) => (value.match(/PROMPT\s+(?:GANCHO\s+CHAMATIVO\s+)?CENA\s+\d+/gi) || []).length;
     const countDetailed = (value: string) => (value.match(/\[Negative Prompt\]/gi) || []).length;

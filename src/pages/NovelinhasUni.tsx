@@ -1548,7 +1548,13 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
               className="flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-2xl border border-orange-300/70 bg-orange-500 px-8 text-sm font-black uppercase tracking-wide text-black shadow-[0_18px_60px_rgba(249,115,22,0.28)] transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-800 disabled:text-zinc-500 sm:w-auto"
             >
               {loading && !isPartTwo ? <Loader2 className="animate-spin" size={20} /> : <Sparkles size={20} />}
-              {loading && !isPartTwo ? 'Gerando roteiro cinematográfico...' : result ? 'Gerar novo roteiro' : 'Gerar roteiro'}
+              {loading && !isPartTwo
+                ? scenes > 8
+                  ? 'Montando plano e gerando cenas...'
+                  : 'Gerando roteiro cinematográfico...'
+                : result
+                  ? 'Gerar novo roteiro'
+                  : 'Gerar roteiro'}
             </button>
 
             {result && (
@@ -1575,6 +1581,14 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
               </button>
             )}
           </div>
+
+          {scenes > 8 && !loading && (
+            <p className="mt-4 text-center text-xs font-semibold leading-relaxed text-zinc-400">
+              Vídeo longo detectado: a IA cria primeiro a ficha de personagens e o plano de continuidade e
+              depois gera as {scenes} cenas em blocos, todos alimentados pelo mesmo contrato. Leva mais
+              tempo, mas mantém figurino, cenário, nomes e ritmo iguais da cena 1 até a cena {scenes}.
+            </p>
+          )}
         </section>
 
         <section className="rounded-3xl border border-zinc-800 bg-zinc-950 p-4 shadow-2xl shadow-black/40 sm:p-7">

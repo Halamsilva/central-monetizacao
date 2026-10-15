@@ -634,42 +634,42 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
             </span>
           </div>
 
-            {/* SELETOR DE IDIOMA DAS FALAS */}
-            <div className="space-y-2">
-              <label className="flex items-center gap-1.5 text-xs font-bold text-amber-200">
-                <Languages className="h-3.5 w-3.5 text-amber-400" />
-                <span>Idioma das Falas e dos Textos:</span>
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {([
-                  { id: 'brasil', label: 'Brasil', flag: 'ðŸ‡§ðŸ‡·', lang: 'PortuguÃªs' },
-                  { id: 'estados_unidos', label: 'EUA', flag: 'ðŸ‡ºðŸ‡¸', lang: 'English' },
-                  { id: 'espanha', label: 'Espanha', flag: 'ðŸ‡ªðŸ‡¸', lang: 'EspaÃ±ol' },
-                ] as const).map((langOpt) => {
-                  const isActive = outputLanguage === langOpt.id;
-                  return (
-                    <button
-                      key={langOpt.id}
-                      type="button"
-                      onClick={() => setOutputLanguage(langOpt.id)}
-                      className={`flex flex-col items-center justify-center gap-0.5 rounded-lg border p-2 transition-all ${
-                        isActive
-                          ? 'border-amber-400 bg-gradient-to-b from-[#242b1a] to-[#1a2313] text-amber-100 shadow-md shadow-amber-950 ring-2 ring-amber-500/50'
-                          : 'border-amber-900/40 bg-[#0d160f] text-amber-300/70 hover:border-amber-700/60 hover:bg-[#132216]'
-                      }`}
-                    >
-                      <span className="text-lg leading-none">{langOpt.flag}</span>
-                      <span className="text-[11px] font-black uppercase tracking-wide text-white">{langOpt.label}</span>
-                      <span className="text-[9px] font-normal opacity-70 leading-none">{langOpt.lang}</span>
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="text-[11px] leading-relaxed text-amber-200/70">
-                A descriÃ§Ã£o visual do prompt continua sempre em inglÃªs (para as ferramentas de vÃ­deo). O que muda Ã© a 
-                <strong className="text-white">fala do apresentador</strong> e os textos de apoio, no idioma escolhido. O tom de venda e a forÃ§a da fala permanecem iguais.
-              </p>
+
+          {/* SELETOR DE IDIOMA DAS FALAS */}
+          <div>
+            <label className="block text-xs font-bold text-amber-200 mb-2 flex items-center gap-1.5">
+              <Languages className="h-3.5 w-3.5 text-amber-400" />
+              <span>Idioma das Falas e dos Textos:</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { id: 'brasil', label: 'Brasil', flag: '🇧🇷', lang: 'Português' },
+                { id: 'estados_unidos', label: 'EUA', flag: '🇺🇸', lang: 'English' },
+                { id: 'espanha', label: 'Espanha', flag: '🇪🇸', lang: 'Español' },
+              ] as const).map((langOpt) => {
+                const isActive = outputLanguage === langOpt.id;
+                return (
+                  <button
+                    key={langOpt.id}
+                    type="button"
+                    onClick={() => setOutputLanguage(langOpt.id)}
+                    className={`flex flex-col items-center justify-center gap-0.5 rounded-lg border p-2 transition-all ${
+                      isActive
+                        ? 'border-amber-400 bg-gradient-to-b from-[#242b1a] to-[#1a2313] text-amber-100 shadow-md shadow-amber-950 ring-2 ring-amber-500/50'
+                        : 'border-amber-900/40 bg-[#0d160f] text-amber-300/70 hover:border-amber-700/60 hover:bg-[#132216]'
+                    }`}
+                  >
+                    <span className="text-lg leading-none">{langOpt.flag}</span>
+                    <span className="text-[11px] font-black uppercase tracking-wide text-white">{langOpt.label}</span>
+                    <span className="text-[9px] font-normal opacity-70 leading-none">{langOpt.lang}</span>
+                  </button>
+                );
+              })}
             </div>
+            <span className="text-[10px] text-amber-200/70 mt-1.5 block leading-relaxed">
+              A descrição visual do prompt continua sempre em inglês (para as ferramentas de vídeo). O que muda é a <strong>fala do apresentador</strong> e os textos de apoio, no idioma escolhido. O tom de venda e a força da fala permanecem iguais.
+            </span>
+          </div>
 
           <div>
             <label htmlFor="select-hook-action" className="block text-xs font-bold text-cyan-300 mb-1 flex items-center justify-between">

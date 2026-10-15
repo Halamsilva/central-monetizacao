@@ -26,11 +26,11 @@ import {
 import { VideoScript, CorpoReveladoPrompt } from '../types';
 
 interface PromptSequenceListProps {
-  outputLanguage?: 'brasil' | 'estados_unidos' | 'espanha';
   script: VideoScript;
   activePromptId: number;
   onSelectPrompt: (id: number) => void;
   onClearPrompts: () => void;
+  outputLanguage?: 'brasil' | 'estados_unidos' | 'espanha';
 }
 
 export const PromptSequenceList: React.FC<PromptSequenceListProps> = ({
@@ -44,8 +44,8 @@ export const PromptSequenceList: React.FC<PromptSequenceListProps> = ({
     outputLanguage === 'estados_unidos'
       ? 'American English'
       : outputLanguage === 'espanha'
-        ? 'Espanhol (EspaÃ±a)'
-        : 'PortuguÃªs Brasileiro';
+        ? 'Espanhol (España)'
+        : 'Português Brasileiro';
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [copiedType, setCopiedType] = useState<string | null>(null);
   const [copiedAll, setCopiedAll] = useState<boolean>(false);
@@ -125,11 +125,11 @@ ${videoSummary}`;
       sections.push(`ENQUADRAMENTO DA CÂMERA & LENTE:\n${prompt.cameraFraming}`);
     }
 
-    sections.push(`FALA DO APRESENTADOR (${spokenLanguageLabel} ~ 8s ~ Sincronia Labial ~ SEM legendas na tela):\n"${prompt.spokenLinePt}"`);
+    sections.push(`FALA DO APRESENTADOR (${spokenLanguageLabel} • 8s • Sincronia Labial • SEM legendas na tela):\n"${prompt.spokenLinePt}"`);
 
     let technicalPrompt = prompt.promptText.trim();
     if (!technicalPrompt.includes(prompt.spokenLinePt)) {
-      technicalPrompt += `\n\nSPOKEN AUDIO (${spokenLanguageLabel}, 8s, perfect lip synchronization, spoken naturally without on-screen subtitles):\n"${prompt.spokenLinePt}"`;
+      technicalPrompt += `\n\nSPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization, spoken naturally without on-screen subtitles):\n"${prompt.spokenLinePt}"`;
     }
 
     sections.push(`PROMPT COMPLETO DE VÍDEO PARA IA (Inglês Técnico com todas as movimentações e descrições):\n${technicalPrompt}`);
@@ -526,7 +526,7 @@ ${videoSummary}`;
                     <div className="flex items-center justify-between gap-2 mb-1.5">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1">
                         <Volume2 className="h-3.5 w-3.5 text-amber-400" />
-                        Fala do Apresentador (${spokenLanguageLabel} ~ ~8s)
+                        Fala do Apresentador (Português Brasileiro • ~8s)
                       </span>
                       <button
                         type="button"
@@ -539,7 +539,7 @@ ${videoSummary}`;
                             ? 'border-amber-400 bg-amber-500 text-black font-bold'
                             : 'border-amber-500/40 bg-amber-950/40 text-amber-200 hover:bg-amber-900/50 hover:border-amber-400'
                         }`}
-                        title="Copiar apenas a fala no idioma escolhido para dublagem, gravação ou ElevenLabs"
+                        title="Copiar apenas as falas no idioma escolhido para dublagem, gravação ou ElevenLabs"
                       >
                         {isCopied && copiedType === 'speechOnly' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                         <span>{isCopied && copiedType === 'speechOnly' ? 'Fala Copiada!' : 'Copiar só Fala'}</span>

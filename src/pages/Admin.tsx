@@ -15,6 +15,7 @@ import {
   Loader2,
   RefreshCw,
   AlertCircle,
+  Zap,
 } from 'lucide-react';
 
 import {
@@ -26,7 +27,7 @@ import {
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
-    'notices' | 'agents' | 'users'
+    'notices' | 'agents' | 'users' | 'ia'
   >('users');
 
   const [userFilter, setUserFilter] = useState<
@@ -44,6 +45,36 @@ const Admin: React.FC = () => {
 
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Diagnostico da chave de IA
+  const [isTestingAi, setIsTestingAi] = useState(false);
+  const [aiTestResult, setAiTestResult] = useState<any>(null);
+
+  const testGeminiKey = async () => {
+    setIsTestingAi(true);
+    setAiTestResult(null);
+
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data?.session?.access_token || '';
+
+      const response = await fetch('/api/admin/system-status?test_gemini=1', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload?.error || 'Nao foi possivel testar a chave.');
+      }
+
+      setAiTestResult(payload);
+    } catch (err: any) {
+      setAiTestResult({ results: [{ ok: false, message: err.message || 'Falha no teste.' }] });
+    } finally {
+      setIsTestingAi(false);
+    }
+  };
 
   const [notices] = useState<Notice[]>([]);
   const [agents] = useState<Agent[]>([]);
@@ -292,7 +323,101 @@ const Admin: React.FC = () => {
           <Users className="mr-2 inline h-4 w-4" />
           Alunos
         </button>
+
+        <button
+          onClick={() => setActiveTab('ia')}
+          className={`rounded-2xl px-5 py-3 text-sm font-semibold transition-all ${activeTab === 'ia'
+              ? 'bg-blue-600 text-white'
+              : 'bg-white text-slate-700'
+            }`}
+        >
+          <Zap className="mr-2 inline h-4 w-4" />
+          Chave de IA
+        </button>
       </div>
+
+      {activeTab === 'ia' && (
+        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+          <h2 className="text-2xl font-black text-slate-900">
+            Testar chave de IA
+          </h2>
+
+          <p className="mt-2 max-w-2xl text-sm text-slate-500">
+            Verifica se a chave do Google AI Studio esta liberada. Se estiver recusada,
+            os agentes nao chamam a IA e entregam um roteiro local em portugues.
+          </p>
+
+          <button
+            onClick={testGeminiKey}
+            disabled={isTestingAi}
+            className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-60"
+          >
+            {isTestingAi ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Zap className="h-4 w-4" />
+            )}
+            {isTestingAi ? 'Testando...' : 'Testar chave agora'}
+          </button>
+
+          {aiTestResult && (
+            <div className="mt-6 space-y-3">
+              {(aiTestResult.results || []).map((result: any, index: number) => (
+                <div
+                  key={index}
+                  className={`rounded-2xl border p-4 ${
+                    result.ok
+                      ? 'border-emerald-200 bg-emerald-50'
+                      : 'border-red-200 bg-red-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-bold text-slate-800">
+                      {result.source}
+                    </span>
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-black uppercase ${
+                        result.ok
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-red-500 text-white'
+                      }`}
+                    >
+                      {result.ok ? 'Funcionando' : 'Com problema'}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-sm text-slate-600">{result.message}</p>
+
+                  {result.workingModel && (
+                    <p className="mt-1 text-xs font-mono text-slate-500">
+                      Modelo que respondeu: {result.workingModel}
+                    </p>
+                  )}
+
+                  {result.maskedKey && (
+                    <p className="mt-1 text-xs font-mono text-slate-400">
+                      Chave: {result.maskedKey}
+                    </p>
+                  )}
+
+                  {result.raw && (
+                    <p className="mt-2 break-all rounded-lg bg-white/70 p-2 text-[11px] font-mono text-red-700">
+                      {result.raw}
+                    </p>
+                  )}
+                </div>
+              ))}
+
+              {aiTestResult.hint && (
+                <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                  {aiTestResult.hint}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {activeTab === 'notices' && (
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">

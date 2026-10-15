@@ -2,6 +2,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { getRandomThemeSuggestions } from '../src/pages/encapsulados/data/presets.js';
 import { generateLocalScript as generateLocalScriptModular } from './encapsuladosScriptGen.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
+import { getOutputLanguage, buildLanguageDirective } from './output-language.js';
 import { getActiveGeminiApiKey } from './gemini-key.js';
 
 const CORPO_REVELADO_SYSTEM_INSTRUCTION = `
@@ -269,6 +270,7 @@ function generateLocalScript(
 
 // Main script generation endpoint
 const handleGenerateScript = async (req: any, res: any) => {
+  const outputLanguage = getOutputLanguage(req.body?.outputLanguage);
   try {
     const { 
       theme, 
@@ -523,6 +525,7 @@ Lembre-se:
 6. O promptText de cada cena deve estar em inglês altamente descritivo e pronto para ferramentas de geração de vídeo (Sora, Runway Gen-3, Kling, Luma).
 7. REGRA CRÍTICA INEGOCIÁVEL — SEM LEGENDAS E SEM TEXTO NA TELA (ZERO SUBTITLES, ZERO ON-SCREEN TEXT): O vídeo NÃO deve exibir legendas nem qualquer tipo de texto na tela. O promptText de CADA UM dos prompts DEVE começar OBRIGATORIAMENTE com a proibição:
 "NEGATIVE PROMPT & ON-SCREEN TEXT BAN: ABSOLUTELY NO on-screen text, NO subtitles, NO captions, NO closed captions, NO words written on screen, NO text overlays, NO lower thirds, NO banners, NO typography, NO UI elements, NO watermarks. Clean raw cinematic video footage with zero text overlays and zero subtitles."
+${buildLanguageDirective(outputLanguage)}
 A fala do apresentador é estritamente falada em cena com sincronização labial (lip-sync), NUNCA gerada ou embutida como legenda na tela!`;
 
     contents.push({ text: userPromptText });

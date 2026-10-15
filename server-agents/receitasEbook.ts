@@ -2,6 +2,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { getRandomThemeSuggestions } from '../src/pages/receitasEbook/data/presets.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 import { getActiveGeminiApiKey } from './gemini-key.js';
+import { getOutputLanguage, buildLanguageDirective } from './output-language.js';
 
 const CORPO_REVELADO_SYSTEM_INSTRUCTION = `
 Você é o AGENTE DIRETOR CRIATIVO E ENGENHEIRO DE PROMPTS ESPECIALISTA EM VÍDEOS VIRAIS DE SAÚDE E RECEITAS CASEIRAS no estilo dos vídeos do Mestre de Jiu-Jitsu (BJJ) e do livro "FARMÁCIA DA LONGEVIDADE".
@@ -920,6 +921,7 @@ ${settingDesc}`
 
 // Main script generation endpoint
 const handleGenerateScript = async (req: any, res: any) => {
+  const outputLanguage = getOutputLanguage(req.body?.outputLanguage);
   try {
     const { 
       theme, 
@@ -1160,6 +1162,7 @@ Lembre-se:
 5. O promptText de cada cena deve estar em inglês altamente descritivo e pronto para ferramentas de geração de vídeo (Sora, Runway Gen-3, Kling, Luma).
 6. REGRA CRÍTICA INEGOCIÁVEL — SEM LEGENDAS E SEM TEXTO NA TELA (ZERO SUBTITLES, ZERO ON-SCREEN TEXT): O vídeo NÃO deve exibir legendas nem qualquer tipo de texto na tela. O promptText de CADA UM dos prompts DEVE começar OBRIGATORIAMENTE com a proibição:
 "NEGATIVE PROMPT & ON-SCREEN TEXT BAN: ABSOLUTELY NO on-screen text, NO subtitles, NO captions, NO closed captions, NO words written on screen, NO text overlays, NO lower thirds, NO banners, NO typography, NO UI elements, NO watermarks. Clean raw cinematic video footage with zero text overlays and zero subtitles."
+${buildLanguageDirective(outputLanguage)}
 A fala do apresentador é estritamente falada em cena com sincronização labial (lip-sync), NUNCA gerada ou embutida como legenda na tela!`;
 
     contents.push({ text: userPromptText });

@@ -2,6 +2,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { getRandomThemeSuggestions } from '../src/pages/insetos/data/presets.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 import { getActiveGeminiApiKey } from './gemini-key.js';
+import { getOutputLanguage, buildLanguageDirective } from './output-language.js';
 
 const PRAGAS_INSETOS_SYSTEM_INSTRUCTION = `
 Você é o AGENTE DIRETOR CRIATIVO E ENGENHEIRO DE PROMPTS ESPECIALISTA EM VÍDEOS VIRAIS DE RECEITAS CASEIRAS PARA AFASTAR E MATAR INSETOS E PRAGAS DOMÉSTICAS (ratos, ratazanas, baratas, formigas, pernilongos/mosquitos da dengue, escorpiões, aranhas, moscas, pulgas, traças e cupins) do canal e livro "CASA LIVRE DE PRAGAS".
@@ -1218,6 +1219,7 @@ ${settingDesc}`
 
 // Main script generation endpoint
 const handleGenerateScript = async (req: any, res: any) => {
+  const outputLanguage = getOutputLanguage(req.body?.outputLanguage);
   try {
     const { 
       theme, 
@@ -1469,6 +1471,7 @@ Lembre-se:
 4. Todas as falas em Português Brasileiro (~8 segundos cada, diretas, autênticas e magnéticas).
 5. O promptText de cada cena deve estar em inglês altamente descritivo e pronto para ferramentas de geração de vídeo (Sora, Runway Gen-3, Kling, Luma).
 6. REGRA CRÍTICA INEGOCIÁVEL — SEM LEGENDAS E SEM TEXTO NA TELA: O promptText de CADA UM dos prompts DEVE começar OBRIGATORIAMENTE com a proibição:
+${buildLanguageDirective(outputLanguage)}
 "NEGATIVE PROMPT & ON-SCREEN TEXT BAN: ABSOLUTELY NO on-screen text, NO subtitles, NO captions, NO closed captions, NO words written on screen, NO text overlays, NO lower thirds, NO banners, NO typography, NO UI elements, NO watermarks. Clean raw cinematic video footage with zero text overlays and zero subtitles."`;
 
     contents.push({ text: userPromptText });

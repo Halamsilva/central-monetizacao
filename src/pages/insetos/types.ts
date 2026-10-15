@@ -79,6 +79,8 @@ export interface ThemeSuggestion {
 }
 
 export interface PromptGenerationRequest {
+  // Idioma das falas (spokenLinePt) e dos textos de apoio
+  outputLanguage?: 'brasil' | 'estados_unidos' | 'espanha';
   theme: string;
   referenceText?: string;
   referenceImageBase64?: string;

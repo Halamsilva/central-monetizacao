@@ -156,6 +156,7 @@ export default function App() {
               activePromptId={activePromptId}
               onSelectPrompt={(id) => setActivePromptId(id)}
               onClearPrompts={handleClearPrompts}
+            outputLanguage={lastRequest?.outputLanguage}
             />
           ) : (
             <div className="rounded-xl border border-dashed border-emerald-900/60 bg-[#0e1713]/80 p-8 text-center shadow-lg">

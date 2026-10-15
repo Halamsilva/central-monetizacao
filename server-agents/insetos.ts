@@ -180,7 +180,7 @@ async function generateWithGeminiFallback(ai: GoogleGenAI, contents: any, config
 }
 
 // Enforce strict ban on subtitles and on-screen text across all prompts
-function enforceZeroTextAndSubtitles(script: any): any {
+function enforceZeroTextAndSubtitles(script: any, audioTag: string = 'Brazilian Portuguese'): any {
   if (!script || !Array.isArray(script.prompts)) {
     return script;
   }
@@ -218,7 +218,7 @@ function enforceZeroTextAndSubtitles(script: any): any {
 
       // Ensure spoken audio line is cleanly included once
       if (p.spokenLinePt && !p.promptText.includes(p.spokenLinePt)) {
-        p.promptText = `${p.promptText.trim()}\n\nSPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization, spoken naturally without on-screen subtitles):\n"${p.spokenLinePt}"`;
+        p.promptText = `${p.promptText.trim()}\n\nSPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization, spoken naturally without on-screen subtitles):\n"${p.spokenLinePt}"`;
       }
     }
   });
@@ -580,7 +580,8 @@ function generateLocalScript(
   promptCount: number = 8,
   includeCTA: boolean = true,
   productType?: string,
-  giantModelPreference?: string
+  giantModelPreference?: string,
+  audioTag: string = 'Brazilian Portuguese',
 ): any {
   const targetCount = Math.max(2, Math.min(10, Number(promptCount) || 8));
   const hasCTA = Boolean(includeCTA);
@@ -695,7 +696,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: ${selectedHook.actionScene}
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${selectedHook.spoken}"
 
 ${settingDesc}`
@@ -736,7 +737,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter speaks directly about the pest's nesting mechanics and why conventional toxic sprays fail, delivering speech with paternal urgency and magnetic conviction.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${pest.problemSpokenPt}"
 
 ${settingDesc}`
@@ -779,7 +780,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter showcases and speaks about the homemade ingredients on the bench, highlighting their natural repellent or lethal properties against ${pest.nameEn} with authority, warmth, and confidence.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "Você só vai precisar desses ingredientes simples da sua cozinha para criar uma fórmula fatal contra ${pest.namePt} e segura pra sua família: ${formatIngredientsForSpeech(ingredientsText)}."
 
 ${settingDesc}`
@@ -826,7 +827,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter immediately introduces and names each accessible kitchen ingredient on the bench with dynamic energy and perfect on-camera lip synchronization.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${solutionIngredients ? `Para acabar com as ${pest.namePt} rápido você só vai precisar de: ${formatIngredientsForSpeech(solutionIngredients)}. São ingredientes simples da sua casa!` : `Para acabar com as ${pest.namePt} rápido você só vai precisar desses ingredientes simples da sua cozinha: ${formatIngredientsForSpeech(pest.defaultIngredientsPt)}.`}"
 
 ${settingDesc}`
@@ -864,7 +865,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Fast-paced, tactile, highly dynamic preparation. Presenter delivers dialogue with snappy, engaging lip-sync and direct eye contact.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "Mistura tudo bem rápido até homogeneizar. Aplica direto nos pontos estratégicos e as ${pest.namePt} somem em minutos!"
 
 ${settingDesc}`
@@ -905,7 +906,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Natural, fluid cadence. Alternates naturally between looking at the mixing vessel and locking eyes with the camera while speaking with perfect on-camera lip synchronization.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${pest.cook1SpokenPt}"
 
 ${settingDesc}`
@@ -946,7 +947,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Fast-paced, tactile, highly satisfying homemade preparation continuing seamlessly. Presenter speaks with perfect lip sync.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${pest.cook2SpokenPt}"
 
 ${settingDesc}`
@@ -984,7 +985,7 @@ HANDS: Exactly five fingers per hand, correct adult male anatomy, realistic join
 
 ACTION: Presenter delivers narration with direct, engaging conversational lip-sync, maintaining magnetic eye contact with the viewer while gesturing clearly to explain portions and application zones.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${pest.portionsSpokenPt}"
 
 ${settingDesc}`
@@ -1022,7 +1023,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter delivers narration with direct, heartfelt conviction, looking into the camera lens with charismatic confidence.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${pest.resultSpokenPt}"
 
 ${settingDesc}`
@@ -1073,7 +1074,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter reveals and presents the product clearly, speaking with energetic warmth and magnetic conviction.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${stepCTA1Spoken}"
 
 ${settingDesc}`
@@ -1111,7 +1112,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter points directly down into the camera inviting viewers to comment, delivering the closing line with magnetic conviction.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${stepCTA2Spoken}"
 
 ${settingDesc}`
@@ -1149,7 +1150,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter delivers closing guidance with direct, engaging conversational lip-sync, maintaining magnetic eye contact with the viewer while gesturing warmly.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${pest.organicCloseSpokenPt}"
 
 ${settingDesc}`
@@ -1468,7 +1469,7 @@ Lembre-se:
 1. Formato exato: EXATAMENTE ${totalPromptsAi} PROMPTS conectados de 8 segundos cada (total ${totalPromptsAi * 8}s) — ${targetPromptCount} de conteúdo${targetIncludeCTA ? ` + 2 de CTA EXTRA (numerados ${ctaStart} e ${ctaEnd}, fora da contagem de conteúdo)` : ''}, formato 9:16 vertical, 4K, 30fps.
 2. Cada prompt deve ser completo e independente, repetindo toda a descrição do Apresentador, da Pele Humana, das Mãos, do Cenário e da Câmera.
 3. Maquete COLOSSAL da infestação em primeiro plano extremo (ocupando de 55% a 65% da tela 9:16) no Prompt 1.
-4. Todas as falas em Português Brasileiro (~8 segundos cada, diretas, autênticas e magnéticas).
+4. Todas as falas devem seguir o IDIOMA ESCOLHIDO PELO ALUNO (ver REGRA #0 no final deste prompt). Se o aluno nao especificar nada, o padrao e portugues do Brasil.
 5. O promptText de cada cena deve estar em inglês altamente descritivo e pronto para ferramentas de geração de vídeo (Sora, Runway Gen-3, Kling, Luma).
 6. REGRA CRÍTICA INEGOCIÁVEL — SEM LEGENDAS E SEM TEXTO NA TELA: O promptText de CADA UM dos prompts DEVE começar OBRIGATORIAMENTE com a proibição:
 ${buildLanguageDirective(outputLanguage)}
@@ -1507,7 +1508,7 @@ ${buildLanguageDirective(outputLanguage)}
                     timeRange: { type: Type.STRING, description: 'Faixa de tempo, ex: 00:00 - 00:08' },
                     focalObject: { type: Type.STRING, description: 'Estado e posição do objeto principal nesta cena' },
                     actionSummary: { type: Type.STRING, description: 'Resumo da ação física e continuidade' },
-                    spokenLinePt: { type: Type.STRING, description: 'Fala do apresentador em Português Brasileiro (cabe em aprox. 8s)' },
+        spokenLinePt: { type: Type.STRING, description: 'Fala do apresentador no idioma escolhido pelo aluno: ' + outputLanguage.spokenLabel + '. Aproximadamente 8 segundos de fala natural, direta e impactante.' },
                     promptText: { type: Type.STRING, description: 'Prompt completo e autossuficiente em inglês para geração de vídeo IA' }
                   },
                   required: ['id', 'stepName', 'durationSeconds', 'timeRange', 'focalObject', 'actionSummary', 'spokenLinePt', 'promptText']

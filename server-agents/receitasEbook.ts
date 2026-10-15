@@ -169,7 +169,7 @@ async function generateWithGeminiFallback(ai: GoogleGenAI, contents: any, config
 }
 
 // Enforce strict ban on subtitles and on-screen text across all prompts
-function enforceZeroTextAndSubtitles(script: any): any {
+function enforceZeroTextAndSubtitles(script: any, audioTag: string = 'Brazilian Portuguese'): any {
   if (!script || !Array.isArray(script.prompts)) {
     return script;
   }
@@ -207,7 +207,7 @@ function enforceZeroTextAndSubtitles(script: any): any {
 
       // Ensure spoken audio line is properly suffixed with the subtitle-free lip-sync note if not already integrated
       if (p.spokenLinePt && !p.promptText.includes(p.spokenLinePt)) {
-        p.promptText = `${p.promptText.trim()}\n\nSPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization, spoken naturally without on-screen subtitles):\n"${p.spokenLinePt}"`;
+        p.promptText = `${p.promptText.trim()}\n\nSPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization, spoken naturally without on-screen subtitles):\n"${p.spokenLinePt}"`;
       }
     }
   });
@@ -243,7 +243,8 @@ function generateLocalScript(
   referenceVideoBase64?: string,
   videoFileName?: string,
   promptCount: number = 8,
-  includeCTA: boolean = true
+  includeCTA: boolean = true,
+  audioTag: string = 'Brazilian Portuguese',
 ): any {
   const targetCount = Math.max(2, Math.min(10, Number(promptCount) || 8));
   const hasCTA = Boolean(includeCTA);
@@ -376,7 +377,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: ${selectedHook.actionScene}
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "${selectedHook.spoken}"
 
 ${settingDesc}`
@@ -429,7 +430,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter speaks directly about what the underlying medical/biological issue is, detailing the hidden mechanism of the problem with genuine paternal urgency, magnetic conviction, and zero academic pretension.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "O problema real é essa camada aqui: ela se acumula em silêncio, sufoca as células e trava o teu metabolismo sem você nem perceber."
 
 ${settingDesc}`
@@ -488,7 +489,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter showcases and speaks about the homemade ingredients on the bench, highlighting their natural bioactive properties and explaining with conviction and clear cadence which simple home nutrients support the body's natural defense. Direct eye contact with the camera, speaking with authority, warmth, and confidence.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "O segredo para agir na raiz do problema e fortalecer a saúde do seu corpo está nesses bioativos naturais que você já tem na sua cozinha."
 
 ${settingDesc}`
@@ -547,7 +548,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Natural, fluid cadence. Alternates naturally between looking at the boiling pot as ingredients strike the surface and locking eyes with the camera while speaking with perfect on-camera lip synchronization.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "Olha aqui: coloca duzentos ml de água pra ferver, joga o gengibre fatiado e o cravo pra soltar todo esse óleo essencial."
 
 ${settingDesc}`
@@ -601,7 +602,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Fast-paced, tactile, highly satisfying homemade preparation continuing seamlessly. Real fragrant steam rises from the rich golden liquid. Presenter alternates between stirring the ingredients inside the pot and looking up at the camera with an authentic, confident smile while speaking with perfect lip sync.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "Agora que o gengibre e o cravo já tão fervendo aí dentro, joga a cúrcuma, espreme o limão e fecha com o mel puro. Mexe bem!"
 
 ${settingDesc}`
@@ -651,7 +652,7 @@ HANDS: Exactly five fingers per hand, correct adult male anatomy, realistic join
 
 ACTION: Presenter delivers narration with direct, engaging conversational lip-sync, maintaining magnetic eye contact with the viewer while gesturing clearly to explain precise portions and timing.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "Anota aí a quantidade: trezentos ml de água, uma colher de cúrcuma, meio limão e uma de mel. Deixa cinco minutos fervendo em fogo baixo e tá pronto."
 
 ${settingDesc}`
@@ -703,7 +704,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter delivers narration with direct, heartfelt conviction, looking into the camera lens with charismatic confidence.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "Toma isso de manhã e outro antes de dormir. Minha mãe começou a tomar e o corpo dela limpou de um jeito que todo mundo reparou."
 
 ${settingDesc}`
@@ -764,7 +765,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter holds the book prominently, speaks with energetic warmth, points directly down into the camera inviting viewers to comment, delivering the closing line with magnetic conviction and genuine paternal authority.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "Comenta EU QUERO aqui embaixo que te mando no privado com mais de duzentas receitas secretas de família. Garante o teu!"
 
 ${settingDesc}`
@@ -814,7 +815,7 @@ HANDS: Exactly five fingers per hand, correct adult human anatomy, realistic joi
 
 ACTION: Presenter delivers closing guidance with direct, engaging conversational lip-sync, maintaining magnetic eye contact with the viewer while gesturing warmly to explain routine maintenance.
 
-SPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization):
+SPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization):
 "Mantém essa receita duas ou três vezes na semana. O teu organismo vai limpando naturalmente e você vai sentir a diferença na tua energia. Cuida do teu corpo!"
 
 ${settingDesc}`
@@ -1158,7 +1159,7 @@ Lembre-se:
 1. Formato exato: EXATAMENTE ${targetPromptCount} PROMPTS conectados de 8 segundos cada (total ${targetPromptCount * 8}s), formato 9:16 vertical, 4K, 30fps.
 2. Cada prompt deve ser completo e independente, repetindo toda a descrição do Apresentador, da Pele Humana, das Mãos, do Cenário e da Câmera.
 3. Objeto educacional COLOSSAL em primeiro plano extremo (ocupando de 55% a 65% da tela 9:16) no Prompt 1.
-4. Todas as falas em Português Brasileiro (~8 segundos cada, diretas, autênticas e magnéticas).
+4. Todas as falas devem seguir o IDIOMA ESCOLHIDO PELO ALUNO (ver REGRA #0 no final deste prompt). Se o aluno nao especificar nada, o padrao e portugues do Brasil. Mantenha o tom (~8 segundos cada, diretas, autenticas e magneticas).
 5. O promptText de cada cena deve estar em inglês altamente descritivo e pronto para ferramentas de geração de vídeo (Sora, Runway Gen-3, Kling, Luma).
 6. REGRA CRÍTICA INEGOCIÁVEL — SEM LEGENDAS E SEM TEXTO NA TELA (ZERO SUBTITLES, ZERO ON-SCREEN TEXT): O vídeo NÃO deve exibir legendas nem qualquer tipo de texto na tela. O promptText de CADA UM dos prompts DEVE começar OBRIGATORIAMENTE com a proibição:
 "NEGATIVE PROMPT & ON-SCREEN TEXT BAN: ABSOLUTELY NO on-screen text, NO subtitles, NO captions, NO closed captions, NO words written on screen, NO text overlays, NO lower thirds, NO banners, NO typography, NO UI elements, NO watermarks. Clean raw cinematic video footage with zero text overlays and zero subtitles."
@@ -1207,7 +1208,7 @@ A fala do apresentador é estritamente falada em cena com sincronização labial
                     timeRange: { type: Type.STRING, description: 'Faixa de tempo, ex: 00:00 - 00:08' },
                     focalObject: { type: Type.STRING, description: 'Estado e posição do objeto principal nesta cena' },
                     actionSummary: { type: Type.STRING, description: 'Resumo da ação física e continuidade' },
-                    spokenLinePt: { type: Type.STRING, description: 'Fala do apresentador em Português Brasileiro (cabe em aprox. 8s)' },
+        spokenLinePt: { type: Type.STRING, description: 'Fala do apresentador no idioma escolhido pelo aluno: ' + outputLanguage.spokenLabel + '. Aproximadamente 8 segundos de fala natural, direta e impactante.' },
                     promptText: { type: Type.STRING, description: 'Prompt completo e autossuficiente em inglês para geração de vídeo IA' }
                   },
                   required: ['id', 'stepName', 'durationSeconds', 'timeRange', 'focalObject', 'actionSummary', 'spokenLinePt', 'promptText']

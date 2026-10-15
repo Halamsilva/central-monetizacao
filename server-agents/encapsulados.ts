@@ -178,7 +178,7 @@ async function generateWithGeminiFallback(ai: GoogleGenAI, contents: any, config
 }
 
 // Enforce strict ban on subtitles and on-screen text across all prompts
-function enforceZeroTextAndSubtitles(script: any): any {
+function enforceZeroTextAndSubtitles(script: any, audioTag: string = 'Brazilian Portuguese'): any {
   if (!script || !Array.isArray(script.prompts)) {
     return script;
   }
@@ -216,7 +216,7 @@ function enforceZeroTextAndSubtitles(script: any): any {
 
       // Ensure spoken audio line is properly suffixed with the subtitle-free lip-sync note if not already integrated
       if (p.spokenLinePt && !p.promptText.includes(p.spokenLinePt)) {
-        p.promptText = `${p.promptText.trim()}\n\nSPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization, spoken naturally without on-screen subtitles):\n"${p.spokenLinePt}"`;
+        p.promptText = `${p.promptText.trim()}\n\nSPOKEN AUDIO (${audioTag}, 8s, perfect lip synchronization, spoken naturally without on-screen subtitles):\n"${p.spokenLinePt}"`;
       }
     }
   });
@@ -244,7 +244,8 @@ function generateLocalScript(
   bookImageBase64?: string,
   bookImageMimeType?: string,
   promptCount: number = 9,
-  includeCTA: boolean = true
+  includeCTA: boolean = true,
+  audioTag: string = 'Brazilian Portuguese',
 ): any {
   return generateLocalScriptModular(
     theme,
@@ -521,7 +522,7 @@ Lembre-se:
 2. Cada prompt deve ser completo e independente, repetindo toda a descrição do Apresentador (respeitando a foto ou descrição personalizada caso enviada), da Pele Humana (poros, vellus hair, sem filtros de beleza), das Mãos (5 dedos, anatomia correta), do Cenário (respeitando a foto ou descrição personalizada caso enviada) e da Câmera.
 3. Objeto educacional COLOSSAL em primeiro plano extremo (ocupando de 55% a 65% da tela 9:16) é a constante fixa no Prompt 1 demonstrando a condição patológica.
 4. O roteiro deve cobrir de forma harmônica a explicação didática do problema, a exibição dos ingredientes naturais, o preparo ao vivo mantendo consistência da mesma panela inox e utensílios, tempo/medidas de infusão, degustação${hasCTA ? ` e nos 2 últimos prompts a oferta do produto encapsulado "${productTitleToUse}"` : ' e rotina matinal sem CTA comercial'}.
-5. Todas as falas em Português Brasileiro (~8 segundos cada, diretas, autênticas e magnéticas).
+5. Todas as falas devem seguir o IDIOMA ESCOLHIDO PELO ALUNO (ver REGRA #0 no final deste prompt). Se o aluno nao especificar nada, o padrao e portugues do Brasil. Mantenha o tom (~8 segundos cada, diretas, autenticas e magneticas).
 6. O promptText de cada cena deve estar em inglês altamente descritivo e pronto para ferramentas de geração de vídeo (Sora, Runway Gen-3, Kling, Luma).
 7. REGRA CRÍTICA INEGOCIÁVEL — SEM LEGENDAS E SEM TEXTO NA TELA (ZERO SUBTITLES, ZERO ON-SCREEN TEXT): O vídeo NÃO deve exibir legendas nem qualquer tipo de texto na tela. O promptText de CADA UM dos prompts DEVE começar OBRIGATORIAMENTE com a proibição:
 "NEGATIVE PROMPT & ON-SCREEN TEXT BAN: ABSOLUTELY NO on-screen text, NO subtitles, NO captions, NO closed captions, NO words written on screen, NO text overlays, NO lower thirds, NO banners, NO typography, NO UI elements, NO watermarks. Clean raw cinematic video footage with zero text overlays and zero subtitles."
@@ -570,7 +571,7 @@ A fala do apresentador é estritamente falada em cena com sincronização labial
                     timeRange: { type: Type.STRING, description: 'Faixa de tempo, ex: 00:00 - 00:08' },
                     focalObject: { type: Type.STRING, description: 'Estado e posição do objeto principal nesta cena' },
                     actionSummary: { type: Type.STRING, description: 'Resumo da ação física e continuidade' },
-                    spokenLinePt: { type: Type.STRING, description: 'Fala do apresentador em Português Brasileiro (cabe em aprox. 8s)' },
+        spokenLinePt: { type: Type.STRING, description: 'Fala do apresentador no idioma escolhido pelo aluno: ' + outputLanguage.spokenLabel + '. Aproximadamente 8 segundos de fala natural, direta e impactante.' },
                     promptText: { type: Type.STRING, description: 'Prompt completo e autossuficiente em inglês para geração de vídeo IA' }
                   },
                   required: ['id', 'stepName', 'durationSeconds', 'timeRange', 'focalObject', 'actionSummary', 'spokenLinePt', 'promptText']

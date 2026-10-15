@@ -254,7 +254,7 @@ export default function App() {
           <Route path="ganchos" element={<Ganchos />} />
           <Route path="criador-noticias" element={<CriadorNoticias />} />
           <Route path="video-studio" element={<VideoStudio />} />
-          <Route path="novelinhas-gordos" element={<NovelinhasUni lockedTheme="Gordos" />} />
+          <Route path="novelinhas-gordos" element={<NovelinhasUni lockedTheme="Gordos" extraThemes={['Gordos Suados']} />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

@@ -569,9 +569,11 @@ const loadHistory = (key: string): HistoryItem[] => {
 
 interface NovelinhasProps {
   lockedTheme?: string;
+  // Temas extras liberados junto com o tema travado (ex.: "Gordos" + "Gordos Suados").
+  extraThemes?: string[];
 }
 
-const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
+const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme, extraThemes = [] }) => {
   const [theme, setTheme] = useState(lockedTheme || 'Dramas Emocionantes');
   const [customThemeTitle, setCustomThemeTitle] = useState('');
   const [country, setCountry] = useState('Brasil');
@@ -606,8 +608,19 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme }) => {
     return () => window.clearInterval(timer);
   }, [loading]);
 
-  const effectiveTheme = lockedTheme || (theme === 'Outro' ? customThemeTitle.trim() || 'Tema personalizado' : theme);
-  const visibleThemes = lockedTheme ? [{ label: lockedTheme, icon: '🍔' }] : themes;
+  const themeOptions = lockedTheme
+    ? themes.filter((item) => item.label === lockedTheme || extraThemes.includes(item.label))
+    : themes;
+
+  const effectiveTheme = lockedTheme
+    ? theme
+    : theme === 'Outro'
+      ? customThemeTitle.trim() || 'Tema personalizado'
+      : theme;
+
+  const visibleThemes = themeOptions.length
+    ? themeOptions
+    : [{ label: lockedTheme || 'Dramas Emocionantes', icon: '✨' }];
   const draftKey = lockedTheme ? `novelinhas-generator-draft-${lockedTheme.toLowerCase()}` : 'novelinhas-generator-draft';
   const historyKey = lockedTheme ? `novelinhas-generator-history-${lockedTheme.toLowerCase()}` : 'novelinhas-generator-history';
   const canGenerate = useMemo(

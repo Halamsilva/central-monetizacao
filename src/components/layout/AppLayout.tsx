@@ -31,6 +31,7 @@ const pageTitles: Record<string, string> = {
   '/tiktok-shop-shopee': 'TikTok Shop & Shopee',
   '/lumina-8k': 'Upscale de Imagem',
   '/reflexao-velho-roca': 'Reflexão do Velho da Roça',
+  '/criador-noticias': 'Criador de Notícias',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',

@@ -37,6 +37,7 @@ const Limpeza = lazy(() => import('./pages/limpeza/App'));
 const Ganchos = lazy(() => import('./pages/ganchos/App'));
 const VideoStudio = lazy(() => import('./pages/videoStudio/App'));
 const FlowAutomations = lazy(() => import('./pages/flowAutomations/App'));
+const CriadorNoticias = lazy(() => import('./pages/criadorNoticias/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -81,6 +82,7 @@ const routeTitles: Record<string, string> = {
   '/lumina-8k': 'Upscale de Imagem',
   '/reflexao-velho-roca': 'Reflexão do Velho da Roça',
   '/novelinhas-gordos': 'Novelinhas Gordos',
+  '/criador-noticias': 'Criador de Notícias',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
@@ -250,6 +252,7 @@ export default function App() {
           <Route path="plantacoes" element={<Plantacoes />} />
           <Route path="limpeza" element={<Limpeza />} />
           <Route path="ganchos" element={<Ganchos />} />
+          <Route path="criador-noticias" element={<CriadorNoticias />} />
           <Route path="video-studio" element={<VideoStudio />} />
           <Route path="novelinhas-gordos" element={<NovelinhasUni lockedTheme="Gordos" />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />

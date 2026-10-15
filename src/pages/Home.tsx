@@ -32,6 +32,7 @@ import {
   Flame,
   Clapperboard,
   Workflow,
+  Newspaper,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
@@ -116,6 +117,13 @@ const tools: Tool[] = [
     path: '/novelinhas-gordos',
     icon: HeartHandshake,
     accent: 'bg-fuchsia-100 text-fuchsia-600',
+  },
+  {
+    title: 'Criador de Notícias',
+    description: 'Transforme notícias reais em roteiros narrados de alta retenção.',
+    path: '/criador-noticias',
+    icon: Newspaper,
+    accent: 'bg-rose-100 text-rose-600',
   },
   {
     title: 'Upscale de Imagem',

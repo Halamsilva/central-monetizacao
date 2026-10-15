@@ -60,6 +60,7 @@ const themes = [
   { label: 'Jesus: Milagres e Ressurreição', icon: '🙏' },
   { label: 'Histórias de Brasileiros Reais', icon: '🇧🇷' },
   { label: 'Causa Animal e Reviravoltas', icon: '🐾' },
+  { label: 'Gordos Suados', icon: '🥵' },
   { label: 'Outro', icon: '✍️' },
 ];
 

@@ -729,7 +729,44 @@ COTIDIANO BRASILEIRO REAL (FONTE OBRIGATÓRIA DAS HISTÓRIAS):
 - Exemplos do TIPO de premissa desejada (VARIE sempre, NUNCA repita a mesma):
   * Uma família que teve 10 filhos para ganhar mais Bolsa Família e entra em colapso quando o benefício é cortado.
   * Um pobre que mora numa casa caindo aos pedaços e finge ser rico nas redes sociais, até a farsa ser exposta AO VIVO.
-  * Outras sementes: o vizinho do "golpe do Pix", a tia que vende bolo no sinal, o tio das pirâmides, o "influencer" de fachada, a mãe que faz bico de tudo, o compadre que deve a todos, a fila do INSS, o delivery que não paga, o agiota do bairro, o churrasco que virou briga de família, a loteria que promete tudo.
+* Outras sementes: o vizinho do "golpe do Pix", a tia que vende bolo no sinal, o tio das pirâmides, o "influencer" de fachada, a mãe que faz bico de tudo, o compadre que deve a todos, a fila do INSS, o delivery que não paga, o agiota do bairro, o churrasco que virou briga de família, a loteria que promete tudo.
+  * Cada história deve ser ÚNICA e específica: use detalhes concretos (um objeto, um lugar, uma dívida, uma decisão) que só existem nessa história.`,
+
+      'Gordos Suados': `O TEMA OBRIGATÓRIO É 'GORDOS SUADOS — BRASIL PRECÁRIO' 🥵🏚️.
+ESTE TEMA COMBINA DUAS DIRETRIZES OBRIGATÓRIAS: (1) TODOS os personagens são EXTREMAMENTE OBESOS (obesidade mórbida) e (2) TODAS as cenas acontecem em LOCAIS BRASILEIROS PRECÁRIOS, SUJOS E DESORDENADOS, com os personagens visivelmente SUADOS.
+
+DIRETRIZ 1 — APARÊNCIA FÍSICA (OBRIGATÓRIA EM TODO PERSONAGEM, SEM EXCEÇÃO):
+- TODOS os personagens (protagonistas, vilões, vítimas, familiares, amigos, vizinhos, crianças, idosos, vendedores, vendedores ambulantes, QUEISQUER figurantes ao fundo) DEVEM ser pessoas EXTREMAMENTE obesas, com aparência de 150kg a 300kg, brasileiros e reais.
+- Corpo: barriga enorme e caída, braços e pernas muito grossos, ombros largos, silhueta gigantesca que ocupa boa parte do quadro, dobras de pele profundas, rosto extremamente redondo, papada muito marcada.
+- SUOR OBRIGATÓRIO E PERMANENTE: pele visivelmente úmida e brilhando, gotas e escorrimentos de suor no rosto, no pescoço, no peito e nas dobras da pele, cabelo grudado na testa e no pescoço, como se saísse de esforço físico ou de calor intenso. A pele deve estar com brilho de umidade (visible sweat, glistening sweaty skin, sweat droplets rolling down the face and neck, damp hair sticking to the forehead).
+- Roupa de calor e de trabalho: camiseta larga e úmida, bermuda ou calça de moletom, chinelo, camiseta sem mangas ou regata quando o calor exigir. A roupa fica marcada pelo suor e suja pelo trabalho.
+- DESCRITOR FÍSICO OBRIGATÓRIO (repita estes termos em inglês nos prompts visuais): "extremely obese, morbidly obese body, massive 200kg+ weight, enormous hanging belly, very thick heavy arms and legs, broad shoulders, extremely round full face, huge double chin, deep skin folds on neck and abdomen, drenched in sweat, glistening sweaty skin, visible sweat droplets, damp hair stuck to forehead, heavy body presence, wide silhouette occupying the frame".
+
+REGRAS ANTI-MAGREZA E ANTI-SUOR (VIOLAR É PROIBIDO):
+- É TERMINANTEMENTE PROIBIDO gerar qualquer personagem magro, em forma, atlético, "corpo normal", "average build", "slim" ou "fit".
+- O peso extremo e o suor são FIXOS e IMUTÁVEIS: NUNCA emagreça nem seca os personagens do primeiro ao último take. A MESMA silhueta obesa e suada DEVE aparecer IDÊNTICA no PROMPT 00 e em [Subject & Character Consistency] de TODAS as cenas.
+- Em CADA cena inclua no [Negative Prompt]: "thin, slim, skinny, fit body, athletic build, average weight, normal body, muscular, toned, dry skin, clean clothes, luxury setting, spotless room, studio lighting".
+
+DIRETRIZ 2 — CENÁRIO PRECÁRIO E SUJO (OBRIGATÓRIO EM TODA CENA):
+- TODAS as cenas acontecem em ambientes brasileiros precarios, modestos, desorganizados e SUJOS: cozinha de periferia com paredes manchadas e mofadas, banheiro pequeno com azulejo antigo, quarto apertado com colchao no chao, varanda de bloco popular, quintal de terra, lanchonete de rua a noite com banquinho de plastico, barraca de feira, salao de beleza de bairro, interior de onibus, fila do posto, galpao, lavanderia comunitaria, calcada de rua.
+- DETALHES OBRIGATORIOS DO AMBIENTE (repetidos em todas as cenas): paredes descascadas com manchas de umidade e mofo, piso gasto ou sujo, fiacao exposta, marcacao de fumaca, trincas, mesas e cadeiras de plastico basico, roupa estendida no varal, caixas de papelao. Esses detalhes precisam ser COERENTES entre as cenas da mesma casa (o mesmo mofo na mesma parede, o mesmo tipo de cadeira).
+- Iluminação: luz dura de lâmpada fluorescente ou lâmpada pendente com sombra dura, luz de rua amarelada à noite, ou luz natural de janela com ambiente abafado e úmido. NUNCA iluminação de estúdio elegante, NUNCA cenário luxury, NUNCA cozinha americana ou sala limpa.
+- O ambiente PODE ser filmado em formato de celular na vertical 9:16, com leve tremor e foco de câmera amadora de celular barato — hiper-realismo caseiro, sem produção de cinema.
+
+DIRETRIZ NARRATIVA (O PESO E O SUOR SÃO CONTEXTO, NÃO A PIADA):
+- A história NÃO deve girar em torno de dieta, emagrecimento ou do suor. O peso e o suor são apenas a aparência visual de TODOS os personagens.
+- O local precário e sujo também é CONTEXTO da vida real que eles vivem, e não um motivo de humilhação. Trate o ambiente com verdade e AFFETO, como a casa real de uma família brasileira de baixa renda, nunca como piada.
+- Conte dramas humanos reais, viciantes e emocionantes: traição, injustiça, humilhação, amor verdadeiro, reviravolta e superação, exatamente como uma novelinha normal, mas com TODOS os personagens extremamente obesos e suados em ambientes precários.
+- Os personagens vencem pelo caráter, pelo coração e pelas escolhas — NUNCA trate o peso, o suor ou a pobreza como piada humilhante. No máximo, humor leve, carinhoso e respeitoso.
+- Em notícias de morte, acidente ou tragedy, mantenha respeito absoluto. O suor e o peso aqui são verossímeis e humanos, nunca caricatos.
+
+COTIDIANO BRASILEIRO PRECÁRIO REAL (FONTE OBRIGATÓRIA DAS HISTÓRIAS):
+- Toda história deve nascer de uma situação REAL e reconhecível do cotidiano brasileiro precário: mudança de bagunça, conta de luz atrasada, fila do INSS, fila do posto de saúde, ônibus lotado, água potável cortada, cozinha de duas bocas, aluguel atrasado, comida que acaba antes do fim do mês, grupo da família no WhatsApp, dívida, bico, programa social, golpe na internet, rede social, briga por dinheiro.
+- Exemplos do TIPO de premissa (VARIE sempre, NUNCA repita a mesma):
+  * Um pai obeso e suado que perdeu o emprego e esconde isso da família cozinhando na cozinha mofada.
+  * Uma mãe que faz bico de tudo para sustentar os filhos e descobre que foi enganada pelo próprio filho.
+  * Um homem que jura morar bem nas redes sociais, mas a casa desaba e ele é desmascarado AO VIVO.
+  * Outras sementes: o vizinho do "golpe do Pix", a tia que vende bolo no sinal, o tio das pirâmides, a mãe que vende coxinha, o agiota do bairro, o boyfriend de aluguel, o churrasco que virou briga de família, a loteria que promete tudo, o delivery que não paga.
 - Cada história deve ser ÚNICA e específica: use detalhes concretos (um objeto, um lugar, uma dívida, uma decisão) que só existem nessa história.`,
     };
 
@@ -837,7 +874,7 @@ ${
       : '';
 
     const extremeWeightDirective =
-      theme === 'Gordos'
+      theme === 'Gordos' || theme === 'Gordos Suados'
         ? `
 ################################################################
 REGRA SUPREMA E INEGOCIÁVEL DE PESO EXTREMO (TEMA 'GORDOS'):
@@ -1293,15 +1330,15 @@ const handleIdeas = async (req: any, res: any) => {
           : '';
 
     const antiClicheIdeasGuidance =
-      theme === 'Gordos'
+      theme === 'Gordos' || theme === 'Gordos Suados'
         ? `
-IMPORTANTE — COTIDIANO BRASILEIRO REAL (obrigatório para o tema GORDOS):
-- Toda ideia deve nascer de uma situação REAL, reconhecível e do dia a dia do povo brasileiro: periferia, interior, feira, fila do posto de saúde, ônibus lotado, igreja, boteco, salão, grupo da família no WhatsApp, dívida no cartão, bico, programa social, golpe na internet, rede social, briga por dinheiro.
-- O contexto social/econômico é o MOTOR da trama. O peso extremo é só a aparência de todos os personagens.
-- Humor honesto, crítica leve e emoção verdadeira — NUNCA piada humilhante nem deboche.
-- Use detalles concretos e únicos de cada ideia (um objeto, um lugar, uma dívida, uma decisão). Proibido ideias genéricas ou abstratas.
-- Exemplos do TIPO de premissa (varie, não repita): família que teve 10 filhos pra ganhar mais Bolsa Família e colapsa quando o benefício é cortado; pobre que mora numa casa caindo aos pedaços e finge ser rico na internet até a farsa ser exposta ao vivo; vizinho do golpe do Pix; tia que vende bolo no sinal; tio das pirâmides; "influencer" de fachada; mãe que faz bico de tudo; fila do INSS; delivery que não paga; agiota do bairro; churrasco que vira briga de família; a loteria que promete tudo.
-`
+IMPORTANTE - COTIDIANO BRASILEIRO REAL (obrigatorio para o tema de gordos):
+- Toda ideia deve nascer de uma situacao REAL, reconhecivel e do dia a dia do povo brasileiro: periferia, interior, feira, fila do posto de saude, onibus lotado, igreja, boteco, salao, grupo da familia no WhatsApp, divida no cartao, bico, programa social, golpe na internet, rede social, briga por dinheiro.
+- O contexto social/economico e o MOTOR da trama. O peso extremo e so a aparencia de todos os personagens.
+IMPORTANTE - CENARIO PRECARIO E SUOR (obrigatorio para o tema GORDOS SUADOS):
+- Em 'Gordos Suados', TODOS os personagens aparecem SUADOS (pele brilhando, gotas de suor, cabelo grudado na testa) e TODAS as cenas acontecem em locais brasileiros PRECARIOS, SUJOS E DESORDENADOS (cozinha de periferia com parede mofada, quarto apertado, lanchonete de rua a noite, barraca de feira, varanda de bloco popular).
+- Humor honesto, critica leve e emocao verdadeira - NUNCA piada humilhante nem deboche, e NUNCA use a pobreza/precariedade como riso.
+- Exemplos do TIPO de premissa (varie, nao repita): pai obeso e suado que perdeu o emprego e esconde da familia; mae que faz bico de tudo e e enganada pelo proprio filho; homem que finge morar bem nas redes sociais e e desmascarado AO VIVO; vizinho do golpe do Pix; tia que vende bolo no sinal; tio das piramides; mae que vende coxinha; fila do INSS; agiota do bairro; churrasco que vira briga de familia; a loteria que promete tudo.`
         : '';
 
     const prompt = `

@@ -678,8 +678,30 @@ Estilo visual de animação 3D hiper-expressiva (estilo Pixar/DreamWorks), com p
       'Infantil': `O TEMA OBRIGATÓRIO É 'INFANTIL' 🎈🧸.
 História mágica e afetuosa com lições de amizade, bondade e respeito para crianças e família.`,
 
-      'Dorama': `O TEMA OBRIGATÓRIO É 'DORAMA' ❤️🎬.
-Estética e drama no estilo das séries coreanas (K-Drama), com romances emocionantes, rivalidade familiar e reviravoltas intensas.`,
+      'Dorama': `O TEMA OBRIGATORIO E 'DORAMA COREANO (K-DRAMA)'.
+NESTA HISTORIA E OBRIGATORIO que TODOS os personagens sejam ASIATICOS DE APARENCIA (coreanos de origem e aparencia coreana) e que a historia tenha a ESTETICA, o RITMO e os CONFLITOS de uma serie coreana de sucesso. Este tema NAO e uma novelinha brasileira com atores asiaticos: e um K-Drama de verdade.
+
+REGRA 1 - APARENCIA OBRIGATORIA DE TODOS OS PERSONAGENS (SEM EXCEÇÃO):
+- TODOS os personagens - protagonistas, antagonistas, familiares, amigos, colegas de trabalho, rivais, sogras, chefes, medicos e QUALQUER figurante ao fundo - DEVEM ser de ascendencia e APARENCIA ASIATICA (coreana).
+- Rosto: tracos coreanas tipicos - rosto oval ou levemente redondo, macas do rosto suaves, olhos amendoados de palpebra dupla discreta, nariz reto e delicado, labios cheios e delicados, arco da sobrancelha reto e suave.
+- Pele: tom claro a oliva, sempre com textura fotorrealista natural (micoporos visiveis, brilho de pele saudavel, ZERO efeito de plastico ou mascara).
+- Cabelo: preto ou castanho muito escuro, liso ou com ondas suaves, comprimento medio a longo. NUNCA cabelo loiro, ruivo, cacheado ou de outra etnia.
+- Maquiagem de K-Drama: pele luminosa (glass skin), labios com tom rosado ou coral natural, delineado fino e discreto, sobrancelhas naturais. NUNCA maquiagem pesada ocidental.
+- DESCRITOR OBRIGATORIO (repita em ingles em [Subject & Character Consistency] de TODAS as cenas): Korean East Asian man or woman, soft oval face, almond eyes, straight delicate nose, full natural lips, fair to olive realistic skin with visible pores, straight dark brown or black hair, natural K-drama glass-skin makeup, coral lips.
+- E TERMINANTEMENTE PROIBIDO gerar personagem caucasiano, negro, latino, arabe ou de qualquer outra etnia neste tema. Negative prompt obrigatorio em CADA cena: caucasian features, black person, african features, blonde hair, curly hair, light blue eyes, western facial features.
+
+REGRA 2 - ESTETICA VISUAL DE K-DRAMA (OBRIGATORIA EM TODA CENA):
+- Iluminacao: soft key light difusa, luz natural de janela grande, glow suave e luminoso, sombras delicadas. NUNCA iluminacao dura de filme de acao.
+- Color grading: paleta fria e limpa com tons pastéis suaves, verdes e azuis suaves. O visual e de serie coreana, nao de cinema americano.
+- Enquadramento: planos medios e primeiros planos com profundidade de campo rasa (f/1.8), camera lenta e suave, travelling delicado, close de olhos e maos nos momentos emocionais.
+- CENARIOS OBRIGATORIOS: apartamento coreano moderno de piso claro, hanok (casa tradicional coreana de madeira), escritorio de conglomerado de vidro (chaebol), universidade, hospital, cafeteria, shopping de bairro, metro, lavanderia coin laundry, bar de karaoke, cassino de hotel, restaurante de street food coreano (pojangmacha), rua de Seul a noite com letreiros de neon.
+- DETALHES DE K-DRAMA OBRIGATORIOS (repetidos em todas as cenas): chuva na janela com luzes da cidade desfocadas ao fundo, reflexo de neon em poca d'agua, varanda com vista de arranha-céu de Seul, hanbok tradicional em cenas de familia, talheres e mesa de comida coreana, onsen ou sauna, cartas e documentos de negocio.
+
+REGRA 3 - ROTEIRO E CONFLITOS DE K-DRAMA (OBRIGATORIO):
+- Conflitos tipicos de K-Drama: heranca e disputa familiar, identidade oculta revelada, vinganca planejada por anos, casamento por contrato, chaebol versus pequena empresa, filho illegito revelado em festa, traicao entre amigos de infancia, rivalidade profissional, segredo da mae, reencontro depois de muitos anos.
+- Estetica de roteiro: melancolia elegante, expressoes contidas e cheias de tensao, olhares prolongados, silencio cheio de significado, coreografia de emocao coreana.
+- SEMPRE termine com o pagamento emocional classico do K-Drama: a vinganca executada, o segredo revelado em publico, ou a reconciliacao que arranca lagrimas. O publico chora E curte.
+- A historia DEVE estar no formato vertical 9:16.`,
 
       'Histórias de Brasileiros Reais': `O TEMA OBRIGATÓRIO É 'HISTÓRIAS DE BRASILEIROS REAIS' 🇧🇷💪.
 História verossímil e emocionante de pessoas batalhadoras do Brasil enfrentando desafios e vencendo com honestidade.`,

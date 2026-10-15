@@ -129,7 +129,7 @@ ${videoSummary}`;
 
     let technicalPrompt = prompt.promptText.trim();
     if (!technicalPrompt.includes(prompt.spokenLinePt)) {
-      technicalPrompt += `\n\nSPOKEN AUDIO (Brazilian Portuguese, 8s, perfect lip synchronization, spoken naturally without on-screen subtitles):\n"${prompt.spokenLinePt}"`;
+      technicalPrompt += `\n\nSPOKEN AUDIO (${spokenLanguageLabel}, 8s, perfect lip synchronization, spoken naturally without on-screen subtitles):\n"${prompt.spokenLinePt}"`;
     }
 
     sections.push(`PROMPT COMPLETO DE VÍDEO PARA IA (Inglês Técnico com todas as movimentações e descrições):\n${technicalPrompt}`);

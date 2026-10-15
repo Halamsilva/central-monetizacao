@@ -196,14 +196,22 @@ PROMPT 00 - FICHA DE PERSONAGENS E CENÁRIO MESTRE (REFERENCE SHEET):
 [Camera, Lighting & Specs]: lente, luz e estilo de imagem fixos do episódio.
 
 ROTEIRO DE CONTINUIDADE (${ctx.numScenes} CENAS):
-PLANO - CENA 1 | LOCAL: ... | PERSONAGENS: ... | ACAO: ... | FALA PRINCIPAL: "..." | GANCHO PARA A PROXIMA: ...
-PLANO - CENA 2 | LOCAL: ... | PERSONAGENS: ... | ACAO: ... | FALA PRINCIPAL: "..." | GANCHO PARA A PROXIMA: ...
+A linha do plano define QUEM FALA e QUEM RESPONDE. Essa atribuição é LEI: a cena correspondente é obrigada a seguir.
+PLANO - CENA 1 | LOCAL: ... | QUEM FALA: Nome exato do personagem | QUEM RESPONDE: Nome exato (ou "ninguem") | ACAO: ... | FALA: "texto EXATO que esse personagem diz" | RESPOSTA: "texto EXATO que o outro responde" (ou "sem resposta") | GANCHO PARA A PROXIMA: ...
+PLANO - CENA 2 | LOCAL: ... | QUEM FALA: Nome exato | QUEM RESPONDE: Nome exato (ou "ninguem") | ACAO: ... | FALA: "..." | RESPOSTA: "..." | GANCHO PARA A PROXIMA: ...
 (continua até PLANO - CENA ${ctx.numScenes})
+
+ATENÇÃO CRÍTICA - ATRIBUIÇÃO DE FALA (ERRO QUE INVALIDA O EPISÓDIO):
+- O NOME em "QUEM FALA" tem que ser o personagem que DIZ a frase em "FALA". Nunca escreva a fala de um personagem na linha de outro.
+- O NOME em "QUEM RESPONDE" tem que ser quem DIZ a frase em "RESPOSTA", e essa resposta é a reação DIRETA à fala anterior, de outro personagem.
+- Uma mesma frase nunca pode aparecer na linha de duas cenas com donos diferentes.
+- Se você trocar o dono de uma fala entre duas cenas do plano, o vídeo final mostra a pessoa errada falando. Está PROIBIDO.
 
 REGRAS INEGOCIÁVEIS DO PLANO (a história inteira tem ${ctx.numScenes} cenas):
 1. DISTRIBUIÇÃO DE BATIMENTOS (obrigatória, use exatamente esta escala):
 ${buildBeatMap(ctx.numScenes)}
 2. CADA CENA TEM UM SÓ TURNO: exatamente um momento que vira o jogo (revelação, traição, mudança de aliança ou decisão). Se tiver duas viradas, divida em duas cenas. Cada cena termina em mini-cliffhanger (corte na pergunta, nunca na resposta).
+3. ATRIBUIÇÃO DE FALA POR CENA: a linha do plano DEVE declarar sempre QUEM FALA (nome exato do personagem do PROMPT 00), QUEM RESPONDE e o texto literal de cada uma. As falas do plano são copiadas LITERALMENTE para as cenas — é assim que a consistência de dono da fala é garantida.
 3. CAUSA E EFEITO: a cena N+1 sempre nasce da cena N (mesmo lugar, mesmo objeto, mesma consequência). É PROIBIDO escrever uma cena que poderia estar em qualquer ordem.
 4. NENHUMA REPETIÇÃO: cada linha do plano traz um fato, objeto ou virada NOVO. Proibido repetir ação, fala, briga ou revelação já descrita em outra linha.
 5. ESCADA DE ROTAÇÃO DOS GANCHOS: alterne o tipo de gancho entre as cenas (identidade / emoção / realização) para o público não sentir repetição.
@@ -228,7 +236,7 @@ QUEM FALA: [Nome + FICHA FÍSICA FIXA COMPLETA (idade, altura, porte, tom/textur
 TOM E INTENÇÃO DA FALA: [tom vocal, cadência, ritmo e respiração em ${ctx.langName}]
 DIÁLOGO REAL: "[diálogo real e curto]" (máx. 18 palavras; com réplica, máx. 10 palavras cada e soma das duas nunca passa de 20)
 QUEM RESPONDE: [Nome + FICHA FÍSICA FIXA COMPLETA + reação física imediata]
-RESPOSTA: "[réplica real e curta]"
+RESPOSTA: "[réplica real e curta]" (ou a cena fica sem esta linha, se a resposta no plano for "sem resposta")
 INSTRUÇÕES VISUAIS (PROMPT SEEDANCE 2.5 & GOOGLE FLOW):
 [Subject & Character Consistency]: Subject N - Nome (ficha por extenso, idêntica ao PROMPT 00). NUNCA escreva "mesmo personagem".
 [Environment & Scene Setting]: cenário 3D real e detalhado da cena (piso, paredes, janelas, móveis de fundo, iluminação, profundidade).
@@ -241,14 +249,144 @@ INSTRUÇÕES VISUAIS (PROMPT SEEDANCE 2.5 & GOOGLE FLOW):
 [Global Style & Physical Realism]: 4K fotorrealista, ${ctx.skinDirective}, física natural, 24fps.
 [Negative Prompt]: white background, blank white void, studio cyclorama, plain backdrop, floating characters, artificial studio setup, empty white space.
 
-REGRAS INEGOCIÁVEIS:
-1. Cada fala pertence ao personagem declarado em QUEM FALA/RESPOSTA (nunca troque os papéis) e o vocabulário combina com a idade e o papel dele.
-2. Cada cena tem UM SÓ turno e termina em mini-cliffhanger (corte na pergunta, nunca na resposta).
-3. A cena N+1 nasce da cena N: mesmo lugar, mesmo objeto, mesma consequência. Proibido repetir ação, fala ou virada já existente.
-4. Cenhas de diálogo devem coerir: quem conversa está no MESMO ambiente, se olhando (nada de "ao telefone" numa conversa frente a frente).
-5. Fala curta, seca e filmável, em ${ctx.langName}. Proibido discurso, monólogo ou frase genérica de novela.
-6. Nenhum "..." ou "mesmo de antes": cada cena sai completa, com o mesmo nível de detalhe.
+################################################################
+REGRA DE OURO INVIOLÁVEL - CADA FALA NO SEU DONO E NO SEU MOMENTO
+################################################################
+Este é o erro que mais estraga o vídeo: um personagem falando a fala de outro. Você TEM que seguir esta regra ao pé da letra:
+
+1. DONO FIXO: o texto de "DIÁLOGO REAL" pertence SOMENTE ao personagem declarado em "QUEM FALA". O texto de "RESPOSTA" pertence SOMENTE ao personagem declarado em "QUEM RESPONDE". Copie o texto exatamente como está no PLANO, sem trocar, sem resumir, sem mudar o conteúdo.
+2. O PLANO É A LEI: em cada cena, "QUEM FALA" e "QUEM RESPONDE" tem que ser EXATAMENTE os nomes do bloco "QUEM FALA"/"QUEM RESPONDE" da linha "PLANO - CENA N" correspondente. Se o plano diz que é a Dona Clara que fala, é a Dona Clara que fala — mesmo que a frase pareça mais natural na boca de outro personagem.
+3. NUNCA antecipe nem repita: não escreva a fala que pertence à cena seguinte, nem repita a fala da cena anterior. Cada personagem abre a boca UMA vez por cena, na ordem escrita.
+4. COERÊNCIA DE PAPÉIS: o vocabulário e o tom de cada fala combinam com a idade e o papel do dono (a avó não fala como o neto, o vilão não fala como a vítima). A RESPOSTA reage diretamente à fala anterior, nunca muda de assunto.
+5. O bloco [Dialogue & Native Audio] é a FONTE DA VERDADE do áudio: ele DEVE repetir, na MESMA ordem, o nome e o texto exato de QUEM FALA/DIÁLOGO REAL e de QUEM RESPONDE/RESPOSTA. Se o nome ou o texto divergirem do bloco de diálogo acima, corrija antes de entregar.
+6. AUTO-VERIFICAÇÃO OBRIGATÓRIA antes de fechar cada cena: releia e confirme (a) QUEM FALA é o dono do DIÁLOGO REAL; (b) QUEM RESPONDE é o dono da RESPOSTA; (c) nenhum terceiro personagem falou; (d) os nomes em [Dialogue & Native Audio] são os mesmos. Se algo estiver errado, reescreva a cena.
+
+OUTRAS REGRAS INEGOCIÁVEIS:
+1. Cada cena tem UM SÓ turno e termina em mini-cliffhanger (corte na pergunta, nunca na resposta).
+2. A cena N+1 nasce da cena N: mesmo lugar, mesmo objeto, mesma consequência. Proibido repetir ação, fala ou virada já existente no plano.
+3. Cenhas de diálogo devem coerir: quem conversa está no MESMO ambiente, se olhando (nada de "ao telefone" numa conversa frente a frente).
+4. Fala curta, seca e filmável, em ${ctx.langName}. Proibido discurso, monólogo ou frase genérica de novela.
+5. Nenhum "..." ou "mesmo de antes": cada cena sai completa, com o mesmo nível de detalhe das outras.
 `;
+
+const normalizeName = (value: unknown) =>
+  String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+// Honorificos que nao identificam personagem (para nao casar "Dona Clara" com qualquer "dona").
+const HONORIFICS = new Set(['dona', 'don', 'sr', 'sra', 'senhor', 'senhora', 'menina', 'moço', 'moca']);
+
+const planNameTokens = (value: unknown) =>
+  normalizeName(value)
+    .split(' ')
+    .filter((token) => token.length >= 3 && !HONORIFICS.has(token));
+
+// O nome do plano casa se QUALQUER token distintivo dele aparecer no texto da cena.
+const nameMatches = (haystack: string, planName: string) => {
+  const tokens = planNameTokens(planName);
+  if (!tokens.length) return false;
+  const normalized = normalizeName(haystack);
+  return tokens.some((token) => normalized.includes(token));
+};
+
+const hasNobody = (value: unknown) => {
+  const tokens = normalizeName(value)
+    .split(' ')
+    .filter(Boolean);
+  if (!tokens.length) return true;
+  return tokens.every((token) => ['ninguem', 'nenhum', 'sem', 'resposta', 'n', 'a', 'nao', 'nada'].includes(token));
+};
+
+const extractScenes = (text: string) => {
+  const matches = Array.from(
+    text.matchAll(/PROMPT\s+(?:GANCHO\s+CHAMATIVO\s+)?CENA\s+(\d+)[^\n:]*:/gi),
+  );
+
+  return matches.map((match, index) => {
+    const start = (match.index || 0) + match[0].length;
+    const end = matches[index + 1]?.index ?? text.length;
+    return { number: Number(match[1]) || index + 1, content: text.slice(start, end) };
+  });
+};
+
+const readPlanOwner = (planLine: string) => {
+  const speaker = planLine.match(/QUEM\s+FALA\s*:\s*([^|]+)/i)?.[1] || '';
+  const replier = planLine.match(/QUEM\s+RESPONDE\s*:\s*([^|]+)/i)?.[1] || '';
+  const line = planLine.match(/(?:^|\|)\s*FALA\s*:\s*"([^"]*)"/i)?.[1] || '';
+  const reply = planLine.match(/(?:^|\|)\s*RESPOSTA\s*:\s*"([^"]*)"/i)?.[1] || '';
+
+  return {
+    speaker: String(speaker).trim(),
+    replier: hasNobody(replier) ? '' : String(replier).trim(),
+    line,
+    reply,
+  };
+};
+
+// Confere se cada cena respeitou o dono da fala definido no plano. É a trava que impede
+// um personagem de falar a fala de outro — o defeito mais visível do roteiro final.
+const findSpeakerMismatches = (blockText: string, plan: string) => {
+  const planLines = new Map<string, string>();
+  plan
+    .split('\n')
+    .forEach((line) => {
+      const scene = line.match(/CENA\s+(\d+)/i)?.[1];
+      if (scene) planLines.set(scene.padStart(3, '0'), line);
+    });
+
+  const problems: string[] = [];
+
+  for (const scene of extractScenes(blockText)) {
+    const planLine = planLines.get(String(scene.number).padStart(3, '0'));
+    if (!planLine) continue;
+
+    const expected = readPlanOwner(planLine);
+    if (!expected.speaker || hasNobody(expected.speaker)) continue;
+
+    const speaker = scene.content.match(/QUEM\s+FALA\s*:\s*([^\n]+)/i)?.[1] || '';
+    const replier = scene.content.match(/QUEM\s+RESPONDE\s*:\s*([^\n]+)/i)?.[1] || '';
+    const dialogue = scene.content.match(/DI[ÁA]LOGO\s+REAL\s*:\s*"([^"]*)"/i)?.[1] || '';
+    const reply = scene.content.match(/RESPOSTA\s*:\s*"([^"]*)"/i)?.[1] || '';
+    const audio = scene.content.match(/\[Dialogue\s*&\s*Native\s*Audio\]\s*:?\s*([\s\S]*?)(?=\n\s*\[|$)/i)?.[1] || '';
+
+    if (!nameMatches(`${speaker} ${audio}`, expected.speaker)) {
+      problems.push(`CENA ${scene.number}: o plano manda "${expected.speaker}" falar, mas a cena entrega a fala a "${normalizeName(speaker).split(' ').filter(Boolean).slice(0, 2).join(' ') || 'ninguem'}".`);
+    }
+
+    if (expected.line && dialogue && normalizeName(dialogue) !== normalizeName(expected.line)) {
+      problems.push(`CENA ${scene.number}: o DIÁLOGO REAL nao e a fala prevista no plano.`);
+    }
+
+    const hasReply = Boolean(normalizeName(reply));
+    const declaredReplier = normalizeName(replier).split(' ').filter(Boolean).slice(0, 2).join(' ');
+    if (hasReply && !nameMatches(`${replier} ${audio}`, declaredReplier)) {
+      problems.push(`CENA ${scene.number}: a RESPOSTA nao esta entregue ao personagem do plano.`);
+    }
+
+    if (expected.replier && hasReply && !nameMatches(`${replier} ${audio}`, expected.replier)) {
+      problems.push(`CENA ${scene.number}: o plano manda "${expected.replier}" responder, mas a resposta sai em nome de "${declaredReplier || 'ninguem'}".`);
+    }
+
+    if (expected.replier && !hasReply) {
+      problems.push(`CENA ${scene.number}: faltou a resposta de "${expected.replier}".`);
+    }
+
+    if (hasReply && !expected.replier) {
+      problems.push(`CENA ${scene.number}: a cena respondeu mas o plano previa cena sem resposta.`);
+    }
+
+    if (dialogue && audio && !normalizeName(audio).includes(normalizeName(dialogue).slice(0, 28))) {
+      problems.push(`CENA ${scene.number}: [Dialogue & Native Audio] nao repete o DIÁLOGO REAL.`);
+    }
+  }
+
+  return problems;
+};
 
 const buildBlockPrompt = (opts: {
   ctx: LongVideoContext;
@@ -297,6 +435,7 @@ REGRAS BLOCO ${index}/${totalBlocks} (PRIORIDADE MÁXIMA):
 3. CONSISTÊNCIA CANÔNICA: em [Subject & Character Consistency] e em QUEM FALA/QUEM RESPONDE, repita a ficha do PROMPT 00 por extenso (idade, altura, porte, tom/textura de pele, rosto, cabelo, roupa peça por peça com cores e tecidos, calçados e acessórios). A identidade é a mesma da cena 1 até a cena ${ctx.numScenes}.
 4. CONTINUIDADE: mantenha o cenário mestre do PROMPT 00 e o ambiente da cena anterior. Passagem de tempo só com marcação curta ("MAIS TARDE...") e sem trocar de figurino.
 5. Não repita nenhuma fala, ação ou virada já existente no plano antes da cena ${start}.
+6. DONO DA FALA (ERRO QUE INVALIDA O BLOCO): em cada cena, QUEM FALA e QUEM RESPONDE tem que ser EXATAMENTE os nomes do bloco "QUEM FALA"/"QUEM RESPONDE" da linha "PLANO - CENA N" correspondente, e o DIÁLOGO REAL e a RESPOSTA tem que ser o TEXTO EXATO previsto no plano, copiado sem trocar nenhuma palavra. Se o plano diz "sem resposta", a cena NÃO tem RESPOSTA nem QUEM RESPONDE. O bloco [Dialogue & Native Audio] repete os mesmos nomes e os mesmos textos, na mesma ordem. NUNCA coloque na boca de um personagem a fala de outro.
 ${
   isLastBlock
     ? `6. COMO ESTE É O ÚLTIMO BLOCO, ao final das cenas ${start}-${end} entregue também: (a) os CHARACTER MODEL SHEETS (fundo branco puro, 6 ângulos de corpo inteiro + 3 retratos de rosto) de TODOS os personagens que apareceram NO EPISÓDIO INTEIRO; (b) o bloco final "---SEO-START---" com Título Sugerido, Legenda, Gatilho de Engajamento e Hashtags em ${ctx.langName}.`
@@ -330,7 +469,7 @@ CORRECAO OBRIGATORIA
 ================================================================
 A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
 - a seção "PROMPT 00 - FICHA DE PERSONAGENS E CENARIO MESTRE (REFERENCE SHEET)" com TODOS os personagens;
-- a seção "ROTEIRO DE CONTINUIDADE (${ctx.numScenes} CENAS)" com EXATAMENTE ${ctx.numScenes} linhas, uma para cada cena, no formato "PLANO - CENA N | LOCAL: ... | PERSONAGENS: ... | ACAO: ... | FALA PRINCIPAL: "..." | GANCHO PARA A PROXIMA: ...".`,
+- a seção "ROTEIRO DE CONTINUIDADE (${ctx.numScenes} CENAS)" com EXATAMENTE ${ctx.numScenes} linhas, uma para cada cena, no formato "PLANO - CENA N | LOCAL: ... | QUEM FALA: Nome | QUEM RESPONDE: Nome (ou "ninguem") | ACAO: ... | FALA: "texto exato" | RESPOSTA: "texto exato" (ou "sem resposta") | GANCHO PARA A PROXIMA: ...". A atribuicao de fala e obrigatoria: cada nome e o dono real da fala escrita ao lado.`,
       ctx.apiKey,
       0.6,
       { attemptsPerModel: 1, timeoutMs: 90000 },
@@ -365,21 +504,21 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
         plan,
       });
 
-      let blockText =
-        (
-          await generateWithModelFallback(blockPrompt, ctx.apiKey, 0.75, {
-            attemptsPerModel: 1,
-            timeoutMs: 150000,
-          })
-        ).text || '';
+      const callBlock = (temperature: number) =>
+        generateWithModelFallback(blockPrompt, ctx.apiKey, temperature, {
+          attemptsPerModel: 1,
+          timeoutMs: 150000,
+        }).then((result) => result.text || '');
 
-      const isComplete =
-        countSceneBlocks(blockText) >= expected &&
-        countTag(blockText, 'Subject & Character Consistency') >= expected &&
-        countTag(blockText, 'Dialogue & Native Audio') >= expected &&
-        countTag(blockText, 'Negative Prompt') >= expected;
+      let blockText = await callBlock(0.75);
 
-      if (!isComplete) {
+      const hasAllSections = (text: string) =>
+        countSceneBlocks(text) >= expected &&
+        countTag(text, 'Subject & Character Consistency') >= expected &&
+        countTag(text, 'Dialogue & Native Audio') >= expected &&
+        countTag(text, 'Negative Prompt') >= expected;
+
+      if (!hasAllSections(blockText)) {
         const retry = await generateWithModelFallback(
           `${blockPrompt}
 
@@ -395,6 +534,39 @@ Reescreva APENAS as cenas ${range.start} a ${range.end} (${expected} cenas), tod
         if (retry.text && countSceneBlocks(retry.text) >= countSceneBlocks(blockText)) {
           blockText = retry.text;
         }
+      }
+
+      // Trava de dono da fala: se algum personagem disse a fala de outro, reescreve o bloco.
+      let mismatches = findSpeakerMismatches(blockText, plan);
+
+      for (let attempt = 0; mismatches.length && attempt < 1; attempt += 1) {
+        console.warn(`[novelinhas] bloco ${range.start}-${range.end} com fala fora do dono: ${mismatches.join(' | ')}`);
+
+        const fixed = await generateWithModelFallback(
+          `${blockPrompt}
+
+================================================================
+CORRECAO OBRIGATORIA - DONO DA FALA (ERRO GRAVE)
+================================================================
+As cenas ${range.start} a ${range.end} violaram a regra de dono da fala. Problemas detectados:
+${mismatches.map((problem) => `- ${problem}`).join('\n')}
+
+Reescreva as cenas ${range.start} a ${range.end} obeying a regra de ouro:
+- QUEM FALA e QUEM RESPONDE tem que ser EXATAMENTE os nomes do PLANO da cena correspondente;
+- DIÁLOGO REAL e RESPOSTA tem que ser o TEXTO EXATO previsto no plano, palavra por palavra;
+- [Dialogue & Native Audio] repete os mesmos nomes e os mesmos textos, na mesma ordem;
+- se o plano disser "sem resposta", a cena nao tem RESPOSTA.
+Comece direto em "PROMPT CENA ${range.start} (SEEDANCE 2.5):".`,
+          ctx.apiKey,
+          0.5,
+          { attemptsPerModel: 1, timeoutMs: 150000 },
+        );
+
+        if (fixed.text && countSceneBlocks(fixed.text) >= countSceneBlocks(blockText)) {
+          blockText = fixed.text;
+        }
+
+        mismatches = findSpeakerMismatches(blockText, plan);
       }
 
       return stripReferenceSheet(blockText);

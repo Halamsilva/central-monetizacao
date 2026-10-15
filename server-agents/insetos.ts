@@ -1291,7 +1291,7 @@ const handleGenerateScript = async (req: any, res: any) => {
         targetPromptCount,
         targetIncludeCTA
       );
-      return res.json({ script, source: 'offline-template' });
+      return res.json({ script, source: 'offline-template', offlineNotice: 'Roteiro gerado pelo modelo local (sem IA). As falas seguem em portugues; cadastre uma chave do Google AI Studio para gerar no idioma escolhido.' });
     }
 
     // Build specific hook directive

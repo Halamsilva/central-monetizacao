@@ -1,6 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, Mail, PartyPopper, ShieldCheck } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle2,
+  Mail,
+  MessageCircle,
+  PartyPopper,
+  ShieldCheck,
+} from 'lucide-react';
+import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from '../lib/support';
 
 const STEPS = [
   {
@@ -17,6 +25,24 @@ const STEPS = [
     icon: ShieldCheck,
     title: 'Acesso liberado na hora',
     text: 'Pronto! O sistema confere sua compra pelo e-mail e libera o acesso automaticamente.',
+  },
+];
+
+const FAQ = [
+  {
+    question: 'Ainda não recebi nenhum e-mail. O que eu faço?',
+    answer:
+      'Procure "Central Monetização" na caixa de entrada e também na pasta SPAM. O link desta página também está dentro da sua área de compras na Kiwify.',
+  },
+  {
+    question: 'Criei a conta mas continua "em análise".',
+    answer:
+      'Na maioria dos casos a conta foi criada com um e-mail diferente do usado na compra. Crie uma conta nova com o e-mail exato da Kiwify ou chame o suporte no WhatsApp.',
+  },
+  {
+    question: 'Posso usar a plataforma no celular?',
+    answer:
+      'Sim! A plataforma foi feita para funcionar no celular e no computador. Basta abrir o site e entrar com a sua conta.',
   },
 ];
 
@@ -93,11 +119,38 @@ const BoasVindas: React.FC = () => {
             >
               Já tenho conta — fazer login
             </Link>
+
+            <a
+              href={whatsappLink(WHATSAPP_DEFAULT_MESSAGE)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100"
+            >
+              <MessageCircle size={17} />
+              Falar com o suporte no WhatsApp
+            </a>
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+          <h2 className="text-base font-black text-slate-900">
+            Perguntas frequentes
+          </h2>
+
+          <div className="mt-4 space-y-4">
+            {FAQ.map((item) => (
+              <div key={item.question}>
+                <p className="text-sm font-bold text-slate-800">{item.question}</p>
+                <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                  {item.answer}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
         <p className="mt-6 text-center text-xs font-semibold text-slate-400">
-          Precisa de ajuda? Fale com o suporte da Central Monetização.
+          Central Monetização — todos os agentes de IA em um só lugar.
         </p>
       </div>
     </div>

@@ -403,24 +403,20 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   }
 
   if (accessStatus === 'active') {
-    // 1) Se a conta ainda nao existe, cria agora (sem o aluno precisar se cadastrar).
-    if (!existingProfile) {
-      const account = await ensureBuyerAccount(serviceSupabase, email, buyerName);
-      accountCreated = account.created;
-    }
+    // 1) Garante que existe conta no Firebase + perfil (cria se faltar algum dos dois).
+    //    Sem isso, um perfil importado manualmente nao teria login nenhum.
+    const account = await ensureBuyerAccount(serviceSupabase, email, buyerName || existingProfile?.full_name || undefined);
+    accountCreated = account.created;
 
-    // 2) Novo aluno: manda o link pronto para criar a senha e entrar.
-    //    Aluno que ja tinha acesso (renovacao): nao repete e-mail.
-    if (accountCreated) {
+    // 2) Primeira liberacao (acesso novo): manda o link que define a senha.
+    //    Esse link chega no e-mail do COMPRADOR — e o que impede alguem que tenha
+    //    se cadastrado antes com o e-mail de outra pessoa de ficar com o acesso:
+    //    o dono real do e-mail redefine a senha e assume a conta.
+    //    Renovacao de assinatura (wasActive) nao recebe nada para nao virar spam.
+    if (!wasActive) {
       emailResult = await sendAccountReadyEmail(email, {
         name: buyerName || existingProfile?.full_name || null,
-        idempotencyKey: `kiwify-account-ready-${email}`,
-      });
-    } else if (!wasActive) {
-      emailResult = await sendAccessEmail('access_released', {
-        to: email,
-        releaseAt: releaseAt.toISOString(),
-        idempotencyKey: `kiwify-active-${purchaseId}`,
+        idempotencyKey: `kiwify-account-ready-${email}-${purchaseId}`,
       });
     }
   }

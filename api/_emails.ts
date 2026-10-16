@@ -1,7 +1,13 @@
 import { getAuth } from 'firebase-admin/auth';
 import { createServiceClient, isFirebaseAdminConfigured, getAdminApp } from './_firebase.js';
 
-type EmailKind = 'registration' | 'purchase_pending' | 'access_released' | 'password_reset' | 'verification';
+type EmailKind =
+  | 'registration'
+  | 'purchase_pending'
+  | 'access_released'
+  | 'account_ready'
+  | 'password_reset'
+  | 'verification';
 
 type SendAccessEmailInput = {
   to: string;
@@ -144,6 +150,42 @@ Entre na plataforma com este mesmo e-mail para ativar o acesso.`,
     };
   }
 
+  if (kind === 'account_ready') {
+    const accessUrl = input.resetUrl || `${appUrl}/boas-vindas`;
+
+    return {
+      subject: 'Seu acesso esta pronto - crie sua senha e entre',
+      text: `Oi, ${rawName}. Sua compra foi aprovada e a sua conta na Central Monetizacao JA ESTA CRIADA.
+
+ATENCAO: este e-mail e da CENTRAL MONETIZACAO e e DIFERENTE do e-mail automatico da Kiwify. Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta SPAM / lixo eletronico.
+
+Falta so 1 passo: crie a sua senha neste link:
+${accessUrl}
+
+Depois e so entrar com este mesmo e-mail. Pronto: todos os agentes liberados.`,
+      html: baseEmailHtml(
+        'Seu acesso esta pronto',
+        'Sua conta ja foi criada. Falta so definir sua senha.',
+        `
+          <p>Oi, ${firstName}. Sua compra foi aprovada e a sua conta na Central Monetizacao <strong>ja esta criada</strong>. 🎉</p>
+          <p style="background:#fef3c7;border:1px solid #fcd34d;border-radius:12px;padding:12px 14px;color:#92400e;font-size:14px;line-height:1.6;">
+            <strong>Atencao:</strong> este e-mail e da <strong>Central Monetizacao</strong> e e <strong>diferente</strong> do e-mail automatico da Kiwify.
+            Se nao encontrar esta mensagem na caixa de entrada, procure tambem na pasta <strong>SPAM / lixo eletronico</strong>.
+          </p>
+          <p><strong>Falta so 1 passo:</strong> clique no botao abaixo e crie a sua senha. Depois e so entrar com este mesmo e-mail.</p>
+          <p>Nao precisa se cadastrar de novo: a conta ja existe e o acesso ja esta liberado.</p>
+        `,
+        `<p style="margin:28px 0 0;">
+          <a href="${escapeHtml(accessUrl)}" style="display:inline-block;background:#2563eb;color:#fff;text-decoration:none;border-radius:12px;padding:14px 22px;font-weight:700;">Criar minha senha e entrar</a>
+        </p>
+        <p style="margin:16px 0 0;font-size:13px;color:#64748b;">
+          Se o botao nao funcionar, copie e cole este link no navegador:<br />
+          <span style="word-break:break-all;">${escapeHtml(accessUrl)}</span>
+        </p>`
+      ),
+    };
+  }
+
   if (kind === 'password_reset') {
     const resetUrl = input.resetUrl || appUrl;
 
@@ -275,6 +317,43 @@ export const sendAccessEmail = async (kind: EmailKind, input: SendAccessEmailInp
   }
 
   return { ok: true };
+};
+
+// Enviado no momento da compra: a conta ja existe e o aluno so precisa criar a senha.
+// Isso elimina a etapa de cadastro, que era onde os alunos se perdiam.
+export const sendAccountReadyEmail = async (
+  email: string,
+  options: { name?: string | null; idempotencyKey?: string } = {},
+) => {
+  const to = normalizeEmail(email);
+  if (!to) return { ok: false, skipped: true, reason: 'missing_email' };
+
+  if (!isFirebaseAdminConfigured()) {
+    console.warn('Firebase Admin nao configurado. Nao foi possivel gerar o link de primeiro acesso.');
+    return { ok: false, skipped: true, reason: 'missing_admin' };
+  }
+
+  let resetLink: string;
+  try {
+    resetLink = await getAuth(getAdminApp()).generatePasswordResetLink(to, {
+      url: `${appUrl}/recovery`,
+    });
+  } catch (error: any) {
+    console.error('Falha ao gerar o link de primeiro acesso:', error?.message || error);
+    return { ok: false, error: String(error?.message || error) };
+  }
+
+  const oobCode = new URL(resetLink).searchParams.get('oobCode');
+  const directUrl = oobCode
+    ? `${appUrl}/recovery?mode=resetPassword&oobCode=${encodeURIComponent(oobCode)}`
+    : resetLink;
+
+  return sendAccessEmail('account_ready', {
+    to,
+    name: options.name,
+    resetUrl: directUrl,
+    idempotencyKey: options.idempotencyKey,
+  });
 };
 
 export const sendPasswordResetEmail = async (email: string) => {

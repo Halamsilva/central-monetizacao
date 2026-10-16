@@ -1,7 +1,66 @@
-import { createServiceClient, isFirebaseAdminConfigured } from './_firebase.js';
-import { sendAccessEmail } from './_emails.js';
+import { getAuth } from 'firebase-admin/auth';
+import { createServiceClient, isFirebaseAdminConfigured, getAdminApp } from './_firebase.js';
+import { sendAccessEmail, sendAccountReadyEmail } from './_emails.js';
 
 type KiwifyAccessStatus = 'pending' | 'active' | 'blocked';
+
+// Cria a conta do comprador automaticamente (sem o aluno precisar se cadastrar)
+// e devolve se a conta acabou de nascer. O aluno recebe um link para criar a
+// senha e ja entra com o acesso liberado.
+const ensureBuyerAccount = async (
+  serviceSupabase: any,
+  email: string,
+  displayName?: string,
+): Promise<{ created: boolean; userId: string | null }> => {
+  if (!isFirebaseAdminConfigured()) {
+    return { created: false, userId: null };
+  }
+
+  const auth = getAuth(getAdminApp());
+  let userId = '';
+  let created = false;
+
+  try {
+    const existing = await auth.getUserByEmail(email);
+    userId = existing.uid;
+  } catch (error: any) {
+    const code = String(error?.code || '');
+
+    if (!code.includes('user-not-found')) {
+      console.error('Kiwify account lookup error:', error?.message || error);
+      return { created: false, userId: null };
+    }
+
+    const user = await auth.createUser({
+      email,
+      emailVerified: true,
+      displayName: displayName || undefined,
+    });
+
+    userId = user.uid;
+    created = true;
+  }
+
+  if (!created) return { created: false, userId: userId || null };
+
+  const now = new Date().toISOString();
+
+  const { error: profileError } = await serviceSupabase.from('profiles').insert({
+    id: userId,
+    email,
+    full_name: displayName || 'Aluno',
+    role: 'student',
+    access_status: 'active',
+    approved_at: now,
+    created_at: now,
+  });
+
+  if (profileError) {
+    console.error('Kiwify auto profile create error:', profileError);
+  }
+
+  return { created: true, userId };
+};
 
 const normalizeEmail = (email?: unknown) =>
   typeof email === 'string' ? email.trim().toLowerCase() : '';
@@ -188,6 +247,20 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
     return { status: 400, body: { error: 'Customer email not found in webhook payload' } };
   }
 
+  const buyerName = String(
+    getNestedValue(payload, [
+      'Customer.full_name',
+      'Customer.name',
+      'customer.full_name',
+      'customer.name',
+      'buyer.name',
+      'data.customer.name',
+      'data.buyer.name',
+      'order.customer.name',
+      'name',
+    ]) || '',
+  ).trim();
+
   const purchaseId = String(
     getNestedValue(payload, ['order_id', 'sale_id', 'id', 'data.id', 'order.id', 'transaction.id']) || email
   );
@@ -296,6 +369,17 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   if (accessStatus === 'active') profileUpdate.approved_at = new Date().toISOString();
   if (accessStatus === 'pending') profileUpdate.approved_at = null;
 
+  // Le o perfil ANTES de atualizar: precisamos saber se o acesso ja estava ativo
+  // (renovacao de assinatura nao deve disparar e-mail de novo).
+  const { data: existingProfile } = await serviceSupabase
+    .from('profiles')
+    .select('id, access_status, full_name')
+    .eq('email', email)
+    .eq('role', 'student')
+    .maybeSingle();
+
+  const wasActive = existingProfile?.access_status === 'active';
+
   const { error: profileError } = await serviceSupabase
     .from('profiles')
     .update(profileUpdate)
@@ -308,6 +392,7 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   }
 
   let emailResult: { ok: boolean; skipped?: boolean; reason?: string; error?: string } = { ok: false };
+  let accountCreated = false;
 
   if (accessStatus === 'pending') {
     emailResult = await sendAccessEmail('purchase_pending', {
@@ -318,11 +403,26 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   }
 
   if (accessStatus === 'active') {
-    emailResult = await sendAccessEmail('access_released', {
-      to: email,
-      releaseAt: releaseAt.toISOString(),
-      idempotencyKey: `kiwify-active-${purchaseId}`,
-    });
+    // 1) Se a conta ainda nao existe, cria agora (sem o aluno precisar se cadastrar).
+    if (!existingProfile) {
+      const account = await ensureBuyerAccount(serviceSupabase, email, buyerName);
+      accountCreated = account.created;
+    }
+
+    // 2) Novo aluno: manda o link pronto para criar a senha e entrar.
+    //    Aluno que ja tinha acesso (renovacao): nao repete e-mail.
+    if (accountCreated) {
+      emailResult = await sendAccountReadyEmail(email, {
+        name: buyerName || existingProfile?.full_name || null,
+        idempotencyKey: `kiwify-account-ready-${email}`,
+      });
+    } else if (!wasActive) {
+      emailResult = await sendAccessEmail('access_released', {
+        to: email,
+        releaseAt: releaseAt.toISOString(),
+        idempotencyKey: `kiwify-active-${purchaseId}`,
+      });
+    }
   }
 
   return {
@@ -337,6 +437,7 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
       release_days: isSubscription ? 0 : releaseDelayDays,
       access_status: accessStatus,
       release_at: releaseAt.toISOString(),
+      account_created: accountCreated,
       email_sent: emailResult.ok,
       email_skipped: Boolean(emailResult.skipped),
       email_reason: emailResult.reason || null,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { isSupabaseConfigured, firebaseAuth } from '../lib/supabase';
-import { confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
+import { confirmPasswordReset, signInWithEmailAndPassword, verifyPasswordResetCode } from 'firebase/auth';
 import { motion } from 'motion/react';
 import {
   Mail,
@@ -81,8 +81,12 @@ const Recovery: React.FC = () => {
           return;
         }
 
-        await verifyPasswordResetCode(firebaseAuth, code);
-        if (mounted) setRecoveryCode(code);
+        const verifiedEmail = await verifyPasswordResetCode(firebaseAuth, code);
+        if (mounted) {
+          setRecoveryCode(code);
+          // Guarda o e-mail do link para entrar automatico logo apos criar a senha.
+          if (verifiedEmail) setEmail(String(verifiedEmail));
+        }
         finishCheck(true);
       } catch (err: any) {
         console.error(err);
@@ -159,6 +163,25 @@ const Recovery: React.FC = () => {
       }
 
       await confirmPasswordReset(firebaseAuth, recoveryCode, newPassword);
+
+      // Entra direto na plataforma: o aluno nao precisa passar pela tela de login.
+      // Esse e o caminho de quem comprou (conta criada na compra + link de primeiro acesso).
+      try {
+        const loginEmail = email.trim().toLowerCase();
+
+        if (loginEmail) {
+          await signInWithEmailAndPassword(firebaseAuth, loginEmail, newPassword);
+          setSuccessMessage('Tudo pronto! Entrando na plataforma...');
+
+          setTimeout(() => {
+            navigate('/', { replace: true });
+          }, 900);
+
+          return;
+        }
+      } catch (autoLoginError) {
+        console.error('Auto login apos criar a senha falhou:', autoLoginError);
+      }
 
       setSuccessMessage('Senha atualizada com sucesso.');
 

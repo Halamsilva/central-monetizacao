@@ -108,6 +108,11 @@ const GEMINI_FRIENDLY_MESSAGES: Array<{ test: (value: string) => boolean; messag
     message:
       'Os servidores do Google estao com alta demanda temporaria. Tentamos modelos alternativos; tente novamente em instantes.',
   },
+  {
+    test: (value) => /Tempo de resposta esgotado|TIMEOUT|ETIMEDOUT|AbortError|timeout/i.test(value),
+    message:
+      'O modelo demorou demais para responder e foi interrompido. Tentamos modelos alternativos; tente novamente em instantes.',
+  },
 ];
 
 export const describeGeminiError = (error: any) => {
@@ -118,7 +123,12 @@ export const describeGeminiError = (error: any) => {
   return {
     code: /PERMISSION_DENIED/.test(raw) ? 'PERMISSION_DENIED' : code || 'GEMINI_ERROR',
     accessDenied: /PERMISSION_DENIED|denied access/i.test(raw) || Number(error?.status || error?.code) === 403,
-    retryable: /503|UNAVAILABLE|high demand|overloaded|429|RESOURCE_EXHAUSTED/i.test(raw),
+    // TIMEOUT e alta demanda sao retentaveis: nao podem derrubar a geracao, tem que
+    // cair para o proximo modelo da lista.
+    retryable:
+      /503|UNAVAILABLE|high demand|overloaded|429|RESOURCE_EXHAUSTED/i.test(raw) ||
+      /Tempo de resposta esgotado|TIMEOUT|ETIMEDOUT|AbortError|timeout/i.test(raw) ||
+      error?.code === 'TIMEOUT',
     message: hit?.message || 'Nao foi possivel gerar agora com a IA. Tente novamente em instantes.',
     raw: raw.slice(0, 400),
   };

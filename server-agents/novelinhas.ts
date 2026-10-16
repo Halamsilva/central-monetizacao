@@ -25,7 +25,9 @@ async function generateWithModelFallback(
   const keys = (Array.isArray(apiKeys) ? apiKeys : [apiKeys]).filter(Boolean);
   const models = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
   const attemptsPerModel = options.attemptsPerModel ?? 2;
-  const timeoutMs = options.timeoutMs ?? 120000;
+  // 75s por modelo: com 3 modelos na lista, a cascata inteira cabe no limite de
+// execucao da Vercel (300s) mesmo no pior caso.
+const timeoutMs = options.timeoutMs ?? 75000;
   let lastError: any = null;
 
   for (const apiKey of keys) {
@@ -448,7 +450,7 @@ const generateLongVideo = async (ctx: LongVideoContext) => {
   let bible = (
     await generateWithModelFallback(biblePrompt, ctx.apiKey, 0.7, {
       attemptsPerModel: 1,
-      timeoutMs: 90000,
+      timeoutMs: 60000,
     })
   ).text || '';
 
@@ -472,7 +474,7 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
 - a seção "ROTEIRO DE CONTINUIDADE (${ctx.numScenes} CENAS)" com EXATAMENTE ${ctx.numScenes} linhas, uma para cada cena, no formato "PLANO - CENA N | LOCAL: ... | QUEM FALA: Nome | QUEM RESPONDE: Nome (ou "ninguem") | ACAO: ... | FALA: "texto exato" | RESPOSTA: "texto exato" (ou "sem resposta") | GANCHO PARA A PROXIMA: ...". A atribuicao de fala e obrigatoria: cada nome e o dono real da fala escrita ao lado.`,
       ctx.apiKey,
       0.6,
-      { attemptsPerModel: 1, timeoutMs: 90000 },
+      { attemptsPerModel: 1, timeoutMs: 60000 },
     );
 
     const retryText = retry.text || '';
@@ -507,7 +509,7 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
       const callBlock = (temperature: number) =>
         generateWithModelFallback(blockPrompt, ctx.apiKey, temperature, {
           attemptsPerModel: 1,
-          timeoutMs: 150000,
+          timeoutMs: 120000,
         }).then((result) => result.text || '');
 
       let blockText = await callBlock(0.75);
@@ -528,7 +530,7 @@ CORRECAO OBRIGATORIA DO BLOCO
 Reescreva APENAS as cenas ${range.start} a ${range.end} (${expected} cenas), todas completas, numeradas em sequencia e com TODAS as 10 secoes entre colchetes em cada cena. Comece direto em "PROMPT CENA ${range.start} (SEEDANCE 2.5):" e nao inclua o PROMPT 00 nem o plano.`,
           ctx.apiKey,
           0.7,
-          { attemptsPerModel: 1, timeoutMs: 150000 },
+          { attemptsPerModel: 1, timeoutMs: 120000 },
         );
 
         if (retry.text && countSceneBlocks(retry.text) >= countSceneBlocks(blockText)) {
@@ -559,7 +561,7 @@ Reescreva as cenas ${range.start} a ${range.end} obeying a regra de ouro:
 Comece direto em "PROMPT CENA ${range.start} (SEEDANCE 2.5):".`,
           ctx.apiKey,
           0.5,
-          { attemptsPerModel: 1, timeoutMs: 150000 },
+          { attemptsPerModel: 1, timeoutMs: 120000 },
         );
 
         if (fixed.text && countSceneBlocks(fixed.text) >= countSceneBlocks(blockText)) {

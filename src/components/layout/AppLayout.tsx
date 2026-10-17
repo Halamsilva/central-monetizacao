@@ -32,6 +32,7 @@ const pageTitles: Record<string, string> = {
   '/lumina-8k': 'Upscale de Imagem',
   '/reflexao-velho-roca': 'Reflexão do Velho da Roça',
   '/criador-noticias': 'Criador de Notícias',
+  '/clonagem-pro': 'Clonagem de Vídeo PRO',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',

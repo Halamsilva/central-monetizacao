@@ -40,6 +40,7 @@ import {
   Clapperboard,
   Workflow,
   Newspaper,
+  Puzzle,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -146,6 +147,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Vídeos de Limpeza', icon: Sparkles, path: '/limpeza' },
     { title: 'Novelinhas Gordos', icon: HeartHandshake, path: '/novelinhas-gordos' },
     { title: 'Criador de Notícias', icon: Newspaper, path: '/criador-noticias' },
+    { title: 'Clonagem PRO', icon: Puzzle, path: '/clonagem-pro' },
     { title: 'Upscale de Imagem', icon: ImageIcon, path: '/lumina-8k' },
     { title: 'TikTok Shop & Shopee', icon: ShoppingBag, path: '/tiktok-shop-shopee' },
     { title: 'Receitas p/ Ebook', icon: BookOpen, path: '/receitas-ebook' },

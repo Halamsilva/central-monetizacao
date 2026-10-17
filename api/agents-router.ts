@@ -19,6 +19,7 @@ import ganchosHandler from '../server-agents/ganchos.js';
 import videoStudioHandler from '../server-agents/videoStudio.js';
 import flowAutomationsHandler from '../server-agents/flowAutomations.js';
 import criadorNoticiasHandler from '../server-agents/criadorNoticias.js';
+import clonagemProHandler from '../server-agents/clonagemPro.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
@@ -42,6 +43,7 @@ const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'video-studio': videoStudioHandler,
   'flow-automations': flowAutomationsHandler,
   'criador-noticias': criadorNoticiasHandler,
+  'clonagem-pro': clonagemProHandler,
 };
 
 export default function handler(req: any, res: any) {

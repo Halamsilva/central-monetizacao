@@ -20,6 +20,7 @@ const ToolsIA = lazy(() => import('./pages/ToolsIA'));
 
 const MeninaDaRoca = lazy(() => import('./pages/MeninaDaRoca'));
 const ClonagemVideo = lazy(() => import('./pages/clonagem/App'));
+const ClonagemPro = lazy(() => import('./pages/clonagemPro/App'));
 const NovelinhasUni = lazy(() => import('./pages/NovelinhasUni'));
 const Mestre30s = lazy(() => import('./pages/mestre30s/App'));
 const Insetos = lazy(() => import('./pages/insetos/App'));
@@ -69,6 +70,7 @@ const routeTitles: Record<string, string> = {
   '/tools-ia': 'Ferramentas IA',
   '/menina-da-roca': 'Menina da Roca',
   '/clonagem-video': 'Clonagem de Video',
+  '/clonagem-pro': 'Clonagem de Video PRO',
   '/novelinhas': 'Novelinhas Universal',
   '/mestre-30s': 'Mestre 30s',
   '/insetos': 'Receitas Anti-Pragas',
@@ -237,6 +239,7 @@ export default function App() {
               <Route path="tools-ia" element={<ToolsIA />} />
               <Route path="menina-da-roca" element={<MeninaDaRoca />} />
               <Route path="clonagem-video" element={<ClonagemVideo />} />
+          <Route path="clonagem-pro" element={<ClonagemPro />} />
               <Route path="novelinhas" element={<NovelinhasUni />} />
               <Route path="mestre-30s" element={<Mestre30s />} />
               <Route path="insetos" element={<Insetos />} />

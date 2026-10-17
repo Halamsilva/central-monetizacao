@@ -33,6 +33,7 @@ import {
   Clapperboard,
   Workflow,
   Newspaper,
+  Puzzle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
@@ -124,6 +125,13 @@ const tools: Tool[] = [
     path: '/criador-noticias',
     icon: Newspaper,
     accent: 'bg-rose-100 text-rose-600',
+  },
+{
+    title: 'Clonagem PRO',
+    description: 'Análise forense do vídeo com prompts de clonagem em 3 idiomas.',
+    path: '/clonagem-pro',
+    icon: Puzzle,
+    accent: 'bg-indigo-100 text-indigo-600',
   },
   {
     title: 'Upscale de Imagem',

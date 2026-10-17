@@ -53,6 +53,8 @@ export interface CampaignOverview {
 export interface GeneratedCampaign {
   campaignOverview: CampaignOverview;
   prompts: PromptItem[];
+  // Texto de SEO pronto para copiar e colar (titulo + legenda + hashtags, sem etiquetas).
+  seoPost?: string;
 }
 
 export interface PresetNiche {

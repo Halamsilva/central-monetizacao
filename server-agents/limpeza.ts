@@ -367,6 +367,32 @@ ${count >= 8 ? `- PROMPT 8: Conclusão Amigável Sem Clichê (9s).\n` : ''}`;
 }
 
 // Helper to construct guaranteed dynamic cleaning VSL narrative adapted to count
+// Bloco de SEO em texto puro (sem etiquetas), pronto para copiar e colar na publicacao.
+function buildSeoPost(overview: any, params: any) {
+  const prod = String(overview?.productName || params?.productName || 'o produto').trim();
+  const niche = String(overview?.niche || params?.niche || 'limpeza pesada').trim();
+  const nicheLower = niche.toLowerCase();
+
+  const title = nicheLower.includes('gordura') || nicheLower.includes('panela')
+    ? 'A crosta preta da panela sai assim que isso encosta nela'
+    : nicheLower.includes('rejunte') || nicheLower.includes('mofo')
+      ? 'O rejunte preto de mofo clareia na hora com essa misturinha'
+      : nicheLower.includes('ralo') || nicheLower.includes('sifao') || nicheLower.includes('sifão')
+        ? 'O ralo entupido desce a água na hora com isso aqui'
+        : nicheLower.includes('box') || nicheLower.includes('vidro')
+          ? 'O vidro do box volta a ficar transparente com esse truque'
+          : `O truque caseiro que resolve ${nicheLower} sem cansar o braço`;
+
+  const caption = `Passei anos esfregando sem resultado ate descobrir esse truque simples e barato que resolve ${nicheLower} de verdade. `
+    + `A aplicacao leva menos de 5 minutos e voce nao precisa de produto caro nem de esforco fisico. `
+    + `Salve este video para nao perder e me conta nos comentarios o que voce quer ver aqui no proximo. `
+    + `Se voce nao tem os ingredientes em casa, o ${prod} ja vem pronto pra voce: comenta EU QUERO que eu te mando o link.`;
+
+  const hashtags = '#limpezapesada #dicasdelimpeza #truquescaseiros #donacasa #limpezadomestica #casaorganizada #façavocêmesmo #viraltiktok';
+
+  return `${title}\n\n${caption}\n\n${hashtags}`;
+}
+
 function buildFallbackPromptsResponse(params: any) {
   const {
     productName,
@@ -453,11 +479,11 @@ function buildFallbackPromptsResponse(params: any) {
     goal: hookGoal,
     spokenScript: hookScript,
     wordCount: 22,
-    voiceDirection: 'Tom sincero, direto e caloroso de dona de casa para dona de casa no Brasil, sem clichês dramáticos artificiais, fala clara com <pausa 0.5s>',
+    voiceDirection: 'Tom sincero, direto e caloroso de especialista para o público brasileiro, sem clichês dramáticos artificiais, fala clara com <pausa 0.5s>',
     facialExpressionsAndHumanRealism: 'Olhos expressivos com indignação bem-humorada e cumplicidade sincera, cenho atento e empático, postura ágil, pele hiper-realista 8K com textura natural sob luz 5400K.',
     handMovements: 'Mãos experientes apontando com o indicador diretamente para a crosta preta de sujeira entranhada na maquete gigante de 1,20m, 5 dedos anatômicos perfeitos.',
     cameraAndLighting: 'Enquadramento cinematográfico de alto impacto com FOCO ÓPTICO PRIMÁRIO NA MAQUETE GIGANTE DE 1,20M ocupando dois terços do quadro em primeiro plano. Push-in suave revelando em ultra-definição 8K as camadas de sujeira, porosidade e textura microscópica. Iluminação suave e quente 5400K com luz de recorte nos ombros da especialista ao lado.',
-    videoPromptVisual: `Plano cinematográfico com FOCO CENTRAL E DESTACADO na MAQUETE GIGANTE DE 1,20M em primeiro plano proeminente: ${modelDesc}. A maquete possui acabamento de museu com texturas autênticas de sujeira, camadas estratificadas e profundidade macro. Ao lado da maquete, ${charDesc} no cenário ${setDesc} reage com olhar de pura cumplicidade e indignação de dona de casa, apontando diretamente para a sujeira presa nos poros.`,
+    videoPromptVisual: `Plano cinematográfico com FOCO CENTRAL E DESTACADO na MAQUETE GIGANTE DE 1,20M em primeiro plano proeminente: ${modelDesc}. A maquete possui acabamento de museu com texturas autênticas de sujeira, camadas estratificadas e profundidade macro. Ao lado da maquete, ${charDesc} no cenário ${setDesc} reage com olhar de pura cumplicidade e indignação, apontando diretamente para a sujeira presa nos poros.`,
     videoPromptEnglish: `Cinematic 4K UHD. Primary visual focus on the GIANT 1.2M HYPER-REALISTIC MACRO CROSS-SECTION MODEL dominating the foreground in breathtaking biological and structural fidelity: ${modelDesc}. Museum-grade craftsmanship displaying microscopic layers of grime, encrusted grease, and mineral pores with high tactile detail. Standing right beside it, ${charDesc} in ${setDesc} gestures with sincere domestic expertise and relatable empathy, pointing with firm hand directly at the encrusted layer. Warm directional studio lighting 5400K, shallow depth of field f/1.8, 8k resolution, raytracing.`,
     engineParameters: `--ar ${aspectRatio} --style raw --v 6.1 / Kling Pro 4K`,
     scientificBacking: defaultScientificBacking,
@@ -486,7 +512,7 @@ function buildFallbackPromptsResponse(params: any) {
     goal: 'Apresentar e citar nominalmente em voz alta os ingredientes populares e baratos da despensa/mercado dispostos na bancada',
     spokenScript: `Pra descolar essa sujeira sem esforço, você só usa ${citedNames}, que você tem aí no armário de casa.`,
     wordCount: 21,
-    voiceDirection: 'Tom entusiasmado, amigável e seguro, como quem ensina um truque de ouro de vizinha para vizinha na cozinha',
+    voiceDirection: 'Tom entusiasmado, amigável e seguro, como quem ensina um truque de ouro de casa em casa na cozinha',
     facialExpressionsAndHumanRealism: 'Expressão de cumplicidade, olhos brilhantes e postura acolhedora demonstrando solução prática e acessível.',
     handMovements: 'Mãos ágeis e naturais com 5 dedos perfeitos sobre a bancada de granito polido, apresentando individualmente os potes e frascos com os ingredientes caseiros.',
     cameraAndLighting: 'Plano médio com leve tilt descendente focalizando os ingredientes na bancada e subindo para o rosto confiante da especialista.',
@@ -526,7 +552,7 @@ function buildFallbackPromptsResponse(params: any) {
     goal: 'Explicar com extrema clareza e linguagem direta pra que serve a receita e o modo exato de aplicar e limpar sem esforço',
     spokenScript: defaultPurposeScript,
     wordCount: 22,
-    voiceDirection: 'Tom seguro, didático e natural de dona de casa para dona de casa, sem rodeios e sem clichês, ritmo calmo com <pausa 0.5s>',
+    voiceDirection: 'Tom seguro, didático e natural, sem rodeios e sem clichês, ritmo calmo com <pausa 0.5s>',
     facialExpressionsAndHumanRealism: 'Olhar firme e acolhedor direto nos olhos da espectadora, sorriso amigável de quem ensina uma solução que realmente funciona.',
     handMovements: 'Mãos segurando com firmeza o borrifador ou esponja macia na altura da bancada, gesticulando com naturalidade ao explicar a aplicação.',
     cameraAndLighting: 'Plano médio com enquadramento focado na especialista e na bancada de granito polido, iluminação suave 5400K.',
@@ -538,23 +564,23 @@ function buildFallbackPromptsResponse(params: any) {
     timeToReady: 'Age em 5 minutos sem esfregar',
   };
 
-  // PROMPT 5 (com CTA): Apresentação do Frasco em Mãos + Chamada "EU QUERO"
+  // PROMPT 5 (com CTA): Pra Que Serve o Produto a Venda + Chamada de Venda "EU QUERO"
   const promptCTA = {
-    title: 'PROMPT 5: Chamada com Frasco em Mãos (CTA "EU QUERO") (9s)',
+    title: 'PROMPT 5: Pra Que Serve o Produto Pronto + Chamada de Venda (CTA "EU QUERO") (9s)',
     duration: '00:00 - 00:09 (SOMENTE 9 SEGUNDOS EXATOS)',
     step: 5,
-    goal: 'Apresentação do produto concentrado em mãos e chamada direta e simples pedindo para comentar "EU QUERO" nos comentários',
-    spokenScript: `A gente concentrou essa mesma fórmula no frasco de ${prod}. Comenta EU QUERO aqui embaixo que te mando no direct agora!`,
+    goal: 'Explicar pra que serve o produto pronto a venda e fazer a chamada de venda pedindo para comentar "EU QUERO"',
+    spokenScript: 'Se você não tem esses ingredientes em casa, o nosso produto já está pronto. Comenta EU QUERO que eu te mando o link!',
     wordCount: 22,
-    voiceDirection: 'Entonação de proximidade, cúmplice e direta, ênfase natural nas palavras "EU QUERO" e "mando no direct agora"',
-    facialExpressionsAndHumanRealism: 'Olhar penetrante conectado com a câmera, sorriso franco e acolhedor, leve aproximação para a frente chamando quem está assistindo.',
+    voiceDirection: 'Entonação de proximidade, cúmplice e direta, ênfase natural nas palavras "EU QUERO" e "te mando o link"',
+    facialExpressionsAndHumanRealism: 'Olhar conectado com a câmera, sorriso franco e acolhedor, leve aproximação para a frente chamando quem está assistindo.',
     handMovements: `Mão esquerda segurando com firmeza o frasco do produto de limpeza ${suppDesc} com rótulo voltado perfeitamente para a câmera, enquanto a mão direita aponta com o indicador para a área dos comentários abaixo incentivando a digitar "EU QUERO".`,
     cameraAndLighting: 'Enquadramento fechado americano com foco cravado no rótulo do frasco e no olhar da especialista, reflexos nítidos no gatilho sob luz direcional e atmosfera acolhedora.',
-    videoPromptVisual: `${charDesc} no mesmo cenário ${setDesc}, segurando com orgulho o frasco spray ${suppDesc} com rótulo nítido virado para a lente, enquanto aponta para baixo convidando a comentar "EU QUERO" para receber no direct.`,
-    videoPromptEnglish: `Cinematic 4K UHD. Direct-response commercial framing. ${charDesc} in ${setDesc}, holding up firmly with one hand the exact cleaning spray bottle: ${suppDesc} with label clearly facing camera, while pointing with the other index finger downward toward the comments section, urging viewers to comment 'EU QUERO' so she can send the direct link. Crisp focus on the product, natural skin pores, dramatic studio lighting, 24fps high conversion VSL.`,
+    videoPromptVisual: `${charDesc} no mesmo cenário ${setDesc}, explicando pra que serve o produto pronto ${suppDesc} e segurando o frasco spray com rótulo nítido virado para a lente, enquanto aponta para baixo convidando a comentar "EU QUERO" para receber o link de compra no direct.`,
+    videoPromptEnglish: `Cinematic 4K UHD. Direct-response commercial framing. ${charDesc} in ${setDesc}, explaining what the ready-to-use product is for while holding up firmly with one hand the exact cleaning spray bottle: ${suppDesc} with label clearly facing camera, then pointing with the other index finger downward toward the comments section, urging viewers to comment 'EU QUERO' to receive the purchase link in direct. Crisp focus on the product, natural skin pores, dramatic studio lighting, 24fps high conversion VSL.`,
     engineParameters: `--ar ${aspectRatio} --style raw --v 6.1 / Kling Pro 4K`,
     scientificBacking: defaultScientificBacking,
-    recipeStepDetail: 'Apresentação do frasco concentrado para quem busca praticidade sem fazer sujeira.',
+    recipeStepDetail: 'Apresentação do produto pronto: o que ele resolve e a vantagem de comprar pronto em vez de fazer em casa.',
     timeToReady: 'Uso imediato em spray',
   };
 
@@ -567,7 +593,7 @@ function buildFallbackPromptsResponse(params: any) {
     spokenScript: 'Assim você limpa sua casa em minutos, sem estragar as unhas nem cansar o braço, com tudo brilhando como espelho.',
     wordCount: 22,
     voiceDirection: 'Tom acolhedor e satisfeito, fechando o comercial com serenidade e sorriso verdadeiro de alívio doméstico',
-    facialExpressionsAndHumanRealism: 'Sorriso franco e aliviado, olhos brilhantes de orgulho, pele iluminada com calor suave 5400K sem brilhos artificiais.',
+    facialExpressionsAndHumanRealism: 'Sorriso franco e aliviado, olhos brilhantes de orgulho, pele iluminada com calor suave 5400K sem brilhos artificiais. MESMA pessoa da ficha (mesmo gênero).',
     handMovements: `Especialista mantendo o frasco ${suppDesc} na altura do peito com segurança, acenando positivamente com a cabeça e admirando o reflexo da bancada.`,
     cameraAndLighting: 'Slow pull-out elegante revelando a especialista e a cozinha resplandecente em composição aconchegante de encerramento.',
     videoPromptVisual: `${charDesc} no mesmo cenário ${setDesc}, segurando o produto ${suppDesc} próximo ao peito com sorriso radiante e acolhedor, celebrando a cozinha reluzente e o tempo livre ganho.`,
@@ -596,6 +622,26 @@ function buildFallbackPromptsResponse(params: any) {
     scientificBacking: defaultScientificBacking,
     recipeStepDetail: 'Encerramento acolhedor da orientação caseira.',
     timeToReady: 'Uso diário ou semanal',
+  };
+
+  // PROMPT EXTRA (com CTA): Pra Que Serve o Produto a Venda (frasco pronto)
+  const promptProductSale = {
+    title: 'PROMPT: Pra Que Serve o Produto Pronto (o frasco) (9s)',
+    duration: '00:00 - 00:09 (SOMENTE 9 SEGUNDOS EXATOS)',
+    step: 5,
+    goal: 'Explicar com clareza pra que serve o produto pronto a venda: o que ele resolve, em que superfícies usar e a vantagem de comprar pronto em vez de fazer em casa',
+    spokenScript: `Esse frasco resolve a mesma sujeira pesada pra você: é só borrifar na superfície e passar o pano. Já vem pronto, sem misturar nada.`,
+    wordCount: 23,
+    voiceDirection: 'Tom seguro, prático e convincente, mostrando a vantagem de ter o produto pronto em casa',
+    facialExpressionsAndHumanRealism: 'Olhar confiante e acolhedor, expressão de praticidade e alívio, postura aberta e próxima da câmera.',
+    handMovements: `Mão direita erguendo o frasco ${suppDesc} com o rótulo virado para a câmera na altura do peito, enquanto a esquerda aponta para as superfícies da bancada onde o produto é usado.`,
+    cameraAndLighting: 'Plano médio com foco no frasco e na especialista, iluminação suave e comercial 5400K realçando o rótulo.',
+    videoPromptVisual: `${charDesc} no mesmo cenário ${setDesc}, erguendo o frasco ${suppDesc} com o rótulo virado para a câmera e explicando pra que serve o produto pronto, em quais superfícies usar e a praticidade de não precisar misturar nada.`,
+    videoPromptEnglish: `Cinematic 4K UHD. ${charDesc} in ${setDesc}, holding the product bottle ${suppDesc} with the label clearly facing camera, explaining what the ready-to-use cleaning product is for, which surfaces it works on, and the convenience of not having to mix anything at home. Commercial hero framing on the bottle, ultra photorealistic skin texture, warm 5400K lighting, 24fps.`,
+    engineParameters: `--ar ${aspectRatio} --style raw --v 6.1 / Kling Pro 4K`,
+    scientificBacking: defaultScientificBacking,
+    recipeStepDetail: 'Explicação do produto pronto: função prática, superfícies de uso e vantagem do pronto.',
+    timeToReady: 'Pronto para uso imediato',
   };
 
   const includeCTA = params.includeCTA !== false;
@@ -676,6 +722,19 @@ function buildFallbackPromptsResponse(params: any) {
     ];
   }
 
+  // Insere o prompt do produto a venda IMEDIATAMENTE ANTES da chamada final (CTA).
+  if (includeCTA) {
+    const ctaIndex = selectedTemplates.findIndex((t) => t === promptCTA);
+
+    if (ctaIndex > 0) {
+      selectedTemplates = [
+        ...selectedTemplates.slice(0, ctaIndex),
+        promptProductSale,
+        ...selectedTemplates.slice(ctaIndex),
+      ];
+    }
+  }
+
   const prompts = selectedTemplates.slice(0, count).map((t, idx) => {
     const stepNum = idx + 1;
     const cleanTitle = t.title.replace(/^PROMPT(\s+\d+)?:?\s*/i, '');
@@ -699,6 +758,7 @@ function buildFallbackPromptsResponse(params: any) {
       technicalSpecs: `${String(targetPlatform).toUpperCase()} • ${aspectRatio} • ${resolution} • ${count} Cenas (${count * 9}s)`,
       scientificBacking: defaultScientificBacking,
     },
+    seoPost: buildSeoPost({ productName: prod, niche }, params),
     prompts,
   };
 }
@@ -1000,8 +1060,15 @@ app.post('/api/generate-prompts', async (req: Request, res: Response) => {
     const systemPrompt = `Você é o maior especialista mundial em criação de Prompts de Vídeo IA (Kling 1.5/2.0, Sora, Runway Gen-3 Alpha, Luma Ray 2) para Vídeos de Vendas (VSL) e Conteúdo de Alta Conversão no MERCADO DE LIMPEZA DOMÉSTICA, DONAS DE CASA E MISTURINHAS CASEIRAS NO BRASIL.
 
 ========================================================================
-AS 6 REGRAS DE OURO INVIOLÁVEIS DO AGENTE:
+AS 7 REGRAS DE OURO INVIOLÁVEIS DO AGENTE:
 ========================================================================
+REGRA 0 (PRIORIDADE MÁXIMA - FIDELIDADE TOTAL À PERSONAGEM DA FICHA):
+- A personagem de TODOS os prompts e EXATAMENTE a da "Descrição da Personagem" fornecida abaixo (genero, idade, etnia, cor e tipo de cabelo, roupa).
+- E TERMINANTEMENTE PROIBIDO trocar o genero da personagem. Se a ficha descreve um HOMEM, TODOS os prompts (INCLUSIVE O PROMPT 1) descrevem um HOMEM. Se a ficha descreve uma MULHER, todos descrevem uma MULHER.
+- TODOS os prompts DEVEM repetir a ficha fisica completa da personagem (mesmo rosto, mesmo cabelo, mesma roupa) - inclusive o PROMPT 1, que costuma ser o mais desobediente nesse ponto.
+- NUNCA use os termos "dona de casa", "de dona de casa para dona de casa" nem qualquer palavra feminina se a ficha nao for feminina. Nesse caso use "especialista", "profissional" ou "apresentador".
+- No inicio de CADA prompt, repita: a mesma pessoa da ficha, com o genero EXATO da ficha.
+
 REGRA 1: NÃO FALE FRASES CLICHÊS DE FORMA ALGUMA!
 - É expressamente PROIBIDO usar chavões batidos como: "pare tudo", "descubra o segredo milagroso", "fórmula mágica", "o segredo revelado", "sua casa vai virar um palácio", "devolver o equilíbrio com amor", "restaure a paz que você merece".
 - Use falas reais, sinceras, olho no olho, como uma dona de casa experiente conversa de verdade com outra no Brasil ("gordura preta empedrada", "sem cansar o braço esfregando", "rejunte encardido de limo", "amarelado de suor no colchão", "vidro do box embaçado de sabonete").
@@ -1026,7 +1093,13 @@ REGRA 5: TODAS AS RECEITAS E MISTURINHAS DEVEM SER 100% REAIS E FUNCIONAIS!
 - Baseado em química doméstica real comprovada: bicarbonato, vinagre de álcool branco, detergente neutro, água oxigenada 10 vol, limão, sal grosso, álcool 70%, sabão de coco.
 
 REGRA 6: SEMPRE INGREDIENTES CASEIROS DE FÁCIL ACESSO!
-- Apenas ingredientes populares que qualquer dona de casa brasileira tem no armário ou compra no mercadinho da esquina por poucos reais.
+- Apenas ingredientes populares que qualquer pessoa tem no armário ou compra no mercadinho da esquina por poucos reais.
+
+REGRA 7: O CTA VENDE O PRODUTO (NUNCA PROMETE ENVIAR A RECEITA):
+- E PROIBIDO dizer que vai "enviar a receita", "mandar o passo a passo" ou "enviar a misturinha" no direct.
+- O CTA vende o PRODUTO PRONTO: a pessoa que nao tem os ingredientes (ou nao quer fazer) compra o produto que ja vem pronto.
+- Fórmula obrigatoria do CTA: "Se voce nao tem esses ingredientes em casa, o nosso produto ja esta pronto pra voce. Comenta EU QUERO que eu te mando o link!"
+- Antes do CTA, um prompt dedicado explica PRA QUE SERVE O PRODUTO (o que ele resolve, em que superficies usar, qual vantagem sobre fazer em casa).
 
 DIRETRIZES DE POLÍTICAS DE ANÚNCIOS (META / GOOGLE / TIKTOK / CONAR):
 - NUNCA ADICIONE JALECO NO PERSONAGEM NEM FALE QUE ELE É MÉDICO OU CIENTISTA INDUSTRIAL!
@@ -1039,7 +1112,8 @@ Sua missão é gerar rigorosamente ${count} PROMPTS SEQUENCIAIS com narrativa ci
 - PROMPT 2: Nomes dos Ingredientes Caseiros da Despensa (citados em voz alta) (9s • 20-24 palavras)
 - PROMPT 3: Como Fazer o Preparo da Misturinha Passo a Passo & Tempo (5 minutos de ação) (9s • 20-24 palavras)
 - PROMPT 4: PRA QUE SERVE E COMO USAR NA PRÁTICA (Obrigatório falar pra que serve e como aplicar sem esforço) (9s • 20-24 palavras)
-- PROMPT 5 ${hasCTA ? ': Chamada com Frasco de Limpeza em Mãos (CTA "EU QUERO" no direct)' : ': Brilho Espelhado e Casa Limpa Sem Esforço'} (9s • 20-24 palavras)
+${hasCTA ? `- PENÚLTIMO PROMPT: PRA QUE SERVE O PRODUTO À VENDA (o frasco pronto): explique o que o produto resolve, em que superfícies usar e a vantagem de comprar pronto em vez de fazer em casa (9s • 20-24 palavras)
+- ÚLTIMO PROMPT: CTA DE VENDA DO PRODUTO - "Se voce nao tem esses ingredientes em casa, o nosso produto ja esta pronto pra voce. Comenta EU QUERO que eu te mando o link!" (9s • 20-24 palavras)` : `- ÚLTIMO PROMPT: Brilho e Casa Limpa Sem Esforço (sem venda) (9s • 20-24 palavras)`}
 ${count >= 6 ? `- PROMPT 6: Resultado Real e Brilho Espelhado Sem Cansar o Braço (Sem clichê) (9s • 20-24 palavras)` : ''}
 
 ${narrativePlan}
@@ -1110,7 +1184,8 @@ Você deve gerar a resposta rigorosamente em formato JSON com o seguinte schema 
       "recipeStepDetail": "string",
       "timeToReady": "string"
     }
-  ]
+  ],
+  "seoPost": "Texto corrido pronto para copiar e colar ao publicar o video: titulo chamativo na primeira linha, depois o texto da legenda (2 a 4 frases) e por ultimo de 5 a 8 hashtags. ESCREVA O TEXTO PURO, SEM NENHUMA ETIQUETA: nao escreva as palavras 'Titulo:', 'Descricao:', 'Legenda:' nem 'Hashtags:'. Apenas o texto final, com quebras de linha entre o titulo, a legenda e as hashtags."
 }`;
 
     const parsed = await callGeminiWithFallbacks(
@@ -1137,6 +1212,11 @@ Você deve gerar a resposta rigorosamente em formato JSON com o seguinte schema 
         return fallback;
       }
     );
+
+    // Garante o bloco de SEO mesmo quando a IA nao devolve (ou devolve vazio).
+    if (parsed && !parsed.seoPost) {
+      parsed.seoPost = buildSeoPost(parsed.campaignOverview, req.body);
+    }
 
     return res.json(parsed);
   } catch (error: any) {

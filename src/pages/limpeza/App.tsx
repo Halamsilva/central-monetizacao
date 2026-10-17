@@ -62,6 +62,7 @@ export default function App() {
   const [isTeleprompterOpen, setIsTeleprompterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [copiedAll, setCopiedAll] = useState(false);
+  const [copiedSection, setCopiedSection] = useState<string | null>(null);
 
   // Preset Selection
   const handleSelectPreset = (preset: PresetNiche) => {
@@ -387,6 +388,43 @@ export default function App() {
                 />
               ))}
             </div>
+
+            {/* Bloco de SEO pronto para publicar */}
+            {generatedCampaign.seoPost && (
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-300">
+                    <Sparkles className="h-4 w-4 text-amber-400" />
+                    Texto pronto para publicar (copie e cole)
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedCampaign.seoPost || '');
+                      setCopiedSection('seo');
+                      setTimeout(() => setCopiedSection(null), 2000);
+                    }}
+                    className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-[11px] font-semibold transition-all ${
+                      copiedSection === 'seo'
+                        ? 'border-emerald-400 bg-emerald-500 text-black'
+                        : 'border-slate-700 bg-slate-950 text-slate-300 hover:border-amber-500/60'
+                    }`}
+                  >
+                    {copiedSection === 'seo' ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                    {copiedSection === 'seo' ? 'Copiado!' : 'Copiar texto'}
+                  </button>
+                </div>
+
+                <pre className="whitespace-pre-wrap break-words rounded-xl border border-slate-800 bg-slate-950/80 p-4 font-sans text-sm leading-relaxed text-slate-200">
+                  {generatedCampaign.seoPost}
+                </pre>
+              </div>
+            )}
           </div>
         )}
       </main>

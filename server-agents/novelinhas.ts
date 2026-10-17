@@ -175,7 +175,7 @@ ATENÇÃO: É ESTRITAMENTE PROIBIDO DESVIAR DO TEMA '${ctx.theme}'. Toda a trama
 ${ctx.context ? `Contexto opcional do criador (totalmente adaptado para ocorrer DENTRO do tema '${ctx.theme}'): "${ctx.context}"` : ''}
 ${ctx.extremeWeightDirective}
 ${ctx.ownScriptDirective}
-${ctx.isContinuing ? `ESTA HISTÓRIA É A PARTE 2 (CONTINUAÇÃO). O público JÁ viu a parte 1 e o plano abaixo NÃO pode recontar nada do que já foi entregue. Comece no ponto exato em que a parte 1 terminou.\nCONTEXTO DA PARTE 1 (use só como referência de continuidade):\n"""\n${ctx.previousStory.slice(0, 7000)}\n"""\n` : ''}
+${ctx.isContinuing ? `ESTA HISTÓRIA É A PARTE 2 (CONTINUAÇÃO). O público JÁ viu a parte 1 e o plano abaixo NAO pode recontar nada do que já foi entregue. O bloco "ULTIMAS CENAS DA PARTE 1" traz o FINAL REAL da historia: comece EXATAMENTE deste ponto.\nCONTEXTO DA PARTE 1 (use só como referência de continuidade):\n"""\n${ctx.previousStory.slice(0, 7000)}\n"""\n` : ''}
 
 PARÂMETROS DA PRODUÇÃO:
 - Tema: ${ctx.theme} | País e idioma: ${ctx.country} (${ctx.langName})
@@ -978,7 +978,7 @@ ${previousStory.slice(0, 7000)}
 
 REGRA OBRIGATÓRIA DA PARTE 2 - PROIBIDO REPETIR:
 1. É TERMINANTEMENTE PROIBIDO recontar, resumir, reformular, "melhorar" ou reescrever QUALQUER TRECHO que já foi escrito na parte 1. O público JÁ viu isso. Não comece recontando o que aconteceu antes.
-2. A CENA 1 desta parte 2 deve começar EXATAMENTE no ponto em que a parte 1 terminou (veja "ULTIMOS ACONTECIMENTOS DA PARTE 1"), nunca antes dele.
+2. A CENA 1 desta parte 2 deve começar EXATAMENTE no ponto em que a parte 1 terminou (veja o bloco "ULTIMAS CENAS DA PARTE 1" acima, que traz o final real da historia), nunca antes dele.
 3. Traga SOMENTE acontecimentos NOVOS e um arco novo: novo conflito, nova escalada, nova reviravolta e um desfecho novo que feche ESTA parte.
 4. Marque a passagem do tempo na primeira cena ("MAIS TARDE...", "NA MANHA SEGUINTE...", "TRES DIAS DEPOIS...") e reative o gancho em 1 segundo.
 5. Mantenha rigorosamente a mesma continuidade visual (mesma ficha física dos personagens, mesmo figurino, mesma ambientação e mesmas regras do universo de '${theme}').`

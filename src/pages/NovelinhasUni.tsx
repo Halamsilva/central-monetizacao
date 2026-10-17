@@ -855,24 +855,73 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme, extraThemes = [] }
     localStorage.setItem(historyKey, JSON.stringify(nextHistory));
   };
 
-  // Na Parte 2 a IA precisa saber (1) a historia inteira e (2) ONDE ela parou.
-  // Mandar o texto bruto truncado fazia a IA repetir o comeco da parte 1.
-  const buildContinuationPayload = (fullResult: string) => {
-    const storyMatch = fullResult.match(
-      /(?:HIST.RIA COMPLETA DA NOVELINHA|HIST.RIA COMPLETA|ETAPA 1:\s*HIST.RIA COMPLETA)[^\n:]*:\s*\n?([\s\S]*?)(?=(?:PROMPT\s+00|PROMPT\s+GANCHO|PROMPT\s+CENA|LEVANTAMENTO|AUDITORIA|MASTER CHARACTER IDENTIT|PROMPT MODEL SHEET|SEO|$))/i
+// Na Parte 2 a IA precisa saber (1) quem sao os personagens e (2) ONDE a historia parou.
+// O texto final do roteiro sao os MODEL SHEETS e o SEO, entao cortar os ultimos N
+// caracteres mandava lixo. Aqui extraimos a FICHA (PROMPT 00) e as ULTIMAS CENAS reais.
+const buildContinuationPayload = (fullResult: string) => {
+  const withoutSeo = fullResult.split(/---SEO-START---/i)[0];
+
+  const sheetMatch = withoutSeo.match(/PROMPT\s+00[\s\S]*?(?=\n\s*PROMPT\s+CENA\s+1)/i);
+  const characterSheet = sheetMatch ? sheetMatch[0].trim() : '';
+
+  const sceneMarkers = Array.from(
+    withoutSeo.matchAll(/PROMPT\s+(?:GANCHO\s+CHAMATIVO\s+)?CENA\s+\d+[^\n:]*:/gi),
+  );
+
+  const TAIL_SCENES = 3;
+  const startIndex = Math.max(0, sceneMarkers.length - TAIL_SCENES);
+  const lastScenesStart = sceneMarkers[startIndex]?.index ?? 0;
+
+  // Corta os model sheets que vem depois das cenas, se houver.
+  let lastScenes = withoutSeo.slice(lastScenesStart).trim();
+  const sheetBoundary = lastScenes.search(
+    /\n\s*(?:PROMPT\s+MODEL\s+SHEET|CHARACTER\s+MODEL\s+SHEET|MASTER\s+CHARACTER\s+IDENTITY)/i,
+  );
+  if (sheetBoundary !== -1) {
+    lastScenes = lastScenes.slice(0, sheetBoundary).trim();
+  }
+
+  return [
+    '=== FICHA DE PERSONAGENS DA PARTE 1 (mantenha exatamente a mesma aparencia e figurino) ===',
+    characterSheet || '(ficha nao identificada)',
+    '',
+    '=== ULTIMAS CENAS DA PARTE 1 — A HISTORIA TERMINA AQUI (continue exatamente deste ponto, sem repetir nada) ===',
+    lastScenes || '(cenas nao identificadas)',
+  ].join('\n');
+};
+
+// Parte 2: remove a ficha duplicada e continua a numeracao das cenas de onde a parte 1 parou.
+const mergePartTwo = (previousText: string, nextText: string) => {
+  const previousWithoutSeo = previousText.split(/---SEO-START---/i)[0];
+  const previousSceneCount = Array.from(
+    previousWithoutSeo.matchAll(/PROMPT\s+(?:GANCHO\s+CHAMATIVO\s+)?CENA\s+\d+/gi),
+  ).length;
+
+  // 1) Remove o PROMPT 00 que a parte 2 gera de novo (a ficha canonica fica a da parte 1).
+  let partTwo = nextText.replace(/PROMPT\s+00[\s\S]*?(?=\n\s*PROMPT\s+CENA\s+\d)/i, '').trim();
+
+  // 2) Continua a numeracao: parte 1 tinha N cenas, a parte 2 comeca em N+1.
+  if (previousSceneCount > 0) {
+    let offset = 0;
+    partTwo = partTwo.replace(
+      /(PROMPT\s+CENA\s+)\d+/gi,
+      (_match, prefix) => `${prefix}${previousSceneCount + (++offset)}`,
     );
+  }
 
-    const synopsis = storyMatch ? storyMatch[1].trim() : '';
-    const tail = fullResult.trim().slice(-3500);
+  // 3) Tira os model sheets da parte 1 (a parte 2 regenera todos no final).
+  let partOne = previousWithoutSeo;
+  if (/PROMPT\s+MODEL\s+SHEET|CHARACTER\s+MODEL\s+SHEET/i.test(partTwo)) {
+    const boundary = partOne.search(
+      /\n\s*(?:PROMPT\s+MODEL\s+SHEET|CHARACTER\s+MODEL\s+SHEET|MASTER\s+CHARACTER\s+IDENTITY)/i,
+    );
+    if (boundary !== -1) {
+      partOne = partOne.slice(0, boundary).trim();
+    }
+  }
 
-    return [
-      '=== SINOPSE COMPLETA DA PARTE 1 (apenas para manter continuidade - NAO repita) ===',
-      synopsis ? synopsis : '(sinopse nao identificada; use o trecho final abaixo)',
-      '',
-      '=== ULTIMOS ACONTECIMENTOS DA PARTE 1 (continue exatamente a partir daqui, sem repetir) ===',
-      tail,
-    ].join('\n');
-  };
+  return `${partOne.trim()}\n\n${partTwo}`.trim();
+};
 
   const generateScript = async (previousResult?: string) => {
     if (!canGenerate) return;
@@ -924,9 +973,7 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme, extraThemes = [] }
       }
 
       const nextText = payload.text || '';
-      const finalText = previousResult
-        ? `${result.split(/---SEO-START---/i)[0].trim()}\n\n${nextText}`.trim()
-        : nextText;
+      const finalText = previousResult ? mergePartTwo(result, nextText) : nextText;
 
       setResult(finalText);
       if (finalText) saveHistory(finalText);

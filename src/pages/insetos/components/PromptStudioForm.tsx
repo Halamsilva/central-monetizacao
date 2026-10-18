@@ -29,6 +29,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { PromptGenerationRequest, HookActionType, ThemeSuggestion } from '../types';
+import { optimizeVideo } from '../utils/videoOptimizer';
 import { QUICK_STARTER_THEMES, ALL_CURATED_THEME_SUGGESTIONS, getRandomThemeSuggestions } from '../data/presets';
 import { supabase } from '../../../lib/supabase';
 import { fileToCompressedDataUrl } from '../../../lib/image';
@@ -163,26 +164,34 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   }, [videoPreviewUrl]);
 
   // Handlers for Reference Viral Video
-  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setVideoError(null);
-    const sizeMB = file.size / (1024 * 1024);
-    if (sizeMB > 60) {
+    let prepared = file;
+
+    try {
+      prepared = await optimizeVideo(file, 3, () => {});
+    } catch {
+      prepared = file;
+    }
+
+    const sizeMB = prepared.size / (1024 * 1024);
+    if (sizeMB > 3.4) {
       setVideoError(`O vídeo selecionado tem ${sizeMB.toFixed(1)}MB. O tamanho máximo recomendado para upload direto é 60MB. Se o vídeo for longo, comprima-o ou utilize um corte com o gancho inicial.`);
       return;
     }
 
-    setVideoFileName(file.name);
-    setVideoMimeType(file.type || 'video/mp4');
+    setVideoFileName(prepared.name);
+    setVideoMimeType(prepared.type || 'video/mp4');
     setVideoFileSizeMB(parseFloat(sizeMB.toFixed(1)));
     setVideoLoading(true);
 
     if (videoPreviewUrl) {
       URL.revokeObjectURL(videoPreviewUrl);
     }
-    const preview = URL.createObjectURL(file);
+    const preview = URL.createObjectURL(prepared);
     setVideoPreviewUrl(preview);
 
     const reader = new FileReader();
@@ -196,7 +205,7 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
       setVideoError('Erro ao ler arquivo de vídeo.');
       setVideoLoading(false);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(prepared);
   };
 
   const removeVideo = () => {

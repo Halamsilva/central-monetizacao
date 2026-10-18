@@ -33,6 +33,8 @@ import { PromptGenerationRequest, HookActionType, ThemeSuggestion } from '../typ
 import { QUICK_STARTER_THEMES, ALL_CURATED_THEME_SUGGESTIONS, getRandomThemeSuggestions } from '../data/presets';
 import { supabase } from '../../../lib/supabase';
 import { describeHttpError } from '../../../lib/httpError';
+import { compressImageFile } from '../utils/imageCompressor';
+import { optimizeVideo } from '../utils/videoOptimizer';
 
 interface PromptStudioFormProps {
   onGenerate: (data: PromptGenerationRequest) => void;
@@ -246,26 +248,42 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   }, [videoPreviewUrl]);
 
   // Handlers for Reference Viral Video
-  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setVideoError(null);
-    const sizeMB = file.size / (1024 * 1024);
-    if (sizeMB > 60) {
-      setVideoError(`O vídeo selecionado tem ${sizeMB.toFixed(1)}MB. O tamanho máximo recomendado para upload direto é 60MB. Se o vídeo for longo, comprima-o ou utilize um corte com o gancho inicial.`);
+
+    setVideoLoading(true);
+    setVideoFileName(file.name);
+
+    let prepared = file;
+
+    try {
+      // O envio passa por funcao serverless (limite de 4,5 MB). Recomprimimos
+      // no navegador para o video caber no envio, sem o aluno fazer nada.
+      prepared = await optimizeVideo(file, 3, () => {});
+    } catch {
+      prepared = file;
+    }
+
+    const sizeMB = prepared.size / (1024 * 1024);
+
+    if (sizeMB > 3.4) {
+      setVideoLoading(false);
+      setVideoError(
+        `Este video ficou com ${sizeMB.toFixed(1)}MB mesmo depois de comprimir. Envie um corte mais curto (de 8 a 15 segundos) com o gancho inicial do video viral.`
+      );
       return;
     }
 
-    setVideoFileName(file.name);
-    setVideoMimeType(file.type || 'video/mp4');
+    setVideoMimeType(prepared.type || 'video/mp4');
     setVideoFileSizeMB(parseFloat(sizeMB.toFixed(1)));
-    setVideoLoading(true);
 
     if (videoPreviewUrl) {
       URL.revokeObjectURL(videoPreviewUrl);
     }
-    const preview = URL.createObjectURL(file);
+    const preview = URL.createObjectURL(prepared);
     setVideoPreviewUrl(preview);
 
     const reader = new FileReader();
@@ -298,20 +316,25 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   };
 
   // Handlers for Reference Image
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setImageFileName(file.name);
-    setImageMimeType(file.type);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64Data = result.split(',')[1] || result;
-      setReferenceImageBase64(base64Data);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImageFile(file, 1280, 0.85);
+      setImageMimeType(compressed.mimeType);
+      setReferenceImageBase64(compressed.base64);
+    } catch {
+      setImageMimeType(file.type);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setReferenceImageBase64(result.split(',')[1] || result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const removeImage = () => {
@@ -324,20 +347,25 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   };
 
   // Handlers for Custom Character Image
-  const handleCharacterFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCharacterFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setCharacterImageFileName(file.name);
-    setCharacterImageMimeType(file.type);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64Data = result.split(',')[1] || result;
-      setCharacterImageBase64(base64Data);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImageFile(file, 1280, 0.85);
+      setCharacterImageMimeType(compressed.mimeType);
+      setCharacterImageBase64(compressed.base64);
+    } catch {
+      setCharacterImageMimeType(file.type);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setCharacterImageBase64(result.split(',')[1] || result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const removeCharacterImage = () => {
@@ -350,20 +378,25 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   };
 
   // Handlers for Custom Scenario Image
-  const handleSettingFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSettingFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setSettingImageFileName(file.name);
-    setSettingImageMimeType(file.type);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64Data = result.split(',')[1] || result;
-      setSettingImageBase64(base64Data);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImageFile(file, 1280, 0.85);
+      setSettingImageMimeType(compressed.mimeType);
+      setSettingImageBase64(compressed.base64);
+    } catch {
+      setSettingImageMimeType(file.type);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setSettingImageBase64(result.split(',')[1] || result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const removeSettingImage = () => {
@@ -376,20 +409,25 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   };
 
   // Handlers for Custom Book Image
-  const handleBookFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBookFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setBookImageFileName(file.name);
-    setBookImageMimeType(file.type);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64Data = result.split(',')[1] || result;
-      setBookImageBase64(base64Data);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImageFile(file, 1280, 0.85);
+      setBookImageMimeType(compressed.mimeType);
+      setBookImageBase64(compressed.base64);
+    } catch {
+      setBookImageMimeType(file.type);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        setBookImageBase64(result.split(',')[1] || result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const removeBookImage = () => {

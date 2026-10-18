@@ -26,6 +26,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { PromptGenerationRequest, HookActionType, ThemeSuggestion } from '../types';
+import { optimizeVideo } from '../utils/videoOptimizer';
 import { QUICK_STARTER_THEMES, ALL_CURATED_THEME_SUGGESTIONS, getRandomThemeSuggestions } from '../data/presets';
 import { supabase } from '../../../lib/supabase';
 import { compressImageFile } from '../utils/imageCompressor';
@@ -159,26 +160,34 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
   }, [videoPreviewUrl]);
 
   // Handlers for Reference Viral Video
-  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setVideoError(null);
-    const sizeMB = file.size / (1024 * 1024);
-    if (sizeMB > 25) {
+    let prepared = file;
+
+    try {
+      prepared = await optimizeVideo(file, 3, () => {});
+    } catch {
+      prepared = file;
+    }
+
+    const sizeMB = prepared.size / (1024 * 1024);
+    if (sizeMB > 3.4) {
       setVideoError(`O vídeo selecionado tem ${sizeMB.toFixed(1)}MB. Para garantir velocidade máxima e evitar quedas de conexão, o limite recomendado é de 25MB. Envie um corte rápido com os primeiros 8 a 15 segundos do vídeo viral.`);
       return;
     }
 
-    setVideoFileName(file.name);
-    setVideoMimeType(file.type || 'video/mp4');
+    setVideoFileName(prepared.name);
+    setVideoMimeType(prepared.type || 'video/mp4');
     setVideoFileSizeMB(parseFloat(sizeMB.toFixed(1)));
     setVideoLoading(true);
 
     if (videoPreviewUrl) {
       URL.revokeObjectURL(videoPreviewUrl);
     }
-    const preview = URL.createObjectURL(file);
+    const preview = URL.createObjectURL(prepared);
     setVideoPreviewUrl(preview);
 
     const reader = new FileReader();
@@ -192,7 +201,7 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
       setVideoError('Erro ao ler arquivo de vídeo.');
       setVideoLoading(false);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(prepared);
   };
 
   const removeVideo = () => {

@@ -3,7 +3,7 @@ export const describeHttpError = async (
   fallback = 'Nao foi possivel concluir agora. Tente novamente.'
 ): Promise<string> => {
   if (response.status === 413) {
-    return 'Arquivo grande demais para envio. Remova o video/imagem de referencia ou use um arquivo menor.';
+    return 'O envio ficou grande demais. Se voce anexou uma imagem ou video de referencia, tente um arquivo menor (imagem pequena ou corte de ate 15 segundos) ou remova o anexo e envie so o texto.';
   }
 
   // Timeouts de borda (Cloudflare 524, gateways 502/504): nao e bug do agente,

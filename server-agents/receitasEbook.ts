@@ -1577,6 +1577,96 @@ const checkAccess = async (serviceSupabase: any, req: any, res: any) => {
   return user;
 };
 
+// Analisa o tema digitado pelo aluno e preenche os campos do formulario
+// adaptados a esse tema (modelo gigante, ingredientes, gancho, escala).
+const handleAutofillTheme = async (req: any, res: any) => {
+  const theme = String(req.body?.theme || '').trim();
+
+  if (!theme) {
+    return res.status(400).json({ error: 'Digite o tema antes de usar o preenchimento com IA.' });
+  }
+
+  const ai = getGeminiClient();
+  if (!ai) {
+    return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
+  }
+
+  const prompt = `Você é o maior estrategista de Direct Response e diretor de arte para vídeos virais de RECEITAS CASEIRAS, SAÚDE NATURAL E EBOOKS no Brasil.
+
+Com base no TEMA/PROBLEMA informado pelo criador: "${theme}"
+
+Preencha a estrutura da campanha adaptando TUDO a esse tema específico. Responda SOMENTE em JSON válido.
+
+REGRAS RÍGIDAS:
+1. "giantModelPreference": descreva um MODELO ANATÔMICO / OBJETO EDUCACIONAL GIGANTE em corte transversal (escala gigante, ocupando 60% da tela 9:16) que represente visualmente o problema do tema. Ex: órgão humano ampliado, alimento em corte mostrando o problema por dentro, estrutura microscópica ampliada. Tem que ser algo que dê para FILMAR de perto e causar choque visual.
+2. "solutionIngredients": 3 a 5 INGREDIENTES CASEIROS REAIS, baratos e fáceis de achar (despensa, feira, mercadinho). NUNCA invente ingrediente perigoso. NUNCA misture cloro/água sanitária com vinagre ou amônia.
+3. "hookStyle": escolha UM entre "curiosidade", "segredo", "problema_visivel" ou "descoberta" — o que mais combina com o tema.
+4. "hookActionType": escolha UM entre "varied_dynamic", "surgical_slice", "pinch_extraction", "pressure_squeeze", "scraping_abrasion", "catheter_unclog", "uv_reveal", "needle_injection" ou "liquid_pouring" — a ação visual do gancho nos primeiros 8 segundos sobre o modelo gigante.
+5. "objectScale": "colossal_60" (o objeto ocupa 55% a 65% da tela) ou "large_45" (45%), conforme o impacto do tema.
+6. "characterDescription": descreva o apresentador/ especialista (idade, roupa simples e confiável, SEM jaleco e SEM aparência de médico ou cientista).
+7. "settingDescription": cenário doméstico/realista onde a demonstração acontece.
+8. NUNCA use frases clichês tipo "descubra o segredo milagroso" ou "fórmula mágica".
+
+Formato EXATO da resposta:
+{
+  "giantModelPreference": "string",
+  "solutionIngredients": "ingrediente 1 + ingrediente 2 + ingrediente 3",
+  "hookStyle": "curiosidade | segredo | problema_visivel | descoberta",
+  "hookActionType": "varied_dynamic | surgical_slice | pinch_extraction | pressure_squeeze | scraping_abrasion | catheter_unclog | uv_reveal | needle_injection | liquid_pouring",
+  "objectScale": "colossal_60 | large_45",
+  "characterDescription": "string",
+  "settingDescription": "string"
+}`;
+
+  try {
+    const { response } = await generateWithGeminiFallback(ai, prompt, {
+      responseMimeType: 'application/json',
+      temperature: 0.7,
+    });
+
+    const rawText = String(response.text || '{}')
+      .trim()
+      .replace(/^```json/i, '')
+      .replace(/^```/, '')
+      .replace(/```$/, '')
+      .trim();
+
+    const parsed = JSON.parse(rawText);
+
+    const validHookStyles = ['curiosidade', 'segredo', 'problema_visivel', 'descoberta'];
+    const validActions = [
+      'varied_dynamic',
+      'surgical_slice',
+      'pinch_extraction',
+      'pressure_squeeze',
+      'scraping_abrasion',
+      'catheter_unclog',
+      'uv_reveal',
+      'needle_injection',
+      'liquid_pouring',
+    ];
+
+    const fields = {
+      giantModelPreference: String(parsed.giantModelPreference || '').trim(),
+      solutionIngredients: String(parsed.solutionIngredients || '').trim(),
+      hookStyle: validHookStyles.includes(parsed.hookStyle) ? parsed.hookStyle : 'problema_visivel',
+      hookActionType: validActions.includes(parsed.hookActionType) ? parsed.hookActionType : 'varied_dynamic',
+      objectScale: parsed.objectScale === 'large_45' ? 'large_45' : 'colossal_60',
+      characterDescription: String(parsed.characterDescription || '').trim(),
+      settingDescription: String(parsed.settingDescription || '').trim(),
+    };
+
+    if (!fields.giantModelPreference && !fields.solutionIngredients) {
+      return res.status(500).json({ error: 'A IA nao conseguiu analisar esse tema. Tente escrever de outra forma.' });
+    }
+
+    return res.json({ ok: true, theme, fields });
+  } catch (error: any) {
+    console.error('Autofill theme error:', error?.message || error);
+    return res.status(500).json({ error: 'Nao foi possivel analisar o tema agora. Tente novamente.' });
+  }
+};
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -1602,6 +1692,7 @@ export default async function handler(req: any, res: any) {
   if (action === 'generate-script') return handleGenerateScript(req, res);
   if (action === 'chat') return handleChat(req, res);
   if (action === 'recommend-suggestions') return handleRecommend(req, res);
+  if (action === 'autofill-theme') return handleAutofillTheme(req, res);
 
   return res.status(400).json({ error: 'Acao invalida.' });
 }

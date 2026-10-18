@@ -25,11 +25,14 @@ import {
   AlertCircle,
   Sliders,
   Clock,
-  ListOrdered
+  ListOrdered,
+  Loader2,
+  Wand2
 } from 'lucide-react';
 import { PromptGenerationRequest, HookActionType, ThemeSuggestion } from '../types';
 import { QUICK_STARTER_THEMES, ALL_CURATED_THEME_SUGGESTIONS, getRandomThemeSuggestions } from '../data/presets';
 import { supabase } from '../../../lib/supabase';
+import { describeHttpError } from '../../../lib/httpError';
 
 interface PromptStudioFormProps {
   onGenerate: (data: PromptGenerationRequest) => void;
@@ -44,6 +47,92 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
 }) => {
   const [theme, setTheme] = useState<string>('');
   const [outputLanguage, setOutputLanguage] = useState<'brasil' | 'estados_unidos' | 'espanha'>('brasil');
+  const [isAutofilling, setIsAutofilling] = useState<boolean>(false);
+  const [autofillMessage, setAutofillMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Analisa o tema digitado e preenche os campos adaptados a ele.
+  const handleAutofillTheme = async () => {
+    const cleanTheme = theme.trim();
+
+    if (!cleanTheme) {
+      setAutofillMessage({ type: 'error', text: 'Digite o tema primeiro.' });
+      return;
+    }
+
+    setIsAutofilling(true);
+    setAutofillMessage(null);
+
+    try {
+      const { data: authData } = await supabase.auth.getSession();
+      const authToken = authData?.session?.access_token || '';
+
+      const response = await fetch('/api/agents/receitasEbook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ action: 'autofill-theme', theme: cleanTheme }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await describeHttpError(response, 'Nao consegui analisar o tema agora.'));
+      }
+
+      const data = await response.json();
+      const fields = data?.fields || {};
+      const applied: string[] = [];
+
+      if (fields.giantModelPreference) {
+        setGiantModelPreference(fields.giantModelPreference);
+        applied.push('modelo colossal');
+      }
+
+      if (fields.solutionIngredients) {
+        setSolutionIngredients(fields.solutionIngredients);
+        applied.push('ingredientes');
+      }
+
+      if (fields.hookStyle) {
+        setHookStyle(fields.hookStyle);
+        applied.push('estilo do gancho');
+      }
+
+      if (fields.hookActionType) {
+        setHookActionType(fields.hookActionType);
+        applied.push('ação do gancho');
+      }
+
+      if (fields.objectScale) {
+        setObjectScale(fields.objectScale);
+        applied.push('escala do objeto');
+      }
+
+      if (fields.characterDescription && !customCharacterDescription.trim()) {
+        setCustomCharacterDescription(fields.characterDescription);
+        applied.push('apresentador');
+      }
+
+      if (fields.settingDescription && !customSettingDescription.trim()) {
+        setCustomSettingDescription(fields.settingDescription);
+        applied.push('cenário');
+      }
+
+      setAutofillMessage({
+        type: 'success',
+        text: applied.length
+          ? `Campos preenchidos: ${applied.join(', ')}. Confira e ajuste o que quiser.`
+          : 'A IA nao retornou campos para este tema. Tente detalhar melhor.',
+      });
+    } catch (err: any) {
+      setAutofillMessage({
+        type: 'error',
+        text: err?.message || 'Nao consegui analisar o tema agora.',
+      });
+    } finally {
+      setIsAutofilling(false);
+    }
+  };
   const [giantModelPreference, setGiantModelPreference] = useState<string>('');
   const [hookStyle, setHookStyle] = useState<'curiosidade' | 'segredo' | 'problema_visivel' | 'descoberta'>('curiosidade');
   const [solutionIngredients, setSolutionIngredients] = useState<string>('');
@@ -416,6 +505,38 @@ export const PromptStudioForm: React.FC<PromptStudioFormProps> = ({
               </button>
             )}
           </div>
+
+          {/* Preenchimento automatico dos campos a partir do tema */}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleAutofillTheme}
+              disabled={isAutofilling || !theme.trim()}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-violet-500/60 bg-violet-600/20 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-violet-100 transition hover:bg-violet-600/35 disabled:cursor-not-allowed disabled:opacity-50"
+              title="A IA analisa o tema e preenche modelo gigante, ingredientes, gancho e escala"
+            >
+              {isAutofilling ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Wand2 className="h-3.5 w-3.5" />
+              )}
+              {isAutofilling ? 'Analisando o tema...' : 'Preencher campos com IA'}
+            </button>
+
+            <span className="text-[10px] text-emerald-300/70">
+              Analisa o seu tema e preenche modelo colossal, ingredientes, gancho e escala.
+            </span>
+          </div>
+
+          {autofillMessage && (
+            <div className={`mt-2 rounded-lg border px-3 py-2 text-[11px] font-semibold ${
+              autofillMessage.type === 'success'
+                ? 'border-violet-500/40 bg-violet-950/40 text-violet-200'
+                : 'border-rose-500/40 bg-rose-950/40 text-rose-200'
+            }`}>
+              {autofillMessage.text}
+            </div>
+          )}
         </div>
 
         {/* Quick Starter Chips & Recomendar Mais Sugestões Button */}

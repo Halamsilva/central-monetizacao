@@ -23,11 +23,21 @@ async function generateWithModelFallback(
   options: { attemptsPerModel?: number; timeoutMs?: number } = {},
 ) {
   const keys = (Array.isArray(apiKeys) ? apiKeys : [apiKeys]).filter(Boolean);
-  const models = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-3.1-flash-lite'];
+// Lista ampla: quando um modelo entra em alta demanda (503), os proximos assumem.
+  // Os "flash" genericos vem primeiro, os "lite" fecham a fila como rede de seguranca.
+  const models = [
+    'gemini-flash-latest',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash',
+    'gemini-3.8-flash',
+    'gemini-3-flash-preview',
+    'gemini-flash-lite-latest',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite',
+  ];
   const attemptsPerModel = options.attemptsPerModel ?? 2;
-  // 75s por modelo: com 3 modelos na lista, a cascata inteira cabe no limite de
-// execucao da Vercel (300s) mesmo no pior caso.
-const timeoutMs = options.timeoutMs ?? 75000;
+  // 75s por modelo: com a cascata inteira cabendo no limite de execucao da Vercel.
+  const timeoutMs = options.timeoutMs ?? 75000;
   let lastError: any = null;
 
   for (const apiKey of keys) {

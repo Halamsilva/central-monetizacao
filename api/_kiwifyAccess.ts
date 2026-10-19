@@ -232,6 +232,7 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   }
 
   if (token !== webhookToken) {
+    console.warn('[kiwify] RECUSADO token invalido');
     return { status: 401, body: { error: 'Invalid webhook token' } };
   }
 
@@ -242,6 +243,8 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
 
   const event = getKiwifyEvent(payload);
   const email = findEmail(payload);
+
+  console.log(`[kiwify] recebido evento=${event || 'sem_evento'} email=${email ? 'ok' : 'ausente'}`);
 
   if (!email) {
     return { status: 400, body: { error: 'Customer email not found in webhook payload' } };
@@ -319,8 +322,15 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   const isRevoked = revokedEvents.includes(event);
   const isApproved = approvedEvents.includes(event);
 
+  // Log enxuto de cada compra: e o que permite conferir nos logs se o aluno
+  // recebeu acesso, sem precisar entrar no banco.
+  const maskedEmail = email.replace(/^(.).*(@.*)$/, '$1***$2');
+  const logEvent = (extra: string) => console.log(`[kiwify] ${extra} | evento=${event} email=${maskedEmail}`);
+
   // Bloqueios por reembolso/chargeback/cancelamento SEMPRE aplicam, mesmo se o produto não estiver na lista de permitidos.
   if (isApproved && !isAllowedKiwifyProduct(product)) {
+    logEvent('IGNORADO produto_nao_permitido');
+
     return {
       status: 200,
       body: {
@@ -338,6 +348,8 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
   if (isApproved) accessStatus = isReleased ? 'active' : 'pending';
 
   if (!accessStatus) {
+    logEvent('IGNORADO evento_sem_acao');
+
     return { status: 200, body: { ok: true, ignored: true, event } };
   }
 
@@ -420,6 +432,12 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
       });
     }
   }
+
+  logEvent(
+    `OK status=${accessStatus} conta_criada=${accountCreated} email_enviado=${emailResult.ok}` +
+      (emailResult.skipped ? ` email_pulado=${emailResult.reason || 'sim'}` : '') +
+      (emailResult.error ? ` email_erro=${String(emailResult.error).slice(0, 160)}` : ''),
+  );
 
   return {
     status: 200,

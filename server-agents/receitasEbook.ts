@@ -158,7 +158,16 @@ async function generateWithGeminiFallback(ai: GoogleGenAI, contents: any, config
   // Candidate models prioritized by stability, capacity and speed:
   // gemini-3.1-flash-lite is the fastest (~1.1s) and avoids 503 high-demand queues and quota bottlenecks.
   // gemini-flash-latest and gemini-3.1-pro-preview provide robust backup tiers.
-  const candidateModels = ['gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.1-pro-preview'];
+  const candidateModels = [
+    'gemini-flash-latest',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash',
+    'gemini-3.8-flash',
+    'gemini-3-flash-preview',
+    'gemini-flash-lite-latest',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite',
+  ];
   let lastError: any = null;
 
   for (const model of candidateModels) {
@@ -1242,6 +1251,13 @@ A fala do apresentador é estritamente falada em cena com sincronização labial
       parsed = JSON.parse(cleanedJson);
       sourceModel = modelUsed;
     } catch (apiError: any) {
+      if (outputLanguage.key !== 'brasil') {
+        console.error('[Gemini Generator] IA falhou e o fallback local nao serve para o idioma', outputLanguage.key);
+        return res.status(503).json({
+          error: `A IA nao conseguiu gerar no idioma ${outputLanguage.label} agora (alta demanda). Tente novamente em instantes.`,
+        });
+      }
+
       console.log('[Gemini Generator] Utilizing local high-fidelity generator fallback');
       parsed = generateLocalScript(
         theme || 'Demonstração de Saúde', 

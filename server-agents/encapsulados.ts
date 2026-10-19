@@ -152,12 +152,25 @@ function getGeminiClient() {
 
 // Multi-tier model fallback with immediate cascade for high-demand / 503 / 429 conditions
 async function generateWithGeminiFallback(ai: GoogleGenAI, contents: any, config: any) {
-  // Candidate models prioritized by stability, capacity and speed
-  // gemini-3.8-flash is the primary model designated for this applet environment
-  const candidateModels = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+  // Modelos atualizados: o gemini-2.5-flash nao esta mais disponivel para novas
+  // contas (404) e estava gastando uma vaga da cascata. O timeout de 25s era curto
+  // demais para prompts grandes e derrubava a IA, caindo no gerador local (portugues).
+  const candidateModels = [
+    'gemini-flash-latest',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash',
+    'gemini-3.8-flash',
+    'gemini-3-flash-preview',
+    'gemini-flash-lite-latest',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite',
+  ];
   let lastError: any = null;
+  const deadline = Date.now() + 260000;
 
   for (const model of candidateModels) {
+    if (Date.now() > deadline) break;
+
     try {
       const responsePromise = ai.models.generateContent({
         model,
@@ -165,9 +178,9 @@ async function generateWithGeminiFallback(ai: GoogleGenAI, contents: any, config
         config,
       });
 
-      // 25s timeout to prevent hanging and allow graceful fallback
+      // 45s por modelo, respeitando o limite total de execucao da Vercel.
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`Timeout exceeding 25s on model ${model}`)), 25000)
+        setTimeout(() => reject(new Error(`Timeout exceeding 45s on model ${model}`)), 45000)
       );
 
       const response = await Promise.race([responsePromise, timeoutPromise]);
@@ -176,7 +189,7 @@ async function generateWithGeminiFallback(ai: GoogleGenAI, contents: any, config
       }
     } catch (err: any) {
       lastError = err;
-      console.log(`[Gemini Engine] Primary route busy or timed out (${model}): ${err?.message || err}, routing automatically to alternate tier...`);
+      console.log(`[Gemini Engine] Modelo ${model} falhou: ${err?.message || err}. Tentando proximo...`);
       continue;
     }
   }
@@ -598,6 +611,15 @@ A fala do apresentador é estritamente falada em cena com sincronização labial
       parsed = JSON.parse(cleanedJson);
       sourceModel = modelUsed;
     } catch (apiError: any) {
+      // O gerador local e 100% em portugues. Se o aluno escolheu outro idioma,
+      // entregar portugues seria pior do que pedir para tentar de novo.
+      if (outputLanguage.key !== 'brasil') {
+        console.error('[Gemini Generator] IA falhou e o fallback local nao serve para o idioma', outputLanguage.key);
+        return res.status(503).json({
+          error: `A IA nao conseguiu gerar no idioma ${outputLanguage.label} agora (alta demanda). Tente novamente em instantes.`,
+        });
+      }
+
       console.log('[Gemini Generator] Utilizing local high-fidelity generator fallback');
       parsed = generateLocalScript(
         theme || 'Demonstração de Saúde', 
@@ -624,6 +646,13 @@ A fala do apresentador é estritamente falada em cena com sincronização labial
 
     // Verify prompts structure; if missing or invalid, trigger local engine fallback
     if (!parsed || !Array.isArray(parsed.prompts) || parsed.prompts.length === 0) {
+      if (outputLanguage.key !== 'brasil') {
+        console.error('[Gemini Generator] Saida invalida e o fallback local nao serve para o idioma', outputLanguage.key);
+        return res.status(503).json({
+          error: `A IA nao conseguiu gerar no idioma ${outputLanguage.label} agora (alta demanda). Tente novamente em instantes.`,
+        });
+      }
+
       console.log('[Gemini Generator] Output was missing prompts, utilizing local generator fallback');
       parsed = generateLocalScript(
         theme || 'Demonstração de Saúde', 

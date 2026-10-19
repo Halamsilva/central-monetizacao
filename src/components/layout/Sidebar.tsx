@@ -122,8 +122,11 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Automações do FLOW', icon: Workflow, path: '/automacoes-flow' },
   ];
 
+  // Dupla checagem: so mostra itens administrativos quando o perfil e realmente admin.
+  const isAdminUser = Boolean(isAdmin && profile?.role === 'admin');
+
   const primaryStrategyMenu: MenuItem[] = [
-    ...(isAdmin ? [{ title: 'Agentes IA', icon: Bot, path: '/agents' }] : []),
+    ...(isAdminUser ? [{ title: 'Agentes IA', icon: Bot, path: '/agents' }] : []),
     { title: 'Loja VIP', icon: ShoppingBag, path: '/shop-vip' },
     { title: 'Downloads', icon: Download, path: '/downloads' },
   ];

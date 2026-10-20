@@ -211,7 +211,22 @@ const diagnoseEmail = async (req: any, res: any, serviceSupabase: any) => {
   const email = getEmailFromQuery(req);
 
   if (!email.includes('@')) {
-    return res.status(400).json({ error: 'Informe um e-mail valido para diagnosticar.' });
+    // Sem e-mail: lista as compras mais recentes recebidas da Kiwify.
+    const { data: recentPurchases, error: recentError } = await serviceSupabase
+      .from('kiwify_purchases')
+      .select('email, purchase_status, paid_at, release_at, product_id, updated_at')
+      .order('updated_at', { ascending: false })
+      .limit(60);
+
+    if (recentError) {
+      console.error('Recent purchases error:', recentError);
+      return res.status(500).json({ error: 'Erro ao listar as compras recentes.' });
+    }
+
+    return res.status(200).json({
+      ok: true,
+      purchases: recentPurchases || [],
+    });
   }
 
   const { data: profile, error: profileError } = await serviceSupabase

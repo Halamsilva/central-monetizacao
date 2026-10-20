@@ -42,9 +42,40 @@ const AdminStudents: React.FC = () => {
     const [removeHasActivePurchase, setRemoveHasActivePurchase] = useState(false);
     const [removing, setRemoving] = useState(false);
 
+    const [recentPurchases, setRecentPurchases] = useState<any[]>([]);
+    const [loadingPurchases, setLoadingPurchases] = useState(false);
+
     useEffect(() => {
         loadStudents();
+        loadRecentPurchases();
     }, []);
+
+    // Mostra as compras que chegaram da Kiwify (o webhook grava em kiwify_purchases).
+    // Serve para conferir, sem depender de logs, se uma venda entrou na plataforma.
+    const loadRecentPurchases = async () => {
+        setLoadingPurchases(true);
+
+        try {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const token = sessionData.session?.access_token;
+
+            if (!token) return;
+
+            const response = await fetch('/api/admin/legacy-students', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                setRecentPurchases(payload.purchases || []);
+            }
+        } catch (err) {
+            console.error('Erro ao carregar compras recentes:', err);
+        } finally {
+            setLoadingPurchases(false);
+        }
+    };
 
     const loadStudents = async () => {
         setLoading(true);
@@ -661,6 +692,80 @@ const AdminStudents: React.FC = () => {
                         Contas liberadas para acessar os agentes.
                     </p>
                 </div>
+            </div>
+
+            {/* Compras recebidas da Kiwify */}
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100">
+                            <Check size={22} className="text-emerald-600" />
+                        </div>
+
+                        <div>
+                            <h2 className="text-xl font-black text-slate-900">
+                                Compras recebidas da Kiwify
+                            </h2>
+
+                            <p className="text-sm text-slate-500">
+                                Ultimas vendas que chegaram pelo webhook. Se a venda nao aparece aqui, o webhook nao disparou.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={loadRecentPurchases}
+                        disabled={loadingPurchases}
+                        className="inline-flex h-11 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-60"
+                    >
+                        <RefreshCw className={loadingPurchases ? 'animate-spin' : ''} size={17} />
+                        Atualizar
+                    </button>
+                </div>
+
+                {loadingPurchases ? (
+                    <p className="py-6 text-center text-sm text-slate-500">Carregando compras...</p>
+                ) : recentPurchases.length === 0 ? (
+                    <p className="rounded-2xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+                        Nenhuma compra registrada ainda.
+                    </p>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-sm">
+                            <thead>
+                                <tr className="border-b border-slate-200 text-xs font-black uppercase tracking-wide text-slate-400">
+                                    <th className="py-2 pr-4">E-mail</th>
+                                    <th className="py-2 pr-4">Status</th>
+                                    <th className="py-2 pr-4">Produto</th>
+                                    <th className="py-2">Atualizado</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {recentPurchases.map((purchase, index) => (
+                                    <tr key={`${purchase.email}-${index}`} className="border-b border-slate-100 last:border-0">
+                                        <td className="py-2.5 pr-4 font-semibold text-slate-700">{purchase.email}</td>
+                                        <td className="py-2.5 pr-4">
+                                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-black uppercase ${
+                                                purchase.purchase_status === 'active'
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : purchase.purchase_status === 'blocked'
+                                                        ? 'bg-red-100 text-red-700'
+                                                        : 'bg-amber-100 text-amber-700'
+                                            }`}>
+                                                {purchase.purchase_status}
+                                            </span>
+                                        </td>
+                                        <td className="py-2.5 pr-4 text-slate-500">{purchase.product_id || '-'}</td>
+                                        <td className="py-2.5 text-slate-400">
+                                            {purchase.updated_at ? new Date(purchase.updated_at).toLocaleString('pt-BR') : '-'}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
             <div className="rounded-3xl border border-orange-200 bg-white p-6 shadow-sm">

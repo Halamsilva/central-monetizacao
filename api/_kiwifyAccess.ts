@@ -203,21 +203,25 @@ const isSubscriptionProduct = (product: { id: string; name: string }) => {
   );
 };
 
+// Produtos do Kiwify que liberam acesso a plataforma. O nome precisa ser o mesmo
+// que aparece no Kiwify (acentos e maiusculas nao importam).
+const DEFAULT_ALLOWED_PRODUCTS = [
+  'Acesso Plataforma - Central Monetizacao',
+  'Monetizar pagina do facebook, tiktok e no Youtube',
+];
+
 const isAllowedKiwifyProduct = (product: { id: string; name: string }) => {
   if (isSubscriptionProduct(product)) return true;
 
-  const allowedProducts = process.env.KIWIFY_ALLOWED_PRODUCTS;
+  const configured = process.env.KIWIFY_ALLOWED_PRODUCTS;
 
-  if (!allowedProducts) return true;
+  // Se a variavel existir, ela manda. Sem ela, usa a lista do codigo.
+  // Separador: "|" ou quebra de linha (o nome pode conter virgula).
+  const source = configured
+    ? configured.split(/\s*[|\n]\s*/).flatMap((item) => (/\s*[|\n]\s*/.test(configured) ? [item] : item.split(',')))
+    : DEFAULT_ALLOWED_PRODUCTS;
 
-  const allowed = allowedProducts
-    // Separador: "|" ou quebra de linha. O nome de um produto pode conter virgula
-    // (ex: "Monetizar pagina do facebook, tiktok e no Youtube"), entao a virgula
-    // so e usada como fallback quando nao houver "|" nem quebra de linha.
-    .split(/\s*[|\n]\s*/)
-    .flatMap((item) => (/\s*[|\n]\s*/.test(allowedProducts) ? [item] : item.split(',')))
-    .map((item) => normalizeProductKey(item))
-    .filter(Boolean);
+  const allowed = source.map((item) => normalizeProductKey(item)).filter(Boolean);
 
   if (!allowed.length) return true;
 

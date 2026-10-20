@@ -34,6 +34,7 @@ import {
   Workflow,
   Newspaper,
   Puzzle,
+  Cherry,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
@@ -132,6 +133,13 @@ const tools: Tool[] = [
     path: '/clonagem-pro',
     icon: Puzzle,
     accent: 'bg-indigo-100 text-indigo-600',
+  },
+{
+    title: 'Novelinhas Frutas',
+    description: 'Novelinhas com personagens frutas antropomórficas em 3D.',
+    path: '/novelinhas-frutas',
+    icon: Cherry,
+    accent: 'bg-pink-100 text-pink-600',
   },
   {
     title: 'Upscale de Imagem',

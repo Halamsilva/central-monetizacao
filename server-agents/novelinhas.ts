@@ -626,13 +626,17 @@ ESTILO VISUAL OBRIGATÓRIO:
 - Iluminação profissional volumétrica de animação 3D, cores vibrantes, formato vertical 9:16.
 
 ESTRUTURA OBRIGATÓRIA PARA CRIAR CADA PERSONAGEM (SEGUIR À RISCA NO PROMPT 00 E REPETIR EM TODAS AS CENAS):
-- Fruta: Espécie exata (Morango, Banana, Uva, Maçã, Manga, Pera, Abacaxi, Limão, Melancia, Cereja).
+- Fruta: Espécie exata (Morango, Banana, Uva, Maçã, Manga, Pera, Abacaxi, Limão, Melancia, Cereja, Abacate, Kiwi, Pêssego).
 - Gênero: Feminino ou Masculino.
 - Idade aparente: Jovem, adulto ou idoso.
-- Corpo: Formato anatômico da fruta com textura tátil realista da casca, mas com braços e pernas de proporções humanas estilizadas, mãos de cinco dedos articuladas e pés com calçados delicados. No topo da cabeça, folhas ou coroa verde formando penteados estilosos.
-- Rosto: Rosto humanoide esculpido na fruta com olhos grandes, brilhantes e expressivos, cílios longos (para femininas), sobrancelhas bem definidas, nariz sutil e lábios rosados/articulados com dentes perfeitos para sincronismo labial.
-- Roupa: Figurino humano completo e elegante (ex: vestido rosa elegante com babados e pequena bolsa combinando; OU terno bem cortado de alfaiataria com gravata; OU jaqueta estilizada; sapatos delicados). As roupas devem ter corte e cores coordenadas e JAMAIS mudam entre as cenas.
-- Personalidade: Personalidade marcante de novela (ex: romântica, sensível, carismática e ciumenta; OU vilão invejoso e calculista; OU playboy arrogante; OU amigo leal e cômico). Demonstra emoções humanas intensas (felicidade, lágrimas de tristeza, raiva, surpresa, decepção).
+- Cabeça: formato da fruta (arredondada do morango, alongada e afunilada do abacate), tamanho grande em relação ao corpo, com a superfície da fruta bem visível.
+- Textura da fruta: casca ou polpa realista e tátil — sementes amarelo-claras espalhadas na pele do morango, casca rugosa verde-escura nas laterais do abacate, casca cerosa da maçã, gomos da tangerina. A textura da fruta TAMBÉM aparece nos braços, barriga e pernas.
+- Cabelo: folhas verdes pontudas no topo da cabeça formando uma coroa natural ou penteado (quando a fruta tiver folhas); nunca cabelo humano comum.
+- Rosto: humanoide esculpido na fruta, olhos grandes e expressivos com íris colorida, cílios destacados (femininas), sobrancelhas grossas e arqueadas, nariz pequeno, boca larga e articulada com dentes perfeitos para lip-sync.
+- Corpo: proporções humanas estilizadas (ombros, braços, pernas, mãos de cinco dedos), barriga e pernas arredondadas. Quando a história pedir, a personagem pode estar GESTANTE (barriga grande, redonda e projetada para a frente), sempre com o mesmo tamanho durante todo o episódio.
+- Roupa: figurino humano completo e coerente com a personalidade (top e shorts, vestido, camisa de time, terno, avental), tecidos e cores fixos que JAMAIS mudam entre as cenas.
+- Expressão e postura: descreva o olhar e a emoção de cada momento (carinhoso, desconfiado, alegre, magoado) e a posição do corpo (sentada no sofá com as mãos na barriga, em pé ao lado, etc.).
+- Personalidade: marcante de novela (romântica e ciumenta, vilã invejosa e calculista, playboy arrogante, amigo leal e cômico).
 - Papel na novela: Protagonista, vilão/vilã, namorado(a), amante, rival, sogra implicante ou mentor.
 - Estilo: Animação 3D cinematográfica vertical 9:16.
 
@@ -641,7 +645,8 @@ Moranguinha, a protagonista:
 "Uma personagem feminina antropomórfica inspirada em um morango vermelho maduro. Seu corpo possui formato de morango, com textura natural, pequenas sementes douradas distribuídas pela pele e folhas verdes formando uma espécie de cabelo no topo da cabeça. Possui rosto feminino delicado, olhos grandes e expressivos, cílios longos, sobrancelhas bem definidas, nariz pequeno e lábios rosados. Seus braços e pernas possuem proporções humanas, com mãos de cinco dedos e pés pequenos. Usa um vestido rosa elegante, sapatos delicados e uma pequena bolsa combinando. Sua personalidade é romântica, sensível, carismática e um pouco ciumenta. Demonstra emoções humanas intensas, como felicidade, tristeza, surpresa, raiva e decepção. Estilo visual: animação 3D cinematográfica, personagem extremamente expressiva, textura realista de fruta, iluminação profissional, cores vibrantes, formato vertical 9:16."
 
 CENÁRIOS DO TEMA FRUTAS:
-Os cenários devem ser ambientes 3D cinematográficos na escala das frutas ou cenários requintados estilizados (ex: cozinha gourmet de alta gastronomia com bancada de carvalho onde as frutas vivem e transitam, sala de estar luxuosa estilizada, bistrô de doces artesanais, pomar cinematográfico iluminado por luz dourada).
+Os cenários devem ser ambientes 3D cinematográficos na escala das frutas ou cenários requintados estilizados. EXEMPLOS: sala de estar aconchegante com sofá bege, abajur de luz amarelada quente, estante de madeira com livros, plantas decorativas, quadros na parede e janela ao fundo; cozinha gourmet com bancada de carvalho; bistrô de doces artesanais; pomar iluminado por luz dourada; varanda de casa de praia; quarto de bebê.
+ILUMINAÇÃO OBRIGATÓRIA: luz quente e suave, atmosfera de filme familiar de animação (Pixar / Disney), com sombras macias e profundidade.
 É ESTRITAMENTE PROIBIDO fazer humanos comuns como protagonistas neste tema. Os personagens DEVEM SER AS FRUTAS HUMANIZADAS!`,
 
       'Deuses Gregos': `O TEMA OBRIGATÓRIO É 'DEUSES GREGOS' ⚡🏛️.

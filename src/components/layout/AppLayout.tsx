@@ -20,6 +20,7 @@ const pageTitles: Record<string, string> = {
   '/clonagem-video': 'Clonagem de Vídeo',
   '/novelinhas': 'Novelinhas Universal',
   '/novelinhas-gordos': 'Novelinhas Gordos',
+  '/novelinhas-frutas': 'Novelinhas Frutas',
   '/mestre-30s': 'Mestre 30s',
   '/insetos': 'Receitas Anti-Pragas',
   '/pov-produto': 'POV Produto',

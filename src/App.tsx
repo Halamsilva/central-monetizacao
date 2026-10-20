@@ -84,6 +84,7 @@ const routeTitles: Record<string, string> = {
   '/lumina-8k': 'Upscale de Imagem',
   '/reflexao-velho-roca': 'Reflexão do Velho da Roça',
   '/novelinhas-gordos': 'Novelinhas Gordos',
+  '/novelinhas-frutas': 'Novelinhas Frutas',
   '/criador-noticias': 'Criador de Notícias',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
@@ -258,6 +259,7 @@ export default function App() {
           <Route path="criador-noticias" element={<CriadorNoticias />} />
           <Route path="video-studio" element={<VideoStudio />} />
           <Route path="novelinhas-gordos" element={<NovelinhasUni lockedTheme="Gordos" extraThemes={['Gordos Suados']} />} />
+          <Route path="novelinhas-frutas" element={<NovelinhasUni lockedTheme="Frutas" />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

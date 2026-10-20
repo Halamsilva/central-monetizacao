@@ -120,6 +120,15 @@ const normalizeEventName = (event: unknown) =>
     .toLowerCase()
     .replace(/[\s-]+/g, '_');
 
+// O Kiwify usa nomes de evento que variam (compra_aprovada, order_approved,
+// assinatura_criada, subscription_created, pix_automatico_aprovado...). Em vez de
+// depender de uma lista fechada, reconhecemos por padrao. Isso evita o caso de a
+// venda entrar e o sistema ignorar porque o nome do evento era diferente.
+const REVOKED_PATTERN = /reembols|refund|chargeback|cancel|atras|late|expired|expirad|suspens|blocked/;
+const APPROVED_PATTERN =
+  /aprovad|approved|paid|pago|renovad|renewed|assinatura_criada|subscription_created|assinatura_ativa|subscription_active|compra_criada|order_created|ativacao|ativado/;
+const IGNORED_PATTERN = /recusad|refused|failed|falh|abandon|boleto_gerado|pix_gerado|gerado|waiting|aguardando|pendente|pending/;
+
 const normalizeProductKey = (value: unknown) =>
   String(value || '')
     .normalize('NFD')
@@ -327,8 +336,10 @@ export const handleKiwifyWebhook = async (payload: any, token?: unknown) => {
     'paid',
   ];
 
-  const isRevoked = revokedEvents.includes(event);
-  const isApproved = approvedEvents.includes(event);
+  const isRevoked = revokedEvents.includes(event) || REVOKED_PATTERN.test(event);
+  const isApproved =
+    approvedEvents.includes(event) ||
+    (!isRevoked && !IGNORED_PATTERN.test(event) && APPROVED_PATTERN.test(event));
 
   // Log enxuto de cada compra: e o que permite conferir nos logs se o aluno
   // recebeu acesso, sem precisar entrar no banco.

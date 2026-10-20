@@ -211,7 +211,11 @@ const isAllowedKiwifyProduct = (product: { id: string; name: string }) => {
   if (!allowedProducts) return true;
 
   const allowed = allowedProducts
-    .split(',')
+    // Separador: "|" ou quebra de linha. O nome de um produto pode conter virgula
+    // (ex: "Monetizar pagina do facebook, tiktok e no Youtube"), entao a virgula
+    // so e usada como fallback quando nao houver "|" nem quebra de linha.
+    .split(/\s*[|\n]\s*/)
+    .flatMap((item) => (/\s*[|\n]\s*/.test(allowedProducts) ? [item] : item.split(',')))
     .map((item) => normalizeProductKey(item))
     .filter(Boolean);
 

@@ -9,6 +9,8 @@ export default async function handler(req: any, res: any) {
     req.headers['x-kiwify-token'] ||
     req.headers['x-webhook-token'] ||
     req.query?.token ||
+    // O Kiwify envia o token configurado no campo "Token" como ?signature=
+    req.query?.signature ||
     req.body?.token ||
     req.body?.webhook_token ||
     req.body?.webhook?.token;

@@ -35,6 +35,7 @@ import {
   Newspaper,
   Puzzle,
   Cherry,
+  Images,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
@@ -140,6 +141,13 @@ const tools: Tool[] = [
     path: '/novelinhas-frutas',
     icon: Cherry,
     accent: 'bg-pink-100 text-pink-600',
+  },
+{
+    title: 'Extrator de Quadros',
+    description: 'Tire fotos de qualquer momento do seu vídeo e baixe em ZIP.',
+    path: '/extrator-frames',
+    icon: Images,
+    accent: 'bg-amber-100 text-amber-600',
   },
   {
     title: 'Upscale de Imagem',

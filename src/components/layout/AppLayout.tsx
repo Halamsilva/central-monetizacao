@@ -21,6 +21,7 @@ const pageTitles: Record<string, string> = {
   '/novelinhas': 'Novelinhas Universal',
   '/novelinhas-gordos': 'Novelinhas Gordos',
   '/novelinhas-frutas': 'Novelinhas Frutas',
+  '/extrator-frames': 'Extrator de Quadros',
   '/mestre-30s': 'Mestre 30s',
   '/insetos': 'Receitas Anti-Pragas',
   '/pov-produto': 'POV Produto',

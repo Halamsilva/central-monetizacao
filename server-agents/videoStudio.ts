@@ -150,6 +150,65 @@ export default async function handler(req: any, res: any) {
   }
 
   // ----------------------------------------------------------------- submit
+  // --------------------------------------------------------- upload do frame
+  // Sobe a imagem inicial para o storage da Magic Hour e devolve o file_path,
+  // que e o que o endpoint de image-to-video usa como primeiro quadro.
+  if (action === 'upload-frame') {
+    const { apiKey } = await getUserVideoKey(serviceSupabase, user.id);
+    if (!apiKey) {
+      return res.status(400).json({ error: 'Configure sua chave de video da Magic Hour para continuar.' });
+    }
+
+    const rawBase64 = String(req.body?.imageBase64 || '');
+    const imageBase64 = rawBase64.replace(/^data:image\/[a-z+]+;base64,/i, '');
+    const mimeType = clean(req.body?.mimeType, 40) || 'image/jpeg';
+    const extension = mimeType.includes('png') ? 'png' : mimeType.includes('webp') ? 'webp' : 'jpg';
+
+    if (!imageBase64) {
+      return res.status(400).json({ error: 'Nenhuma imagem foi recebida.' });
+    }
+
+    const buffer = Buffer.from(imageBase64, 'base64');
+
+    if (!buffer.length) {
+      return res.status(400).json({ error: 'Nao consegui ler essa imagem. Tente outro arquivo.' });
+    }
+
+    if (buffer.length > 8 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Imagem muito grande. Use uma foto menor que 8MB.' });
+    }
+
+    const presign = await callMagicHour('/v1/files/upload-urls', apiKey, {
+      method: 'POST',
+      body: { items: [{ type: 'image', extension }] },
+    });
+
+    if (!presign.ok) {
+      return res.status(presign.status).json({
+        error: friendlyProviderError(presign.status, presign.payload?.code, presign.payload?.message),
+      });
+    }
+
+    const uploadItem = presign.payload?.items?.[0];
+
+    if (!uploadItem?.upload_url || !uploadItem?.file_path) {
+      return res.status(500).json({ error: 'O provedor nao devolveu a URL de upload.' });
+    }
+
+    const uploadResponse = await fetch(uploadItem.upload_url, {
+      method: 'PUT',
+      headers: { 'Content-Type': mimeType },
+      body: buffer,
+    });
+
+    if (!uploadResponse.ok) {
+      console.error('Magic Hour image upload failed:', uploadResponse.status);
+      return res.status(500).json({ error: 'Nao consegui enviar a imagem para o provedor.' });
+    }
+
+    return res.status(200).json({ ok: true, filePath: uploadItem.file_path });
+  }
+
   if (action === 'submit') {
     const { apiKey } = await getUserVideoKey(serviceSupabase, user.id);
     if (!apiKey) {
@@ -157,13 +216,14 @@ export default async function handler(req: any, res: any) {
     }
 
     const prompt = clean(req.body?.prompt);
+    const imageFilePath = clean(req.body?.imageFilePath, 300);
     const model = clean(req.body?.model, 40) || 'ltx-2.5';
     const resolution = clean(req.body?.resolution, 10) || '480p';
     const aspectRatio = clean(req.body?.aspectRatio, 10) || '9:16';
     const audio = req.body?.audio === true;
     const durationSeconds = Math.round(Number(req.body?.durationSeconds) || 5);
 
-    if (prompt.length < 5) {
+    if (!imageFilePath && prompt.length < 5) {
       return res.status(400).json({ error: 'Escreva um prompt com pelo menos 5 caracteres.' });
     }
 
@@ -209,17 +269,24 @@ export default async function handler(req: any, res: any) {
 
     const generationId = String(inserted.id);
 
-    const { ok, status, payload } = await callMagicHour('/v1/text-to-video', apiKey, {
+    const isImageMode = Boolean(imageFilePath);
+    const endpoint = isImageMode ? '/v1/image-to-video' : '/v1/text-to-video';
+    const baseBody: Record<string, unknown> = {
+      name: `Estudio de Videos IA - ${generatedNameTag()}`,
+      end_seconds: durationSeconds,
+      resolution,
+      model,
+      audio,
+      style: { prompt: prompt || 'Movimento cinematografico suave, camera lenta, iluminacao natural.' },
+    };
+
+    const requestBody = isImageMode
+      ? { ...baseBody, assets: { image_file_path: imageFilePath } }
+      : { ...baseBody, aspect_ratio: aspectRatio };
+
+    const { ok, status, payload } = await callMagicHour(endpoint, apiKey, {
       method: 'POST',
-      body: {
-        name: `Estudio de Videos IA - ${generatedNameTag()}`,
-        end_seconds: durationSeconds,
-        aspect_ratio: aspectRatio,
-        resolution,
-        model,
-        audio,
-        style: { prompt },
-      },
+      body: requestBody,
     });
 
     if (!ok) {

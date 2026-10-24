@@ -41,7 +41,20 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
 
-const TUTORIAL_VIDEO_ID = 'eKRCEJ1CRtE';
+const TUTORIAL_VIDEOS = [
+  {
+    id: 'eKRCEJ1CRtE',
+    badge: 'Comece por aqui',
+    title: 'Como usar a plataforma',
+    description: 'Video de 2 minutos: como cadastrar sua chave de IA e gerar seu primeiro roteiro.',
+  },
+  {
+    id: 'HHfYYnkYQK4',
+    badge: 'Passo a passo',
+    title: 'Novelinhas no automatico',
+    description: 'Aprenda a criar suas novelinhas no automatico, do zero ate o video pronto.',
+  },
+];
 
 type Tool = {
   title: string;
@@ -239,7 +252,8 @@ const adminLinks = [
 
 const Home: React.FC = () => {
   const { profile, isAdmin } = useAuth();
-  const [showTutorial, setShowTutorial] = useState(false);
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+  const activeVideo = TUTORIAL_VIDEOS.find((video) => video.id === activeVideoId) || null;
 
   const firstName = (profile?.full_name || '').trim().split(' ')[0];
   const accessStatus = profile?.access_status || 'pending';
@@ -283,39 +297,42 @@ const Home: React.FC = () => {
         </Link>
       </section>
 
-      <section>
-        <button
-          type="button"
-          onClick={() => setShowTutorial(true)}
-          className="group flex w-full items-center gap-4 rounded-3xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md sm:gap-5 sm:p-5"
-        >
-          <span className="relative flex h-20 w-32 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-900 sm:h-24 sm:w-44">
-            <img
-              src={`https://img.youtube.com/vi/${TUTORIAL_VIDEO_ID}/hqdefault.jpg`}
-              alt="Como usar a plataforma"
-              loading="lazy"
-              className="h-full w-full object-cover opacity-80 transition group-hover:opacity-100"
-            />
-            <span className="absolute flex h-12 w-12 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition group-hover:scale-110">
-              <Play size={22} className="ml-0.5" fill="currentColor" />
+      <section className="grid gap-4 lg:grid-cols-2">
+        {TUTORIAL_VIDEOS.map((video) => (
+          <button
+            key={video.id}
+            type="button"
+            onClick={() => setActiveVideoId(video.id)}
+            className="group flex w-full items-center gap-4 rounded-3xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md sm:gap-5 sm:p-5"
+          >
+            <span className="relative flex h-20 w-32 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-900 sm:h-24 sm:w-40">
+              <img
+                src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+                alt={video.title}
+                loading="lazy"
+                className="h-full w-full object-cover opacity-80 transition group-hover:opacity-100"
+              />
+              <span className="absolute flex h-12 w-12 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition group-hover:scale-110">
+                <Play size={22} className="ml-0.5" fill="currentColor" />
+              </span>
             </span>
-          </span>
 
-          <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-blue-600">
-              <Youtube size={14} />
-              Comece por aqui
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-blue-600">
+                <Youtube size={14} />
+                {video.badge}
+              </span>
+              <span className="mt-1 block text-base font-black text-slate-900 sm:text-lg">
+                {video.title}
+              </span>
+              <span className="mt-1 block text-xs font-medium leading-relaxed text-slate-500 sm:text-sm">
+                {video.description}
+              </span>
             </span>
-            <span className="mt-1 block text-base font-black text-slate-900 sm:text-lg">
-              Como usar a plataforma
-            </span>
-            <span className="mt-1 block text-xs font-medium leading-relaxed text-slate-500 sm:text-sm">
-              Video de 2 minutos: como cadastrar sua chave de IA e gerar seu primeiro roteiro.
-            </span>
-          </span>
 
-          <ArrowRight size={20} className="hidden shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-500 sm:block" />
-        </button>
+            <ArrowRight size={20} className="hidden shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-blue-500 sm:block" />
+          </button>
+        ))}
       </section>
 
       <section>
@@ -428,10 +445,10 @@ const Home: React.FC = () => {
         </section>
       )}
 
-      {showTutorial && (
+      {activeVideo && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm"
-          onClick={() => setShowTutorial(false)}
+          onClick={() => setActiveVideoId(null)}
         >
           <div
             className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl"
@@ -440,12 +457,12 @@ const Home: React.FC = () => {
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
               <span className="flex items-center gap-2 text-sm font-black text-slate-900">
                 <Youtube size={18} className="text-red-600" />
-                Como usar a plataforma
+                {activeVideo.title}
               </span>
 
               <button
                 type="button"
-                onClick={() => setShowTutorial(false)}
+                onClick={() => setActiveVideoId(null)}
                 className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Fechar video"
               >
@@ -456,8 +473,8 @@ const Home: React.FC = () => {
             <div className="aspect-video w-full bg-black">
               <iframe
                 className="h-full w-full"
-                src={`https://www.youtube.com/embed/${TUTORIAL_VIDEO_ID}?autoplay=1&rel=0`}
-                title="Como usar a plataforma"
+                src={`https://www.youtube.com/embed/${activeVideo.id}?autoplay=1&rel=0`}
+                title={activeVideo.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />

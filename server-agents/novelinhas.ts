@@ -20,7 +20,7 @@ async function generateWithModelFallback(
   promptInstructions: string,
   apiKeys: string | string[],
   temperature = 0.85,
-  options: { attemptsPerModel?: number; timeoutMs?: number } = {},
+  options: { attemptsPerModel?: number; timeoutMs?: number; totalBudgetMs?: number } = {},
 ) {
   const keys = (Array.isArray(apiKeys) ? apiKeys : [apiKeys]).filter(Boolean);
 // Lista ampla: quando um modelo entra em alta demanda (503), os proximos assumem.
@@ -35,15 +35,19 @@ async function generateWithModelFallback(
     'gemini-3.5-flash-lite',
     'gemini-3.1-flash-lite',
   ];
-  const attemptsPerModel = options.attemptsPerModel ?? 2;
-  // 75s por modelo: com a cascata inteira cabendo no limite de execucao da Vercel.
-  const timeoutMs = options.timeoutMs ?? 75000;
+  // 1 tentativa por modelo e 45s: se um modelo engasga, o proximo assume rapido.
+  // Antes eram 2 tentativas de 75s e um unico modelo lento travava tudo por 150s.
+  const attemptsPerModel = options.attemptsPerModel ?? 1;
+  const timeoutMs = options.timeoutMs ?? 45000;
+  const deadline = Date.now() + (options.totalBudgetMs ?? 240000);
   let lastError: any = null;
 
   for (const apiKey of keys) {
     const ai = new GoogleGenAI({ apiKey });
 
     for (const model of models) {
+      if (Date.now() > deadline) break;
+
       for (let attempt = 0; attempt < attemptsPerModel; attempt++) {
         try {
           const response = await withTimeout(

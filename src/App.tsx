@@ -23,6 +23,7 @@ const ClonagemVideo = lazy(() => import('./pages/clonagem/App'));
 const ClonagemPro = lazy(() => import('./pages/clonagemPro/App'));
 const NovelinhasUni = lazy(() => import('./pages/NovelinhasUni'));
 const FrameExtractor = lazy(() => import('./pages/FrameExtractor'));
+const ViralProfiles = lazy(() => import('./pages/ViralProfiles'));
 const Mestre30s = lazy(() => import('./pages/mestre30s/App'));
 const Insetos = lazy(() => import('./pages/insetos/App'));
 const PovProduto = lazy(() => import('./pages/povProduto/App'));
@@ -87,6 +88,7 @@ const routeTitles: Record<string, string> = {
   '/novelinhas-gordos': 'Novelinhas Gordos',
   '/novelinhas-frutas': 'Novelinhas Frutas',
   '/extrator-frames': 'Extrator de Quadros',
+  '/perfis-virais': 'Perfis Virais',
   '/criador-noticias': 'Criador de Notícias',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
@@ -263,6 +265,7 @@ export default function App() {
           <Route path="novelinhas-gordos" element={<NovelinhasUni lockedTheme="Gordos" extraThemes={['Gordos Suados']} />} />
           <Route path="novelinhas-frutas" element={<NovelinhasUni lockedTheme="Frutas" />} />
           <Route path="extrator-frames" element={<FrameExtractor />} />
+          <Route path="perfis-virais" element={<ViralProfiles />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

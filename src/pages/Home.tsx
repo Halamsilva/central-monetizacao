@@ -36,6 +36,7 @@ import {
   Puzzle,
   Cherry,
   Images,
+  Users2,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { WHATSAPP_COMMUNITY_LINK } from '../lib/support';
@@ -142,12 +143,19 @@ const tools: Tool[] = [
     icon: Cherry,
     accent: 'bg-pink-100 text-pink-600',
   },
-{
+  {
     title: 'Extrator de Quadros',
     description: 'Tire fotos de qualquer momento do seu vídeo e baixe em ZIP.',
     path: '/extrator-frames',
     icon: Images,
     accent: 'bg-amber-100 text-amber-600',
+  },
+  {
+    title: 'Perfis Virais',
+    description: 'Biblioteca de perfis com nichos que estão viralizando.',
+    path: '/perfis-virais',
+    icon: Users2,
+    accent: 'bg-fuchsia-100 text-fuchsia-600',
   },
   {
     title: 'Upscale de Imagem',

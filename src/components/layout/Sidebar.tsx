@@ -43,6 +43,7 @@ import {
   Puzzle,
   Cherry,
   Images,
+  Users2,
 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
@@ -155,6 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Clonagem PRO', icon: Puzzle, path: '/clonagem-pro' },
     { title: 'Novelinhas Frutas', icon: Cherry, path: '/novelinhas-frutas' },
     { title: 'Extrator de Quadros', icon: Images, path: '/extrator-frames' },
+    { title: 'Perfis Virais', icon: Users2, path: '/perfis-virais' },
     { title: 'Upscale de Imagem', icon: ImageIcon, path: '/lumina-8k' },
     { title: 'TikTok Shop & Shopee', icon: ShoppingBag, path: '/tiktok-shop-shopee' },
     { title: 'Receitas p/ Ebook', icon: BookOpen, path: '/receitas-ebook' },

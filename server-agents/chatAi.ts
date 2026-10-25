@@ -10,7 +10,7 @@ const GEMINI_MODELS = [
   'gemini-3.1-flash-lite',
 ];
 
-const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+const GROQ_MODELS = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
 
 const OPENROUTER_MODELS = [
   'meta-llama/llama-3.3-70b-instruct:free',

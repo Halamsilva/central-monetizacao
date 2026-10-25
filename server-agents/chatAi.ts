@@ -13,9 +13,10 @@ const GEMINI_MODELS = [
 const GROQ_MODELS = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
 
 const OPENROUTER_MODELS = [
-  'meta-llama/llama-3.3-70b-instruct:free',
-  'deepseek/deepseek-chat-v3-0324:free',
-  'google/gemini-2.0-flash-exp:free',
+  'xingchen-agi/xing4.0-29b-a4b:free',
+  'recursive/flint-v1.0:free',
+  'google/gemma-4-31b-it:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
 ];
 
 const SYSTEM_PROMPT = `Voce e o Assistente da Central Monetizacao, um consultor de conteudo viral para criadores brasileiros.

@@ -22,6 +22,7 @@ import criadorNoticiasHandler from '../server-agents/criadorNoticias.js';
 import clonagemProHandler from '../server-agents/clonagemPro.js';
 import viralProfilesHandler from '../server-agents/viralProfiles.js';
 import chatAiHandler from '../server-agents/chatAi.js';
+import agnesImagesHandler from '../server-agents/agnesImages.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
@@ -48,6 +49,7 @@ const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'clonagem-pro': clonagemProHandler,
   'perfis-virais': viralProfilesHandler,
   'chat-ia': chatAiHandler,
+  'agnes-imagens': agnesImagesHandler,
 };
 
 export default function handler(req: any, res: any) {

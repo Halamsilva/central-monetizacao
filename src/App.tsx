@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+﻿import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
@@ -7,7 +7,7 @@ import { firebaseAuth, isFirebaseConfigured } from './lib/supabase';
 import { MessageCircle } from 'lucide-react';
 import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from './lib/support';
 
-// Páginas com Lazy Loading
+// PÃ¡ginas com Lazy Loading
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Recovery = lazy(() => import('./pages/Recovery'));
@@ -42,6 +42,7 @@ const VideoStudio = lazy(() => import('./pages/videoStudio/App'));
 const FlowAutomations = lazy(() => import('./pages/flowAutomations/App'));
 const CriadorNoticias = lazy(() => import('./pages/criadorNoticias/App'));
 const ChatIA = lazy(() => import('./pages/ChatIA/App'));
+const ImagensIA = lazy(() => import('./pages/ImagensIA/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -52,7 +53,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Home = lazy(() => import('./pages/Home'));
 
-// Páginas de Administração
+// PÃ¡ginas de AdministraÃ§Ã£o
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AdminNotices = lazy(() => import('./pages/AdminNotices'));
@@ -61,7 +62,7 @@ const AdminBlog = lazy(() => import('./pages/AdminBlog'));
 const AdminSubscription = lazy(() => import('./pages/AdminSubscription'));
 
 const routeTitles: Record<string, string> = {
-  '/': 'Início',
+  '/': 'InÃ­cio',
   '/login': 'Entrar',
   '/register': 'Cadastro',
   '/recovery': 'Recuperar acesso',
@@ -85,19 +86,20 @@ const routeTitles: Record<string, string> = {
   '/radar-tiktok-shop': 'Radar TikTok Shop',
   '/tiktok-shop-shopee': 'TikTok Shop & Shopee',
   '/lumina-8k': 'Upscale de Imagem',
-  '/reflexao-velho-roca': 'Reflexão do Velho da Roça',
+  '/reflexao-velho-roca': 'ReflexÃ£o do Velho da RoÃ§a',
   '/novelinhas-gordos': 'Novelinhas Gordos',
   '/novelinhas-frutas': 'Novelinhas Frutas',
   '/extrator-frames': 'Extrator de Quadros',
   '/perfis-virais': 'Perfis Virais',
   '/chat-ia': 'Chat IA',
-  '/criador-noticias': 'Criador de Notícias',
+  '/imagens-ia': 'Imagens IA',
+  '/criador-noticias': 'Criador de NotÃ­cias',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',
   '/profile': 'Perfil',
-  '/settings': 'Configurações',
+  '/settings': 'ConfiguraÃ§Ãµes',
   '/admin': 'Painel Admin',
   '/admin/agents': 'Gerenciar Agentes',
   '/admin/notices': 'Gerenciar Avisos',
@@ -109,8 +111,8 @@ const TitleManager = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const pageTitle = routeTitles[location.pathname] || 'Central Monetização';
-    document.title = `${pageTitle} | Central Monetização`;
+    const pageTitle = routeTitles[location.pathname] || 'Central MonetizaÃ§Ã£o';
+    document.title = `${pageTitle} | Central MonetizaÃ§Ã£o`;
   }, [location.pathname]);
 
   return null;
@@ -123,7 +125,7 @@ const LoadingScreen = () => (
   </div>
 );
 
-// Tela de Cadastro em Análise
+// Tela de Cadastro em AnÃ¡lise
 const PendingAccessScreen = () => {
   const { profile } = useAuth();
   const email = profile?.email || '';
@@ -132,28 +134,28 @@ const PendingAccessScreen = () => {
   <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] p-6">
     <div className="max-w-md rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-xl">
       <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-3xl">
-        🔒
+        ðŸ”’
       </div>
-      <h1 className="text-3xl font-black text-slate-900">Acesso em análise</h1>
+      <h1 className="text-3xl font-black text-slate-900">Acesso em anÃ¡lise</h1>
       <p className="mt-4 leading-relaxed text-slate-500">
         Seu cadastro foi recebido. Use o <strong>mesmo e-mail da compra</strong> na Kiwify:
-        o acesso é liberado automaticamente após a confirmação da compra. A assinatura da
+        o acesso Ã© liberado automaticamente apÃ³s a confirmaÃ§Ã£o da compra. A assinatura da
         plataforma e a compra do curso liberam na hora.
       </p>
       <a
         href="/assinar"
         className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white transition hover:bg-blue-700"
       >
-        Quero só o acesso à plataforma (assinar)
+        Quero sÃ³ o acesso Ã  plataforma (assinar)
       </a>
       <a
-        href={whatsappLink(`Olá! Fiz a compra na Kiwify e meu acesso ainda não foi liberado. Meu e-mail de compra é ${email || '(meu e-mail)'}. Pode liberar meu acesso, por favor?`)}
+        href={whatsappLink(`OlÃ¡! Fiz a compra na Kiwify e meu acesso ainda nÃ£o foi liberado. Meu e-mail de compra Ã© ${email || '(meu e-mail)'}. Pode liberar meu acesso, por favor?`)}
         target="_blank"
         rel="noopener noreferrer"
         className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] text-sm font-bold text-white transition hover:brightness-105"
       >
         <MessageCircle size={18} />
-        Pedir liberação no WhatsApp
+        Pedir liberaÃ§Ã£o no WhatsApp
       </a>
     </div>
   </div>
@@ -165,7 +167,7 @@ const BlockedAccessScreen = () => (
   <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] p-6">
     <div className="max-w-md rounded-3xl border border-red-100 bg-white p-10 text-center shadow-xl">
       <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100 text-3xl">
-        🚫
+        ðŸš«
       </div>
       <h1 className="text-3xl font-black text-slate-900">Acesso bloqueado</h1>
       <p className="mt-4 leading-relaxed text-slate-500">
@@ -220,7 +222,7 @@ export default function App() {
         <TitleManager />
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
-            {/* Rotas Públicas */}
+            {/* Rotas PÃºblicas */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/recovery" element={<Recovery />} />
@@ -269,6 +271,7 @@ export default function App() {
           <Route path="extrator-frames" element={<FrameExtractor />} />
           <Route path="perfis-virais" element={<ViralProfiles />} />
           <Route path="chat-ia" element={<ChatIA />} />
+          <Route path="imagens-ia" element={<ImagensIA />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

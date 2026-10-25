@@ -73,6 +73,13 @@ const tools: Tool[] = [
     accent: 'bg-violet-100 text-violet-600',
   },
   {
+    title: 'Imagens IA',
+    description: 'Gere fotos, personagens e cenarios para os seus videos.',
+    path: '/imagens-ia',
+    icon: ImageIcon,
+    accent: 'bg-fuchsia-100 text-fuchsia-600',
+  },
+  {
     title: 'Menina da Roça',
     description: 'Vídeos virais de retenção emocional no estilo rural.',
     path: '/menina-da-roca',

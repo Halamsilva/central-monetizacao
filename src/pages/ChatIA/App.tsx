@@ -457,7 +457,7 @@ const ChatIA: React.FC = () => {
                     )}
 
                     <div
-                      className={`group relative max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                      className={`group relative w-fit max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                         isUser
                           ? 'bg-orange-500 text-black'
                           : 'border border-slate-800 bg-slate-900/80 text-slate-200'
@@ -485,7 +485,7 @@ const ChatIA: React.FC = () => {
                   <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-orange-500/15 text-orange-400">
                     <Bot size={14} />
                   </span>
-                  <div className="max-w-[85%] rounded-2xl border border-slate-800 bg-slate-900/80 px-3.5 py-2.5 text-sm leading-relaxed text-slate-200">
+                  <div className="w-fit max-w-[85%] rounded-2xl border border-slate-800 bg-slate-900/80 px-3.5 py-2.5 text-sm leading-relaxed text-slate-200">
                     <p className="whitespace-pre-wrap break-words">{streamText}</p>
                   </div>
                 </div>

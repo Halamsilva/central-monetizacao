@@ -4,7 +4,7 @@ const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceCli
 
 const MODELS = ['agnes-image-2.5-flash', 'agnes-image-2.1-flash', 'agnes-image-2.0-flash'];
 
-const SIZES = ['1024x1024', '1024x1536', '1536x1024', '720x1280'];
+const SIZES = ['1024x1024', '1024x1536', '1536x1024', '720x1280', '1280x720'];
 
 const clean = (value: unknown, max = 2000) => String(value || '').trim().slice(0, max);
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
@@ -33,6 +33,7 @@ const MODELS = [
 const SIZES = [
   { id: '1024x1024', label: '1:1', hint: 'Quadrado' },
   { id: '720x1280', label: '9:16', hint: 'Vertical' },
+  { id: '1280x720', label: '16:9', hint: 'YouTube' },
   { id: '1024x1536', label: '2:3', hint: 'Retrato' },
   { id: '1536x1024', label: '3:2', hint: 'Paisagem' },
 ];
@@ -344,7 +345,7 @@ const ImagensIA: React.FC = () => {
               </div>
 
               <p className="rounded-2xl border border-fuchsia-200 bg-fuchsia-50 p-3 text-[11px] font-semibold leading-relaxed text-fuchsia-800">
-                Gere a ficha, clique em "Usar no Estúdio de vídeo" ou copie a descrição para colar no Novelinhas.
+                Gere a ficha, clique em "Usar no EstÃºdio de vÃ­deo" ou copie a descriÃ§Ã£o para colar no Novelinhas.
               </p>
             </>
           )}
@@ -368,7 +369,7 @@ const ImagensIA: React.FC = () => {
             {mode === 'livre' && (
               <div>
                 <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">Formato</label>
-                <div className="mt-2 grid grid-cols-4 gap-1.5">
+                <div className="mt-2 grid grid-cols-3 gap-1.5 sm:grid-cols-5">
                   {SIZES.map((item) => (
                     <button
                       key={item.id}
@@ -447,7 +448,7 @@ const ImagensIA: React.FC = () => {
                   }
                   className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-fuchsia-600 px-3 text-[11px] font-black text-white transition hover:bg-fuchsia-500"
                 >
-                  <Clapperboard size={13} /> Usar no Estúdio de vídeo
+                  <Clapperboard size={13} /> Usar no EstÃºdio de vÃ­deo
                 </button>
 
                 {mode === 'ficha' && (

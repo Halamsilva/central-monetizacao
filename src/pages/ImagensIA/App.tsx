@@ -43,11 +43,30 @@ const EXAMPLES = [
   'Cena realista de uma mesa de cafe da manha com bolo caseiro, vapor saindo, luz natural entrando pela janela',
 ];
 
+const STYLES = [
+  { id: 'novelinha', label: 'Novelinha', prompt: 'hyper-realistic vertical drama style, dramatic lighting, detailed skin, cinematic' },
+  { id: 'pixar', label: '3D Pixar', prompt: '3D Pixar style character, soft global illumination, expressive eyes, high detail' },
+  { id: 'realista', label: 'Fotorrealista', prompt: 'photorealistic, 85mm lens, natural skin texture, cinematic lighting' },
+  { id: 'anime', label: 'Anime', prompt: 'anime style, clean lineart, vibrant colors' },
+];
+
+const SHEET_TYPES = [
+  { id: 'turnaround', label: 'Frente/perfil/costas', hint: '3 vistas', size: '1536x1024' },
+  { id: 'expressions', label: 'Expressoes', hint: '6 rostos', size: '1536x1024' },
+  { id: 'portrait', label: 'Retrato', hint: 'close', size: '1024x1536' },
+];
+
 const ImagensIA: React.FC = () => {
   const navigate = useNavigate();
+  const [mode, setMode] = useState<'livre' | 'ficha'>('livre');
   const [prompt, setPrompt] = useState('');
   const [model, setModel] = useState(MODELS[0].id);
   const [size, setSize] = useState(SIZES[1].id);
+  const [characterName, setCharacterName] = useState('');
+  const [characterDesc, setCharacterDesc] = useState('');
+  const [characterStyle, setCharacterStyle] = useState(STYLES[0].id);
+  const [sheetType, setSheetType] = useState(SHEET_TYPES[0].id);
+  const [fichaCopied, setFichaCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [error, setError] = useState('');
@@ -70,10 +89,37 @@ const ImagensIA: React.FC = () => {
     }
   };
 
+  const buildSheetPrompt = (name: string, description: string, stylePrompt: string, type: string) => {
+    const who = name ? `${name}, ${description}` : description;
+
+    if (type === 'expressions') {
+      return `Character expression sheet of ${who}. Six headshots of the same character showing neutral, smiling, sad, angry, surprised and crying expressions, consistent face and outfit, neutral light grey background, ${stylePrompt}, high detail, no text, no labels, no watermark.`;
+    }
+
+    if (type === 'portrait') {
+      return `Cinematic portrait of ${who}, ${stylePrompt}, 85mm lens, soft natural light, high detail, no text, no watermark.`;
+    }
+
+    return `Character turnaround sheet of ${who}. Full body, front view, side view, three-quarter view and back view, same character, consistent face and outfit, neutral light grey background, ${stylePrompt}, high detail, no text, no labels, no watermark.`;
+  };
+
   const generate = async () => {
     if (generating) return;
 
-    const text = prompt.trim();
+    const style = STYLES.find((item) => item.id === characterStyle) || STYLES[0];
+    const sheet = SHEET_TYPES.find((item) => item.id === sheetType) || SHEET_TYPES[0];
+    const isSheet = mode === 'ficha';
+
+    const text = isSheet
+      ? buildSheetPrompt(characterName.trim(), characterDesc.trim(), style.prompt, sheet.id)
+      : prompt.trim();
+
+    const effectiveSize = isSheet ? sheet.size : size;
+
+    if (isSheet && characterDesc.trim().length < 10) {
+      setError('Descreva o personagem (idade, aparencia, roupa) para gerar a ficha.');
+      return;
+    }
 
     if (text.length < 5) {
       setError('Descreva a imagem que voce quer gerar.');
@@ -96,7 +142,7 @@ const ImagensIA: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ action: 'generate', prompt: text, model, size }),
+        body: JSON.stringify({ action: 'generate', prompt: text, model, size: effectiveSize }),
       });
 
       const data = await response.json().catch(() => ({}));
@@ -110,7 +156,7 @@ const ImagensIA: React.FC = () => {
         url: String(data.url),
         prompt: text,
         model: String(data.model || model),
-        size: String(data.size || size),
+        size: String(data.size || effectiveSize),
         createdAt: new Date().toISOString(),
       };
 
@@ -129,6 +175,20 @@ const ImagensIA: React.FC = () => {
       await navigator.clipboard.writeText(url);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard bloqueado
+    }
+  };
+
+  const copyFicha = async () => {
+    const style = STYLES.find((item) => item.id === characterStyle) || STYLES[0];
+    const name = characterName.trim();
+    const text = `${name ? `${name}: ` : ''}${characterDesc.trim()}. Estilo: ${style.label}.`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setFichaCopied(true);
+      window.setTimeout(() => setFichaCopied(false), 1500);
     } catch {
       // clipboard bloqueado
     }
@@ -165,34 +225,131 @@ const ImagensIA: React.FC = () => {
 
       <div className="grid gap-4 lg:grid-cols-[1fr_380px]">
         <section className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div>
-            <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">
-              Descreva a imagem
-            </label>
-            <textarea
-              value={prompt}
-              onChange={(event) => setPrompt(event.target.value)}
-              rows={4}
-              maxLength={2000}
-              placeholder="Ex: Retrato cinematografico de uma mulher brasileira na cozinha, luz quente de fim de tarde, lente 85mm, alta detalhacao"
-              className="mt-2 w-full resize-y rounded-2xl border border-slate-300 bg-slate-50 p-4 text-sm font-medium leading-relaxed text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/10"
-            />
+          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-slate-100 p-1">
+            <button
+              type="button"
+              onClick={() => setMode('livre')}
+              className={`h-9 rounded-xl text-xs font-black transition ${
+                mode === 'livre' ? 'bg-white text-fuchsia-700 shadow-sm' : 'text-slate-500'
+              }`}
+            >
+              Imagem livre
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('ficha')}
+              className={`h-9 rounded-xl text-xs font-black transition ${
+                mode === 'ficha' ? 'bg-white text-fuchsia-700 shadow-sm' : 'text-slate-500'
+              }`}
+            >
+              Ficha de personagem
+            </button>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {EXAMPLES.map((example, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => setPrompt(example)}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-slate-600 transition hover:border-fuchsia-300 hover:text-fuchsia-700"
-              >
-                Exemplo {index + 1}
-              </button>
-            ))}
-          </div>
+          {mode === 'livre' ? (
+            <>
+              <div>
+                <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+                  Descreva a imagem
+                </label>
+                <textarea
+                  value={prompt}
+                  onChange={(event) => setPrompt(event.target.value)}
+                  rows={4}
+                  maxLength={2000}
+                  placeholder="Ex: Retrato cinematografico de uma mulher brasileira na cozinha, luz quente de fim de tarde, lente 85mm, alta detalhacao"
+                  className="mt-2 w-full resize-y rounded-2xl border border-slate-300 bg-slate-50 p-4 text-sm font-medium leading-relaxed text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/10"
+                />
+              </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex flex-wrap gap-2">
+                {EXAMPLES.map((example, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setPrompt(example)}
+                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-slate-600 transition hover:border-fuchsia-300 hover:text-fuchsia-700"
+                  >
+                    Exemplo {index + 1}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+                    Nome (opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={characterName}
+                    onChange={(event) => setCharacterName(event.target.value)}
+                    maxLength={60}
+                    placeholder="Ex: Dona Marta"
+                    className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 text-sm font-semibold text-slate-900 outline-none focus:border-fuchsia-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">Estilo</label>
+                  <select
+                    value={characterStyle}
+                    onChange={(event) => setCharacterStyle(event.target.value)}
+                    className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 text-sm font-semibold text-slate-900 outline-none focus:border-fuchsia-500"
+                  >
+                    {STYLES.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+                  Descricao do personagem
+                </label>
+                <textarea
+                  value={characterDesc}
+                  onChange={(event) => setCharacterDesc(event.target.value)}
+                  rows={3}
+                  maxLength={1200}
+                  placeholder="Ex: mulher brasileira, 28 anos, cabelo cacheado castanho, olhos verdes, vestido floral, expressao doce"
+                  className="mt-2 w-full resize-y rounded-2xl border border-slate-300 bg-slate-50 p-4 text-sm font-medium leading-relaxed text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/10"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">Tipo de ficha</label>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {SHEET_TYPES.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setSheetType(item.id)}
+                      className={`rounded-xl border px-2 py-2 text-center transition ${
+                        sheetType === item.id
+                          ? 'border-fuchsia-500 bg-fuchsia-50 text-fuchsia-700'
+                          : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300'
+                      }`}
+                    >
+                      <span className="block text-[11px] font-black leading-tight">{item.label}</span>
+                      <span className="block text-[9px] font-semibold uppercase">{item.hint}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <p className="rounded-2xl border border-fuchsia-200 bg-fuchsia-50 p-3 text-[11px] font-semibold leading-relaxed text-fuchsia-800">
+                Gere a ficha, clique em "Usar no Estúdio de vídeo" ou copie a descrição para colar no Novelinhas.
+              </p>
+            </>
+          )}
+
+          <div className={mode === 'livre' ? 'grid gap-3 sm:grid-cols-2' : ''}>
             <div>
               <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">Modelo</label>
               <select
@@ -208,26 +365,28 @@ const ImagensIA: React.FC = () => {
               </select>
             </div>
 
-            <div>
-              <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">Formato</label>
-              <div className="mt-2 grid grid-cols-4 gap-1.5">
-                {SIZES.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setSize(item.id)}
-                    className={`rounded-xl border px-1 py-2 text-center transition ${
-                      size === item.id
-                        ? 'border-fuchsia-500 bg-fuchsia-50 text-fuchsia-700'
-                        : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300'
-                    }`}
-                  >
-                    <span className="block text-xs font-black">{item.label}</span>
-                    <span className="block text-[9px] font-semibold uppercase">{item.hint}</span>
-                  </button>
-                ))}
+            {mode === 'livre' && (
+              <div>
+                <label className="text-[11px] font-black uppercase tracking-wider text-slate-500">Formato</label>
+                <div className="mt-2 grid grid-cols-4 gap-1.5">
+                  {SIZES.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setSize(item.id)}
+                      className={`rounded-xl border px-1 py-2 text-center transition ${
+                        size === item.id
+                          ? 'border-fuchsia-500 bg-fuchsia-50 text-fuchsia-700'
+                          : 'border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300'
+                      }`}
+                    >
+                      <span className="block text-xs font-black">{item.label}</span>
+                      <span className="block text-[9px] font-semibold uppercase">{item.hint}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <button
@@ -290,6 +449,17 @@ const ImagensIA: React.FC = () => {
                 >
                   <Clapperboard size={13} /> Usar no Estúdio de vídeo
                 </button>
+
+                {mode === 'ficha' && (
+                  <button
+                    type="button"
+                    onClick={copyFicha}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 text-[11px] font-bold text-fuchsia-700 transition hover:bg-fuchsia-100"
+                  >
+                    {fichaCopied ? <Check size={13} /> : <Copy size={13} />}
+                    {fichaCopied ? 'Ficha copiada' : 'Copiar ficha'}
+                  </button>
+                )}
 
                 <a
                   href={current.url}

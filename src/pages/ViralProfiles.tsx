@@ -118,7 +118,6 @@ const ViralProfiles: React.FC = () => {
       setPreview(data);
       setNameOverride(data.name || '');
       setAvatarOverride(data.avatarUrl || '');
-      setNotes((current) => (current.trim() ? current : data.followers || ''));
     } catch (err: any) {
       setMessage({ type: 'error', text: err?.message || 'Erro ao analisar o link.' });
     } finally {
@@ -459,7 +458,7 @@ const ViralProfiles: React.FC = () => {
                       </span>
                     )}
 
-                    {profile.notes && (
+                    {profile.notes && profile.notes !== profile.followers && (
                       <p className="mt-2 line-clamp-2 text-xs text-slate-400">{profile.notes}</p>
                     )}
 

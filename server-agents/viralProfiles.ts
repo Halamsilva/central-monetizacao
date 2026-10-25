@@ -42,7 +42,7 @@ const checkAccess = async (serviceSupabase: any, req: any, res: any) => {
   return user;
 };
 
-type Network = 'tiktok' | 'instagram' | 'youtube' | 'outro';
+type Network = 'tiktok' | 'instagram' | 'youtube' | 'facebook' | 'outro';
 
 const detectNetwork = (hostname: string): Network => {
   const host = hostname.toLowerCase();
@@ -50,23 +50,33 @@ const detectNetwork = (hostname: string): Network => {
   if (host.includes('tiktok')) return 'tiktok';
   if (host.includes('instagram')) return 'instagram';
   if (host.includes('youtube') || host.includes('youtu.be')) return 'youtube';
+  if (host.includes('facebook') || host.includes('fb.com') || host.includes('fb.me')) return 'facebook';
 
   return 'outro';
 };
 
-// Extrai o @usuario do link. Aceita /@nome, /nome, /c/nome, /user/nome.
-const extractHandle = (pathname: string, network: Network) => {
-  const parts = pathname
+// Extrai o @usuario (ou id) do link. Aceita /@nome, /nome, /c/nome,
+// /people/Nome/123 e profile.php?id=123.
+const extractHandle = (parsed: URL, network: Network) => {
+  const parts = parsed.pathname
     .split('/')
     .map((part) => part.trim())
     .filter(Boolean);
 
+  if (network === 'facebook') {
+    const id = parsed.searchParams.get('id');
+    if (id) return id;
+
+    const peopleIndex = parts.indexOf('people');
+    if (peopleIndex >= 0 && parts[peopleIndex + 2]) return parts[peopleIndex + 2];
+
+    if (parts[0] === 'profile.php') return '';
+
+    return (parts[0] || '').split('?')[0];
+  }
+
   const last = parts[parts.length - 1] || '';
   const cleaned = last.replace(/^@/, '').split('?')[0];
-
-  if (network === 'youtube') {
-    return cleaned;
-  }
 
   return cleaned;
 };
@@ -98,6 +108,82 @@ const buildAvatarUrl = (network: Network, handle: string) => {
   return '';
 };
 
+// Leitor publico que renderiza a pagina com navegador real. E o unico jeito
+// de ler o Facebook sem login/App Review (o site bloqueia requests diretas).
+const JINA_READER = 'https://r.jina.ai/';
+
+const fetchRenderedHtml = async (url: string) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 25000);
+
+  try {
+    const response = await fetch(`${JINA_READER}${url}`, {
+      headers: {
+        'X-Return-Format': 'html',
+        Accept: 'text/html',
+      },
+      signal: controller.signal,
+    });
+
+    if (!response.ok) return '';
+
+    return await response.text();
+  } catch {
+    return '';
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+const decodeEntities = (value: string) =>
+  value
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)))
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const formatFollowerCount = (raw: string) => {
+  const value = raw.trim();
+  if (!value) return '';
+
+  if (value.includes(',')) {
+    return `${value.replace(/,/g, '.')} seguidores`;
+  }
+
+  return `${value} seguidores`;
+};
+
+const readFacebookProfile = async (url: string) => {
+  const html = await fetchRenderedHtml(url);
+  if (!html) return null;
+
+  const title = decodeEntities(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] || '').replace(/\s*\|\s*Facebook.*$/i, '');
+
+  const ogImage =
+    html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1] ||
+    html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)?.[1] ||
+    '';
+
+  const description =
+    html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']*)["']/i)?.[1] ||
+    html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i)?.[1] ||
+    '';
+
+  const followerMatch = decodeEntities(description).match(/([\d.,]+\s*[KMB]?)\s*followers?/i);
+
+  return {
+    name: title,
+    avatarUrl: decodeEntities(ogImage),
+    followers: followerMatch ? formatFollowerCount(followerMatch[1]) : '',
+  };
+};
+
 const handleFetchProfile = async (req: any, res: any) => {
   const rawUrl = String(req.body?.url || '').trim();
 
@@ -114,17 +200,47 @@ const handleFetchProfile = async (req: any, res: any) => {
   }
 
   const network = detectNetwork(parsed.hostname);
-  const handle = extractHandle(parsed.pathname, network);
+  const handle = extractHandle(parsed, network);
 
   if (!handle) {
-    return res.status(400).json({ error: 'Nao consegui identificar o @usuario nesse link.' });
+    const message =
+      network === 'facebook'
+        ? 'Use o link completo do perfil (ex: https://www.facebook.com/profile.php?id=123456789).'
+        : 'Nao consegui identificar o @usuario nesse link.';
+
+    return res.status(400).json({ error: message });
   }
 
-  let name = handle;
+  let name = '';
+  let avatarUrl = buildAvatarUrl(network, handle);
+  let followers = '';
+  let notice = '';
+  let needsManualAvatar = false;
 
-  if (network === 'tiktok') {
+  if (network === 'facebook') {
+    const facebook = await readFacebookProfile(rawUrl);
+
+    if (facebook) {
+      name = facebook.name;
+      avatarUrl = facebook.avatarUrl || '';
+      followers = facebook.followers;
+    }
+
+    if (!name && !avatarUrl) {
+      notice = 'O Facebook nao liberou os dados agora. Preencha nome, foto e seguidores manualmente.';
+    }
+  } else if (network === 'tiktok') {
     const oembed = await fetchTikTokOEmbed(rawUrl);
     if (oembed?.name) name = oembed.name;
+  } else if (network === 'instagram') {
+    needsManualAvatar = true;
+    notice =
+      'O Instagram bloqueia nome, foto e seguidores automaticamente. Preencha os campos abaixo (ou deixe em branco).';
+  } else if (network === 'youtube') {
+    notice =
+      'O YouTube nao entrega nome e seguidores por link sem API. Confira a foto e complete os campos restantes.';
+  } else {
+    notice = 'Rede nao reconhecida. Preencha os dados manualmente.';
   }
 
   return res.json({
@@ -132,11 +248,11 @@ const handleFetchProfile = async (req: any, res: any) => {
     network,
     handle,
     name,
-    avatarUrl: buildAvatarUrl(network, handle),
+    avatarUrl,
+    followers,
+    notice,
     url: rawUrl,
-    // Instagram bloqueia extracao automatica desde 2020. O nome/foto precisam
-    // ser completados na mao nesse caso.
-    needsManualAvatar: network === 'instagram',
+    needsManualAvatar,
   });
 };
 

@@ -3,6 +3,7 @@ import {
   AlertCircle,
   CheckCircle2,
   ExternalLink,
+  Facebook,
   Instagram,
   Link2,
   Loader2,
@@ -33,6 +34,7 @@ const NETWORK_LABEL: Record<string, { label: string; icon: any; color: string }>
   tiktok: { label: 'TikTok', icon: Music2, color: 'text-rose-400' },
   instagram: { label: 'Instagram', icon: Instagram, color: 'text-fuchsia-400' },
   youtube: { label: 'YouTube', icon: Youtube, color: 'text-red-400' },
+  facebook: { label: 'Facebook', icon: Facebook, color: 'text-blue-400' },
   outro: { label: 'Outro', icon: Link2, color: 'text-slate-400' },
 };
 
@@ -53,6 +55,8 @@ const ViralProfiles: React.FC = () => {
     handle: string;
     name: string;
     avatarUrl: string;
+    followers?: string;
+    notice?: string;
     needsManualAvatar: boolean;
   } | null>(null);
 
@@ -113,6 +117,7 @@ const ViralProfiles: React.FC = () => {
       setPreview(data);
       setNameOverride(data.name || '');
       setAvatarOverride(data.avatarUrl || '');
+      setNotes((current) => (current.trim() ? current : data.followers || ''));
     } catch (err: any) {
       setMessage({ type: 'error', text: err?.message || 'Erro ao analisar o link.' });
     } finally {
@@ -292,9 +297,16 @@ const ViralProfiles: React.FC = () => {
                       </span>
                     </div>
 
-                    {preview.needsManualAvatar && (
-                      <p className="mt-1 text-[11px] font-semibold text-amber-300/80">
-                        O Instagram bloqueia a foto automaticamente. Cole o link da imagem abaixo ou deixe em branco.
+                    {preview.followers && (
+                      <p className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-slate-300">
+                        <Users size={12} className="text-fuchsia-400" />
+                        {preview.followers}
+                      </p>
+                    )}
+
+                    {preview.notice && (
+                      <p className="mt-1 text-[11px] font-semibold leading-relaxed text-amber-300/80">
+                        {preview.notice}
                       </p>
                     )}
                   </div>

@@ -93,14 +93,14 @@ const ImagensIA: React.FC = () => {
     const who = name ? `${name}, ${description}` : description;
 
     if (type === 'expressions') {
-      return `Character expression sheet of ${who}. Six headshots of the same character showing neutral, smiling, sad, angry, surprised and crying expressions, consistent face and outfit, neutral light grey background, ${stylePrompt}, high detail, no text, no labels, no watermark.`;
+      return `Six full-color portrait photos of ${who} in one image, side by side, showing neutral, smiling, sad, angry, surprised and crying expressions. Realistic skin tones, consistent face and colored outfit, neutral light grey background, ${stylePrompt}, high detail, full color, not black and white, not sketch, not line art, no text, no labels, no watermark.`;
     }
 
     if (type === 'portrait') {
-      return `Cinematic portrait of ${who}, ${stylePrompt}, 85mm lens, soft natural light, high detail, no text, no watermark.`;
+      return `Full color cinematic portrait of ${who}, ${stylePrompt}, 85mm lens, soft natural light, realistic skin tones, high detail, not black and white, no text, no watermark.`;
     }
 
-    return `Character turnaround sheet of ${who}. Full body, front view, side view, three-quarter view and back view, same character, consistent face and outfit, neutral light grey background, ${stylePrompt}, high detail, no text, no labels, no watermark.`;
+    return `Four full-body reference photos of ${who} in one image, side by side: front view, side view, three-quarter view and back view. Realistic color photograph, natural skin tones and colored clothing, same character, consistent face and outfit, neutral light grey background, ${stylePrompt}, high detail, full color, not black and white, not sketch, not line art, no text, no labels, no watermark.`;
   };
 
   const generate = async () => {

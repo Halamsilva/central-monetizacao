@@ -66,6 +66,13 @@ type Tool = {
 
 const tools: Tool[] = [
   {
+    title: 'Chat IA',
+    description: 'Converse com a IA para criar roteiros, ganchos, legendas e prompts.',
+    path: '/chat-ia',
+    icon: MessageCircle,
+    accent: 'bg-violet-100 text-violet-600',
+  },
+  {
     title: 'Menina da Roça',
     description: 'Vídeos virais de retenção emocional no estilo rural.',
     path: '/menina-da-roca',

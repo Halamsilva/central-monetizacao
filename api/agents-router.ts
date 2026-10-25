@@ -21,6 +21,7 @@ import flowAutomationsHandler from '../server-agents/flowAutomations.js';
 import criadorNoticiasHandler from '../server-agents/criadorNoticias.js';
 import clonagemProHandler from '../server-agents/clonagemPro.js';
 import viralProfilesHandler from '../server-agents/viralProfiles.js';
+import chatAiHandler from '../server-agents/chatAi.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
@@ -46,6 +47,7 @@ const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'criador-noticias': criadorNoticiasHandler,
   'clonagem-pro': clonagemProHandler,
   'perfis-virais': viralProfilesHandler,
+  'chat-ia': chatAiHandler,
 };
 
 export default function handler(req: any, res: any) {

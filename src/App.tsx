@@ -41,6 +41,7 @@ const Ganchos = lazy(() => import('./pages/ganchos/App'));
 const VideoStudio = lazy(() => import('./pages/videoStudio/App'));
 const FlowAutomations = lazy(() => import('./pages/flowAutomations/App'));
 const CriadorNoticias = lazy(() => import('./pages/criadorNoticias/App'));
+const ChatIA = lazy(() => import('./pages/ChatIA/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -89,6 +90,7 @@ const routeTitles: Record<string, string> = {
   '/novelinhas-frutas': 'Novelinhas Frutas',
   '/extrator-frames': 'Extrator de Quadros',
   '/perfis-virais': 'Perfis Virais',
+  '/chat-ia': 'Chat IA',
   '/criador-noticias': 'Criador de Notícias',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
@@ -266,6 +268,7 @@ export default function App() {
           <Route path="novelinhas-frutas" element={<NovelinhasUni lockedTheme="Frutas" />} />
           <Route path="extrator-frames" element={<FrameExtractor />} />
           <Route path="perfis-virais" element={<ViralProfiles />} />
+          <Route path="chat-ia" element={<ChatIA />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

@@ -122,6 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const mainMenu: MenuItem[] = [
     { title: 'Início', icon: Home, path: '/' },
+    { title: 'Chat IA', icon: MessageCircle, path: '/chat-ia' },
     { title: 'Automações do FLOW', icon: Workflow, path: '/automacoes-flow' },
   ];
 

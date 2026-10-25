@@ -161,21 +161,53 @@ export default async function handler(req: any, res: any) {
 
     const rawBase64 = String(req.body?.imageBase64 || '');
     const imageBase64 = rawBase64.replace(/^data:image\/[a-z+]+;base64,/i, '');
-    const mimeType = clean(req.body?.mimeType, 40) || 'image/jpeg';
-    const extension = mimeType.includes('png') ? 'png' : mimeType.includes('webp') ? 'webp' : 'jpg';
+    const imageUrl = clean(req.body?.imageUrl, 1200);
+    const informedMime = clean(req.body?.mimeType, 40) || 'image/jpeg';
 
-    if (!imageBase64) {
-      return res.status(400).json({ error: 'Nenhuma imagem foi recebida.' });
+    let buffer: Buffer;
+    let mimeType = informedMime;
+
+    if (imageUrl) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 40000);
+
+      try {
+        const imageResponse = await fetch(imageUrl, { signal: controller.signal });
+
+        if (!imageResponse.ok) {
+          return res.status(400).json({ error: 'Nao consegui baixar a imagem gerada. Tente novamente.' });
+        }
+
+        const bytes = await imageResponse.arrayBuffer();
+        buffer = Buffer.from(bytes);
+        mimeType = String(imageResponse.headers.get('content-type') || informedMime).split(';')[0].trim();
+      } catch {
+        return res.status(400).json({ error: 'Nao consegui baixar a imagem gerada. Tente novamente.' });
+      } finally {
+        clearTimeout(timer);
+      }
+    } else {
+      if (!imageBase64) {
+        return res.status(400).json({ error: 'Nenhuma imagem foi recebida.' });
+      }
+
+      buffer = Buffer.from(imageBase64, 'base64');
     }
 
-    const buffer = Buffer.from(imageBase64, 'base64');
+    const extension = mimeType.includes('png')
+      ? 'png'
+      : mimeType.includes('webp')
+        ? 'webp'
+        : mimeType.includes('gif')
+          ? 'gif'
+          : 'jpg';
 
     if (!buffer.length) {
       return res.status(400).json({ error: 'Nao consegui ler essa imagem. Tente outro arquivo.' });
     }
 
-    if (buffer.length > 8 * 1024 * 1024) {
-      return res.status(400).json({ error: 'Imagem muito grande. Use uma foto menor que 8MB.' });
+    if (buffer.length > 10 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Imagem muito grande. Use uma foto menor que 10MB.' });
     }
 
     const presign = await callMagicHour('/v1/files/upload-urls', apiKey, {

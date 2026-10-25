@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
   Check,
+  Clapperboard,
   Clock,
   Copy,
   Download,
@@ -42,6 +44,7 @@ const EXAMPLES = [
 ];
 
 const ImagensIA: React.FC = () => {
+  const navigate = useNavigate();
   const [prompt, setPrompt] = useState('');
   const [model, setModel] = useState(MODELS[0].id);
   const [size, setSize] = useState(SIZES[1].id);
@@ -274,6 +277,18 @@ const ImagensIA: React.FC = () => {
                 >
                   {copied ? <Check size={13} /> : <Copy size={13} />}
                   {copied ? 'Copiado' : 'Copiar link'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate('/video-studio', {
+                      state: { frameUrl: current.url, framePrompt: current.prompt },
+                    })
+                  }
+                  className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-fuchsia-600 px-3 text-[11px] font-black text-white transition hover:bg-fuchsia-500"
+                >
+                  <Clapperboard size={13} /> Usar no Estúdio de vídeo
                 </button>
 
                 <a

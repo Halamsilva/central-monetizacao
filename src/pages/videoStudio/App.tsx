@@ -20,6 +20,7 @@ import {
   Wand2,
   X,
 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { describeHttpError } from '../../lib/httpError';
 import { useAuth } from '../../context/AuthContext';
@@ -109,6 +110,7 @@ const aspectClass: Record<string, string> = {
 
 const VideoStudio: React.FC = () => {
   const { user } = useAuth();
+  const location = useLocation();
 
   const [hasKey, setHasKey] = useState<boolean | null>(null);
   const [keyInput, setKeyInput] = useState('');
@@ -126,6 +128,7 @@ const VideoStudio: React.FC = () => {
   const [resolution, setResolution] = useState('480p');
   const [audio, setAudio] = useState(true);
   const [frame, setFrame] = useState<FrameAsset | null>(null);
+  const [externalFrameUrl, setExternalFrameUrl] = useState('');
   const [frameBusy, setFrameBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
 
@@ -182,6 +185,20 @@ const VideoStudio: React.FC = () => {
     loadKeyState();
     loadHistory();
   }, [loadKeyState, loadHistory]);
+
+  const appliedFrameRef = useRef('');
+
+  useEffect(() => {
+    const state = location.state as { frameUrl?: string; framePrompt?: string } | null;
+
+    if (!state?.frameUrl || state.frameUrl === appliedFrameRef.current) return;
+
+    appliedFrameRef.current = state.frameUrl;
+    setExternalFrameUrl(state.frameUrl);
+    setFrame({ preview: state.frameUrl, base64: '', mimeType: 'image/png', name: 'Imagem gerada' });
+    setPrompt((current) => current || String(state.framePrompt || ''));
+    setComposerOpen(true);
+  }, [location.state]);
 
   useEffect(() => () => {
     if (pollRef.current) window.clearInterval(pollRef.current);
@@ -361,6 +378,7 @@ const VideoStudio: React.FC = () => {
       const compressed = await compressImageFile(file, 1600, 0.9);
       const preview = `data:${compressed.mimeType};base64,${compressed.base64}`;
 
+      setExternalFrameUrl('');
       setFrame({
         preview,
         base64: compressed.base64,
@@ -403,6 +421,7 @@ const VideoStudio: React.FC = () => {
         const uploaded = await callAgent('upload-frame', {
           imageBase64: frame.base64,
           mimeType: frame.mimeType,
+          imageUrl: frame.base64 ? '' : externalFrameUrl,
         });
 
         imageFilePath = String(uploaded?.filePath || '');
@@ -769,6 +788,7 @@ const VideoStudio: React.FC = () => {
                         onClick={(event) => {
                           event.stopPropagation();
                           setFrame(null);
+                          setExternalFrameUrl('');
                         }}
                         className="absolute right-2 top-2 rounded-full bg-black/70 p-1.5 text-slate-200 transition hover:bg-red-500 hover:text-white"
                         aria-label="Remover imagem"

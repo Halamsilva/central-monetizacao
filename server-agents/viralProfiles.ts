@@ -181,7 +181,63 @@ const readFacebookProfile = async (url: string) => {
     name: title,
     avatarUrl: decodeEntities(ogImage),
     followers: followerMatch ? formatFollowerCount(followerMatch[1]) : '',
+    slug: readFacebookSlug(html),
   };
+};
+
+const formatCompactNumber = (raw: string) => {
+  const value = raw.trim().replace(/\s+/g, '');
+
+  if (/^\d+\.\d+[KMB]?$/i.test(value)) return value.replace('.', ',');
+  if (/^\d{1,3}(,\d{3})+$/.test(value)) return value.replace(/,/g, '.');
+
+  return value;
+};
+
+const fetchRenderedMarkdown = async (url: string) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 25000);
+
+  try {
+    const response = await fetch(`${JINA_READER}${url}`, {
+      headers: { Accept: 'text/plain' },
+      signal: controller.signal,
+    });
+
+    if (!response.ok) return '';
+
+    return await response.text();
+  } catch {
+    return '';
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+const readSocialProfile = async (url: string) => {
+  const markdown = await fetchRenderedMarkdown(url);
+  if (!markdown || /Log into|Log in to|Enter your password/i.test(markdown.slice(0, 1500))) return null;
+
+  const title = decodeEntities(markdown.match(/^Title:\s*(.+)$/m)?.[1] || '');
+  const subscriberMatch = markdown.match(/([\d.,]+\s*[KMB]?)\s*subscribers?/i);
+  const tiktokFollowerMatch = markdown.match(/\*\*([\d.,]+\s*[KMB]?)\*\*\s*Followers/i);
+
+  let followers = '';
+
+  if (subscriberMatch) followers = `${formatCompactNumber(subscriberMatch[1])} inscritos`;
+  else if (tiktokFollowerMatch) followers = `${formatCompactNumber(tiktokFollowerMatch[1])} seguidores`;
+
+  return { name: title, followers };
+};
+
+const readFacebookSlug = (html: string) => {
+  const people = html.match(/people\/([^/"\\]+)\/\d+/)?.[1];
+  if (people) return decodeURIComponent(people);
+
+  const page = html.match(/\/p\/([^/"\\]+)-\d+/)?.[1];
+  if (page) return decodeURIComponent(page);
+
+  return '';
 };
 
 const handleFetchProfile = async (req: any, res: any) => {
@@ -216,6 +272,7 @@ const handleFetchProfile = async (req: any, res: any) => {
   let followers = '';
   let notice = '';
   let needsManualAvatar = false;
+  let displayHandle = handle;
 
   if (network === 'facebook') {
     const facebook = await readFacebookProfile(rawUrl);
@@ -224,21 +281,30 @@ const handleFetchProfile = async (req: any, res: any) => {
       name = facebook.name;
       avatarUrl = facebook.avatarUrl || '';
       followers = facebook.followers;
+      if (facebook.slug) displayHandle = facebook.slug;
     }
 
     if (!name && !avatarUrl) {
       notice = 'O Facebook nao liberou os dados agora. Preencha nome, foto e seguidores manualmente.';
     }
   } else if (network === 'tiktok') {
-    const oembed = await fetchTikTokOEmbed(rawUrl);
-    if (oembed?.name) name = oembed.name;
+    const [oembed, social] = await Promise.all([fetchTikTokOEmbed(rawUrl), readSocialProfile(rawUrl)]);
+
+    name = oembed?.name || social?.name || '';
+    followers = social?.followers || '';
   } else if (network === 'instagram') {
     needsManualAvatar = true;
     notice =
       'O Instagram bloqueia nome, foto e seguidores automaticamente. Preencha os campos abaixo (ou deixe em branco).';
   } else if (network === 'youtube') {
-    notice =
-      'O YouTube nao entrega nome e seguidores por link sem API. Confira a foto e complete os campos restantes.';
+    const social = await readSocialProfile(rawUrl);
+
+    name = social?.name || '';
+    followers = social?.followers || '';
+
+    if (!name && !followers) {
+      notice = 'O YouTube nao liberou os dados agora. Confira a foto e complete os campos restantes.';
+    }
   } else {
     notice = 'Rede nao reconhecida. Preencha os dados manualmente.';
   }
@@ -246,7 +312,7 @@ const handleFetchProfile = async (req: any, res: any) => {
   return res.json({
     ok: true,
     network,
-    handle,
+    handle: displayHandle,
     name,
     avatarUrl,
     followers,

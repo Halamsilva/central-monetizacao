@@ -25,6 +25,7 @@ type ViralProfile = {
   handle: string;
   name: string;
   avatarUrl?: string;
+  followers?: string;
   niche?: string;
   notes?: string;
   createdAt?: string;
@@ -140,6 +141,7 @@ const ViralProfiles: React.FC = () => {
         handle: preview.handle,
         name: nameOverride.trim() || preview.name || preview.handle,
         avatarUrl: avatarOverride.trim(),
+        followers: preview.followers || '',
         niche: niche.trim(),
         notes: notes.trim(),
         created_at: new Date().toISOString(),
@@ -185,6 +187,7 @@ const ViralProfiles: React.FC = () => {
       handle: profile.handle,
       name: profile.name,
       avatarUrl: profile.avatarUrl || '',
+      followers: profile.followers || '',
       needsManualAvatar: profile.network === 'instagram',
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -251,7 +254,7 @@ const ViralProfiles: React.FC = () => {
                 type="url"
                 value={url}
                 onChange={(event) => setUrl(event.target.value)}
-                placeholder="https://www.tiktok.com/@perfil ou https://www.instagram.com/perfil"
+                placeholder="https://www.facebook.com/profile.php?id=... , tiktok.com/@perfil ou instagram.com/perfil"
                 className="h-12 flex-1 rounded-xl border border-slate-700 bg-slate-950 px-4 text-sm font-semibold text-white outline-none focus:border-fuchsia-500"
               />
 
@@ -441,6 +444,12 @@ const ViralProfiles: React.FC = () => {
                           <Icon size={12} className={meta.color} />
                           @{profile.handle}
                         </p>
+                        {profile.followers && (
+                          <p className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-bold text-slate-300">
+                            <Users size={11} className="text-fuchsia-400" />
+                            {profile.followers}
+                          </p>
+                        )}
                       </div>
                     </div>
 

@@ -1,4 +1,4 @@
-import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
+﻿import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 import { getGeminiApiKeyCandidates, describeGeminiError } from './gemini-key.js';
 
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
@@ -302,7 +302,7 @@ export default async function handler(req: any, res: any) {
   for (const apiKey of geminiKeys) {
     for (const model of GEMINI_MODELS) {
       const result = await streamGemini(apiKey, model, turns, onText);
-      if (result.streamed) return finish();
+      if (result.streamed) { console.log('[chat] respondido por gemini', model); return finish(); }
       lastError = result.error || lastError;
     }
   }
@@ -311,7 +311,7 @@ export default async function handler(req: any, res: any) {
   if (groqKey) {
     for (const model of GROQ_MODELS) {
       const result = await streamOpenAiCompatible('groq', groqKey, model, turns, onText);
-      if (result.streamed) return finish();
+      if (result.streamed) { console.log('[chat] respondido por groq', model); return finish(); }
       lastError = result.error || lastError;
     }
   }
@@ -320,7 +320,7 @@ export default async function handler(req: any, res: any) {
   if (openrouterKey) {
     for (const model of OPENROUTER_MODELS) {
       const result = await streamOpenAiCompatible('openrouter', openrouterKey, model, turns, onText);
-      if (result.streamed) return finish();
+      if (result.streamed) { console.log('[chat] respondido por openrouter', model); return finish(); }
       lastError = result.error || lastError;
     }
   }

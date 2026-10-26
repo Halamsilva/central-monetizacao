@@ -499,7 +499,13 @@ const FrameExtractor: React.FC = () => {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {frames.map((frame) => (
                 <div key={frame.index} className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950">
-                  <img src={frame.url} alt={`Quadro ${frame.index}`} className="aspect-video w-full object-cover" />
+                  <div className="flex h-44 items-center justify-center bg-black">
+                    <img
+                      src={frame.url}
+                      alt={`Quadro ${frame.index}`}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
 
                   <div className="flex items-center justify-between gap-2 p-2">
                     <div className="min-w-0">

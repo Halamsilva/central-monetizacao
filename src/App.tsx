@@ -1,4 +1,4 @@
-﻿import React, { Suspense, lazy, useEffect } from 'react';
+?import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppLayout from './components/layout/AppLayout';
@@ -7,7 +7,7 @@ import { firebaseAuth, isFirebaseConfigured } from './lib/supabase';
 import { MessageCircle } from 'lucide-react';
 import { whatsappLink, WHATSAPP_DEFAULT_MESSAGE } from './lib/support';
 
-// PÃ¡ginas com Lazy Loading
+// Páginas com Lazy Loading
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Recovery = lazy(() => import('./pages/Recovery'));
@@ -54,7 +54,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Home = lazy(() => import('./pages/Home'));
 
-// PÃ¡ginas de AdministraÃ§Ã£o
+// Páginas de Administração
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminAgents = lazy(() => import('./pages/AdminAgents'));
 const AdminNotices = lazy(() => import('./pages/AdminNotices'));
@@ -63,7 +63,7 @@ const AdminBlog = lazy(() => import('./pages/AdminBlog'));
 const AdminSubscription = lazy(() => import('./pages/AdminSubscription'));
 
 const routeTitles: Record<string, string> = {
-  '/': 'InÃ­cio',
+  '/': 'Início',
   '/login': 'Entrar',
   '/register': 'Cadastro',
   '/recovery': 'Recuperar acesso',
@@ -87,7 +87,7 @@ const routeTitles: Record<string, string> = {
   '/radar-tiktok-shop': 'Radar TikTok Shop',
   '/tiktok-shop-shopee': 'TikTok Shop & Shopee',
   '/lumina-8k': 'Upscale de Imagem',
-  '/reflexao-velho-roca': 'ReflexÃ£o do Velho da RoÃ§a',
+  '/reflexao-velho-roca': 'Reflexão do Velho da Roça',
   '/novelinhas-gordos': 'Novelinhas Gordos',
   '/novelinhas-frutas': 'Novelinhas Frutas',
   '/novelinhas-objetos': 'Novelinhas Objetos',
@@ -96,13 +96,13 @@ const routeTitles: Record<string, string> = {
   '/chat-ia': 'Chat IA',
   '/imagens-ia': 'Imagens IA',
   '/transcritor': 'Transcritor de Video',
-  '/criador-noticias': 'Criador de NotÃ­cias',
+  '/criador-noticias': 'Criador de Notícias',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
   '/downloads': 'Downloads',
   '/shop-vip': 'Loja VIP',
   '/profile': 'Perfil',
-  '/settings': 'ConfiguraÃ§Ãµes',
+  '/settings': 'Configurações',
   '/admin': 'Painel Admin',
   '/admin/agents': 'Gerenciar Agentes',
   '/admin/notices': 'Gerenciar Avisos',
@@ -114,8 +114,8 @@ const TitleManager = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const pageTitle = routeTitles[location.pathname] || 'Central MonetizaÃ§Ã£o';
-    document.title = `${pageTitle} | Central MonetizaÃ§Ã£o`;
+    const pageTitle = routeTitles[location.pathname] || 'Central Monetização';
+    document.title = `${pageTitle} | Central Monetização`;
   }, [location.pathname]);
 
   return null;
@@ -128,7 +128,7 @@ const LoadingScreen = () => (
   </div>
 );
 
-// Tela de Cadastro em AnÃ¡lise
+// Tela de Cadastro em Análise
 const PendingAccessScreen = () => {
   const { profile } = useAuth();
   const email = profile?.email || '';
@@ -137,28 +137,28 @@ const PendingAccessScreen = () => {
   <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] p-6">
     <div className="max-w-md rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-xl">
       <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100 text-3xl">
-        ðŸ”’
+        ⏳
       </div>
-      <h1 className="text-3xl font-black text-slate-900">Acesso em anÃ¡lise</h1>
+      <h1 className="text-3xl font-black text-slate-900">Acesso em análise</h1>
       <p className="mt-4 leading-relaxed text-slate-500">
         Seu cadastro foi recebido. Use o <strong>mesmo e-mail da compra</strong> na Kiwify:
-        o acesso Ã© liberado automaticamente apÃ³s a confirmaÃ§Ã£o da compra. A assinatura da
+        o acesso é liberado automaticamente após a confirmação da compra. A assinatura da
         plataforma e a compra do curso liberam na hora.
       </p>
       <a
         href="/assinar"
         className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white transition hover:bg-blue-700"
       >
-        Quero sÃ³ o acesso Ã  plataforma (assinar)
+        Quero só o acesso à plataforma (assinar)
       </a>
       <a
-        href={whatsappLink(`OlÃ¡! Fiz a compra na Kiwify e meu acesso ainda nÃ£o foi liberado. Meu e-mail de compra Ã© ${email || '(meu e-mail)'}. Pode liberar meu acesso, por favor?`)}
+        href={whatsappLink(`Olá! Fiz a compra na Kiwify e meu acesso ainda não foi liberado. Meu e-mail de compra é ${email || '(meu e-mail)'}. Pode liberar meu acesso, por favor?`)}
         target="_blank"
         rel="noopener noreferrer"
         className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#25D366] text-sm font-bold text-white transition hover:brightness-105"
       >
         <MessageCircle size={18} />
-        Pedir liberaÃ§Ã£o no WhatsApp
+        Pedir liberação no WhatsApp
       </a>
     </div>
   </div>
@@ -170,7 +170,7 @@ const BlockedAccessScreen = () => (
   <div className="flex min-h-screen items-center justify-center bg-[#f8fafc] p-6">
     <div className="max-w-md rounded-3xl border border-red-100 bg-white p-10 text-center shadow-xl">
       <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-100 text-3xl">
-        ðŸš«
+        🚫
       </div>
       <h1 className="text-3xl font-black text-slate-900">Acesso bloqueado</h1>
       <p className="mt-4 leading-relaxed text-slate-500">
@@ -225,7 +225,7 @@ export default function App() {
         <TitleManager />
         <Suspense fallback={<LoadingScreen />}>
           <Routes>
-            {/* Rotas PÃºblicas */}
+            {/* Rotas Públicas */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/recovery" element={<Recovery />} />

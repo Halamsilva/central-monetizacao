@@ -42,6 +42,23 @@ service cloud.firestore {
       allow read, write: if owner() || (signedIn() && request.auth.uid == userId);
     }
 
+    // Biblioteca de perfis virais: admin cadastra, alunos ativos consultam.
+    match /viral_profiles/{profileId} {
+      allow read: if owner() || activeStudent();
+      allow write: if owner();
+    }
+
+    // Historico do Chat IA: cada aluno so acessa as proprias mensagens.
+    match /chat_messages/{messageId} {
+      allow read, delete: if owner() || (signedIn() && resource.data.user_id == request.auth.uid);
+      allow create: if owner() || (signedIn() && request.resource.data.user_id == request.auth.uid);
+      allow update: if owner() || (
+        signedIn()
+        && resource.data.user_id == request.auth.uid
+        && request.resource.data.user_id == request.auth.uid
+      );
+    }
+
     match /{name}/{itemId} {
       allow read: if owner() || (
         activeStudent()

@@ -272,6 +272,16 @@ ${ctx.referenceImage ? `REFERÊNCIA VISUAL ANEXADA (PRIORIDADE MÁXIMA):
 ` : ''}
 
 ################################################################
+POLÍTICA DE PERSONAGENS ADULTOS (OBRIGATÓRIA - FLOW / SEEDANCE)
+################################################################
+- TODOS os personagens são ADULTOS (18 anos ou mais). Escreva sempre "adulto"/"adulta" junto da idade (22, 35, 50...).
+- PROIBIDO nomes no diminutivo que remetem a criança (terminações -inha/-inho ou apelidos infantis). Use nomes adultos (ex: "Morango Vitória", "Maracujá Brabo").
+- PROIBIDO descrever crianças, adolescentes, "jovem" com aparência infantil, uniforme escolar, jardineira infantil, ou corpo "delicado/pequeno" com baixa estatura.
+- Altura mínima: 1,60m para mulheres adultas e 1,70m para homens adultos.
+- Roupas sempre adultas (vestido elegante, terno, camisa social, macacão adulto). NUNCA jardineira escolar, shorts infantil ou laços de criança.
+- O [Negative Prompt] de TODAS as cenas DEVE incluir: child, minor, teenager, kid, school uniform, loli, childlike proportions.
+
+################################################################
 ETAPA 1 DE 2 - CONTRATO DE IDENTIDADE E PLANO DE CONTINUIDADE
 ################################################################
 Este é um VÍDEO LONGO. Você NÃO vai escrever as cenas agora: as ${ctx.numScenes} cenas serão geradas depois, em blocos paralelos, e cada bloco vai ler EXATAMENTE o contrato e o plano que você escrever agora. A consistência do episódio inteiro (mesmo personagem, mesma roupa, mesmo cenário, mesmo tom, sem repetição) depende 100% da qualidade do que você entregar agora.
@@ -339,7 +349,7 @@ INSTRUÇÕES VISUAIS (PROMPT SEEDANCE 2.5 & GOOGLE FLOW):
 [Lighting & Atmosphere]: direção e motivação das luzes coerentes com o cenário.
 [Audio & Ambience (SFX)]): paisagem sonora e foley nativos do local.
 [Global Style & Physical Realism]: 4K fotorrealista, ${ctx.skinDirective}, física natural, 24fps.
-[Negative Prompt]: white background, blank white void, studio cyclorama, plain backdrop, floating characters, artificial studio setup, empty white space.
+[Negative Prompt]: white background, blank white void, studio cyclorama, plain backdrop, floating characters, artificial studio setup, empty white space, child, minor, teenager, kid, school uniform, loli, childlike proportions.
 
 ################################################################
 REGRA DE OURO INVIOLÁVEL - CADA FALA NO SEU DONO E NO SEU MOMENTO
@@ -361,6 +371,7 @@ OUTRAS REGRAS INEGOCIÁVEIS:
 5. Nenhum "..." ou "mesmo de antes": cada cena sai completa, com o mesmo nível de detalhe das outras.
 6. CONSISTÊNCIA COM REFERÊNCIA: toda cena começa com a ficha do PROMPT 00 anexada como imagem de referência. A cena só é válida se o personagem estiver idêntico à ficha (mesmo rosto, roupa, textura, cores e MARCAS ÚNICAS). Se a ferramenta permitir seed, use sempre a mesma.
 7. MARCAS ÚNICAS (FINGERPRINT): repita em cada cena os 2-3 detalhes exclusivos de cada personagem definidos no PROMPT 00 (ex: visor verde na testa, falha na farinha do lado esquerdo, botão prateado). Eles são a âncora visual da identidade.
+8. PERSONAGENS ADULTOS (POLÍTICA OBRIGATÓRIA): todos os personagens são adultos (18+), com "adulto/adulta" e idade escrita na ficha. PROIBIDO nomes no diminutivo que remetam a criança, crianças, adolescentes, uniforme escolar, jardineira infantil, corpo "delicado/pequeno" com baixa estatura. Altura mínima: 1,60m (mulheres) e 1,70m (homens). O [Negative Prompt] de cada cena DEVE conter: child, minor, teenager, kid, school uniform, loli, childlike proportions.
 `;
 
 const normalizeName = (value: unknown) =>
@@ -727,7 +738,7 @@ ESTILO VISUAL OBRIGATÓRIO:
 ESTRUTURA OBRIGATÓRIA PARA CRIAR CADA PERSONAGEM (SEGUIR À RISCA NO PROMPT 00 E REPETIR EM TODAS AS CENAS):
 - Fruta: Espécie exata (Morango, Banana, Uva, Maçã, Manga, Pera, Abacaxi, Limão, Melancia, Cereja, Abacate, Kiwi, Pêssego).
 - Gênero: Feminino ou Masculino.
-- Idade aparente: Jovem, adulto ou idoso.
+- Idade aparente: Adulto jovem (18-30), adulto ou idoso.
 - Cabeça: formato da fruta (arredondada do morango, alongada e afunilada do abacate), tamanho grande em relação ao corpo, com a superfície da fruta bem visível.
 - Textura da fruta: casca ou polpa realista e tátil — sementes amarelo-claras espalhadas na pele do morango, casca rugosa verde-escura nas laterais do abacate, casca cerosa da maçã, gomos da tangerina. A textura da fruta TAMBÉM aparece nos braços, barriga e pernas.
 - Cabelo: folhas verdes pontudas no topo da cabeça formando uma coroa natural ou penteado (quando a fruta tiver folhas); nunca cabelo humano comum.
@@ -740,11 +751,11 @@ ESTRUTURA OBRIGATÓRIA PARA CRIAR CADA PERSONAGEM (SEGUIR À RISCA NO PROMPT 00 
 - Estilo: Animação 3D cinematográfica vertical 9:16.
 
 EXEMPLO CANÔNICO DE REFERÊNCIA:
-Moranguinha, a protagonista:
-"Uma personagem feminina antropomórfica inspirada em um morango vermelho maduro. Seu corpo possui formato de morango, com textura natural, pequenas sementes douradas distribuídas pela pele e folhas verdes formando uma espécie de cabelo no topo da cabeça. Possui rosto feminino delicado, olhos grandes e expressivos, cílios longos, sobrancelhas bem definidas, nariz pequeno e lábios rosados. Seus braços e pernas possuem proporções humanas, com mãos de cinco dedos e pés pequenos. Usa um vestido rosa elegante, sapatos delicados e uma pequena bolsa combinando. Sua personalidade é romântica, sensível, carismática e um pouco ciumenta. Demonstra emoções humanas intensas, como felicidade, tristeza, surpresa, raiva e decepção. Estilo visual: animação 3D cinematográfica, personagem extremamente expressiva, textura realista de fruta, iluminação profissional, cores vibrantes, formato vertical 9:16."
+Morango Vitória, a protagonista (25 anos, mulher adulta):
+"Uma personagem feminina ADULTA de 25 anos, antropomórfica inspirada em um morango vermelho maduro. Seu corpo possui formato de morango, com textura natural, pequenas sementes douradas distribuídas pela pele e folhas verdes formando uma espécie de cabelo no topo da cabeça. Possui rosto feminino expressivo de mulher adulta, olhos grandes e expressivos, cílios longos, sobrancelhas bem definidas, nariz pequeno e lábios rosados. Seus braços e pernas possuem proporções humanas de adulta, com mãos de cinco dedos. Usa um vestido rosa elegante de corte adulto, sapatos delicados e uma bolsa combinando. Sua personalidade é romântica, carismática e um pouco ciumenta. Demonstra emoções humanas intensas, como felicidade, tristeza, surpresa, raiva e decepção. Estilo visual: animação 3D cinematográfica, personagem extremamente expressiva, textura realista de fruta, iluminação profissional, cores vibrantes, formato vertical 9:16."
 
 CENÁRIOS DO TEMA FRUTAS:
-Os cenários devem ser ambientes 3D cinematográficos na escala das frutas ou cenários requintados estilizados. EXEMPLOS: sala de estar aconchegante com sofá bege, abajur de luz amarelada quente, estante de madeira com livros, plantas decorativas, quadros na parede e janela ao fundo; cozinha gourmet com bancada de carvalho; bistrô de doces artesanais; pomar iluminado por luz dourada; varanda de casa de praia; quarto de bebê.
+Os cenários devem ser ambientes 3D cinematográficos na escala das frutas ou cenários requintados estilizados. EXEMPLOS: sala de estar aconchegante com sofá bege, abajur de luz amarelada quente, estante de madeira com livros, plantas decorativas, quadros na parede e janela ao fundo; cozinha gourmet com bancada de carvalho; bistrô de doces artesanais; pomar iluminado por luz dourada; varanda de casa de praia; quarto de casal elegante.
 ILUMINAÇÃO OBRIGATÓRIA: luz quente e suave, atmosfera de filme familiar de animação (Pixar / Disney), com sombras macias e profundidade.
 É ESTRITAMENTE PROIBIDO fazer humanos comuns como protagonistas neste tema. Os personagens DEVEM SER AS FRUTAS HUMANIZADAS!`,
 
@@ -771,7 +782,7 @@ ESTILO VISUAL OBRIGATÓRIO:
 ESTRUTURA OBRIGATÓRIA PARA CRIAR CADA PERSONAGEM (SEGUIR À RISCA NO PROMPT 00 E REPETIR EM TODAS AS CENAS):
 - Objeto: qual é exatamente (Coxinha, Pastel, Pão de queijo, Hambúrguer, Pizza, Latinha de refrigerante, Garrafa de cerveja, Carro esportivo, Celular, Tênis, Fone de ouvido, Controle de videogame, Sorvete).
 - Gênero: Feminino ou Masculino.
-- Idade aparente: Jovem, adulto ou idoso.
+- Idade aparente: Adulto jovem (18-30), adulto ou idoso.
 - Cabeça: o objeto em tamanho GIGANTE (maior que uma cabeça humana normal), com volume, brilho, formato e textura bem reconhecíveis (metal, farinha de rosca, pintura automotiva, plástico). Elementos do objeto podem aparecer no rosto (ex: visor digital na testa da coxinha, tampa da lata no topo).
 - Rosto: rosto 3D CARTOON integrado na superfície do objeto — olhos grandes e expressivos com íris, sobrancelhas grossas e arqueadas, nariz pequeno, boca larga e articulada com dentes perfeitos para lip-sync. NUNCA rosto humano de pele, NUNCA recorte/foto de rosto, NUNCA máscara.
 - Corpo: corpo com proporções humanas (ombros, braços, pernas e mãos de cinco dedos), mas 100% revestido do material e da cor do objeto — SEM pele humana em nenhum ponto.
@@ -1100,6 +1111,16 @@ REFERÊNCIA VISUAL ANEXADA (PRIORIDADE MÁXIMA):
 ` : ''}
 
 ################################################################
+POLÍTICA DE PERSONAGENS ADULTOS (OBRIGATÓRIA - FLOW / SEEDANCE)
+################################################################
+- TODOS os personagens são ADULTOS (18 anos ou mais). Escreva sempre "adulto"/"adulta" junto da idade (22, 35, 50...).
+- PROIBIDO nomes no diminutivo que remetem a criança (terminações -inha/-inho ou apelidos infantis). Use nomes adultos (ex: "Morango Vitória", "Maracujá Brabo").
+- PROIBIDO descrever crianças, adolescentes, "jovem" com aparência infantil, uniforme escolar, jardineira infantil, ou corpo "delicado/pequeno" com baixa estatura.
+- Altura mínima: 1,60m para mulheres adultas e 1,70m para homens adultos.
+- Roupas sempre adultas (vestido elegante, terno, camisa social, macacão adulto). NUNCA jardineira escolar, shorts infantil ou laços de criança.
+- O [Negative Prompt] de TODAS as cenas DEVE incluir: child, minor, teenager, kid, school uniform, loli, childlike proportions.
+
+################################################################
 REGRA #0 - IDIOMA DE DESTINO (PRIORIDADE MÁXIMA - VALE ACIMA DE TUDO, SEM EXCEÇÃO)
 ################################################################
 IDIOMA DE DESTINO OBRIGATÓRIO: ${currentLang.langName} (${currentLang.locale}).
@@ -1323,7 +1344,7 @@ CADA PROMPT DE CENA DEVE CONTER AS SEGUINTES SEÇÕES ROTULADAS:
 7. [Lighting & Atmosphere]: Direção e motivação das luzes (ex: Rembrandt lighting, soft key light, rim light dourada, névoa volumétrica suave, contraste de cinema).
 8. [Audio & Ambience (SFX)]: Paisagem sonora gerada nativamente (ruídos ambientes, respiração ofegante, chuva, eco de passos, tecido farfalhando).
 9. [Global Style & Physical Realism]: Fotorrealismo 4K, sensor ARRI Alexa LF, ${skinDirective}, micro-texturas celulares visíveis, física natural e 24fps cinematográfico.
-10. [Negative Prompt]: white background, blank white void, studio cyclorama, plain backdrop, floating characters, artificial studio setup, empty white space.
+10. [Negative Prompt]: white background, blank white void, studio cyclorama, plain backdrop, floating characters, artificial studio setup, empty white space, child, minor, teenager, kid, school uniform, loli, childlike proportions.
 
 ================================================================================
 ESTRUTURA DE SAÍDA EXATA DOS PROMPTS (MANTENHA RIGOROSAMENTE A ESTRUTURA ANTERIOR):
@@ -1359,7 +1380,7 @@ INSTRUÇÕES VISUAIS (PROMPT SEEDANCE 2.5 & GOOGLE FLOW):
 [Lighting & Atmosphere]: [Motivação e fontes de iluminação volumétrica coerentes com o cenário]
 [Audio & Ambience (SFX)]: [Foley e efeitos de som ambiente sincronizados com o local]
 [Global Style & Physical Realism]: [Cinematografia 4K fotorrealista, ${skinDirective}, física real, 24fps]
-[Negative Prompt]: white background, blank white void, studio cyclorama, plain backdrop, floating characters, artificial studio setup, empty white space
+[Negative Prompt]: white background, blank white void, studio cyclorama, plain backdrop, floating characters, artificial studio setup, empty white space, child, minor, teenager, kid, school uniform, loli, childlike proportions
 
 PROMPT CENA 2 (SEEDANCE 2.5):
 ... até PROMPT CENA ${numScenes} (SEEDANCE 2.5):
@@ -1542,7 +1563,7 @@ const handleIdeas = async (req: any, res: any) => {
 
     const extraThemeGuidance =
       theme === 'Frutas'
-        ? `IMPORTANTE PARA O TEMA FRUTAS: Todos os personagens DEVEM ser FRUTAS HUMANIZADAS / ANTROPOMÓRFICAS (ex: Moranguinha a protagonista romântica com vestido rosa e sementes douradas, Bananão o playboy de terno, Uva Vitória a vilã invejosa de vestido de gala, Maçãzinho o jovem herdeiro, Cereza sedutora, etc.). Crie dilemas novelescos de traição, ciúmes, vingança, romance proibido e superação no mundo das frutas em animação 3D.`
+        ? `IMPORTANTE PARA O TEMA FRUTAS: Todos os personagens DEVEM ser FRUTAS HUMANIZADAS / ANTROPOMÓRFICAS ADULTAS (ex: Morango Vitória a protagonista adulta com vestido rosa e sementes douradas, Bananão o playboy de terno, Uva Vitória a vilã invejosa de vestido de gala, Maçã Rica o herdeiro adulto, Cereza a sedutora, etc.). Crie dilemas novelescos de traição, ciúmes, vingança, romance proibido e superação no mundo das frutas em animação 3D.`
         : theme === 'Vida de Jesus'
           ? `IMPORTANTE PARA O TEMA VIDA DE JESUS: TODAS as ideias devem se passar NOS DIAS DE HOJE, no cotidiano humano do Brasil (periferia, comunidade, interior, família, trabalho, feira, ônibus, hospital público, dívida, briga de família, grupo do WhatsApp). O PERSONAGEM JESUS DEVE APARECER EM TODAS AS IDEIAS com a APARÊNCIA CLÁSSICA E RECONHECÍVEL de Jesus: cabelo longo castanho-escuro, barba cheia, olhar sereno, túnica longa clara com faixa na cintura e sandálias rústicas (NUNCA vestido como homem comum, de camiseta/calça/tênis). Ele cruza o caminho dos personagens e transforma a situação com amor, perdão, compaixão e sabedoria. É PROIBIDO cenário bíblico de época (deserto, templos, vilas antigas) e milagre literal/espetacular (multiplicar pães, andar sobre a água): os "milagres" são GESTOS HUMANOS REAIS do cotidiano (o emprego que aparece, o perdão que desarma a briga, a dívida resolvida por bondade, a família reconciliada).`
           : '';

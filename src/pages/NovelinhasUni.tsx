@@ -119,12 +119,12 @@ const skinLevels = [
 
 const themeQuickIdeas: Record<string, string[]> = {
   'Frutas': [
-    'Moranguinha (protagonista romântica de vestido rosa e sementes douradas) descobre no dia do noivado que seu noivo Bananão (playboy de terno amarelo) tem um caso secreto com a vilã Uva Vitória (vestido roxo de gala).',
-    'Moranguinha é humilhada pela esnobe Maçã Bianca em um baile de gala no bistrô, até que o misterioso herdeiro Abacaxi Arthur (jaqueta e alfaiataria elegante) a convida para a valsa principal desmascarando a rival.',
+    'Morango Vitória (protagonista romântica de vestido rosa e sementes douradas) descobre no dia do noivado que seu noivo Bananão (playboy de terno amarelo) tem um caso secreto com a vilã Uva Vitória (vestido roxo de gala).',
+    'Morango Vitória é humilhada pela esnobe Maçã Bianca em um baile de gala no bistrô, até que o misterioso herdeiro Abacaxi Arthur (jaqueta e alfaiataria elegante) a convida para a valsa principal desmascarando a rival.',
     'A jovem Cereja Sofia (sensível de vestido vermelho) é acusada injustamente de roubo pela governanta Pera Gertrudes, até que o delegado Limão Bento encontra as joias escondidas na bolsa da acusadora.',
-    'Bananão tenta tomar o ateliê de costura da humilde Moranguinha para construir um cassino de frutas, mas o retorno triunfante de Manga Rodrigo como advogado vira o jogo no tribunal.',
-    'Moranguinha sofre um acidente no pomar real e perde a memória, sendo acolhida pelo bondoso Pêssego Paulo, enquanto Bananão, arrependido, vasculha a cidade inteira tentando reconquistá-la.',
-    'No grande julgamento do sindicato das frutas, a vilã Uva Vitória jura inocência, até que Moranguinha entra na corte com o contrato assinado que prova o golpe contra o prefeito Melancia.',
+    'Bananão tenta tomar o ateliê de costura da humilde Morango Vitória para construir um cassino de frutas, mas o retorno triunfante de Manga Rodrigo como advogado vira o jogo no tribunal.',
+    'Morango Vitória sofre um acidente no pomar real e perde a memória, sendo acolhida pelo bondoso Pêssego Paulo, enquanto Bananão, arrependido, vasculha a cidade inteira tentando reconquistá-la.',
+    'No grande julgamento do sindicato das frutas, a vilã Uva Vitória jura inocência, até que Morango Vitória entra na corte com o contrato assinado que prova o golpe contra o prefeito Melancia.',
   ],
   'Deuses Gregos': [
     'Zeus desce à Terra disfarçado de mendigo em Atenas para testar quem tem compaixão, sendo acolhido com carinho apenas por um humilde oleiro.',
@@ -1245,7 +1245,7 @@ const mergePartTwo = (previousText: string, nextText: string) => {
 
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 text-[11px] font-semibold">
                   <div className="rounded-xl border border-pink-500/30 bg-pink-500/10 p-2.5">
-                    <span className="block font-black text-pink-300">🍓 Moranguinha</span>
+                    <span className="block font-black text-pink-300">🍓 Morango Vitória</span>
                     <span className="text-zinc-400">Protagonista romântica, vestido rosa, sementes douradas</span>
                   </div>
                   <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5">
@@ -1365,7 +1365,7 @@ const mergePartTwo = (previousText: string, nextText: string) => {
               maxLength={900}
               placeholder={
                 theme === 'Frutas'
-                  ? 'Ex: Moranguinha (vestido rosa elegante, sementes douradas) confronta seu noivo Bananão (terno amarelo) em um baile de gala ao descobrir a farsa de Uva Vitória...'
+                  ? 'Ex: Morango Vitória (vestido rosa elegante, sementes douradas) confronta seu noivo Bananão (terno amarelo) em um baile de gala ao descobrir a farsa de Uva Vitória...'
                   : theme === 'Objetos'
                   ? 'Ex: Coxinhão (sobretudo preto, cronômetro na mão) humilha a Latinha (vestido simples) em uma loja de relógios de luxo, mas ela descobre que é a verdadeira herdeira da fortuna...'
                   : theme === 'Deuses Gregos'

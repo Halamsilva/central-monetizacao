@@ -90,6 +90,89 @@ async function generateWithGroq(promptInstructions: string, temperature: number)
   }
 }
 
+async function generateWithAgnes(
+  promptInstructions: string,
+  temperature: number,
+  referenceImage?: { mimeType: string; data: string } | null,
+) {
+  const apiKey = String(process.env.AGNES_API_KEY || '').trim();
+  if (!apiKey) return null;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 60000);
+  const startedAt = Date.now();
+
+  try {
+    const userContent = referenceImage
+      ? [
+          { type: 'text', text: promptInstructions },
+          { type: 'image_url', image_url: { url: `data:${referenceImage.mimeType};base64,${referenceImage.data}` } },
+        ]
+      : promptInstructions;
+
+    const response = await fetch('https://apihub.agnes-ai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'agnes-2.5-flash',
+        temperature,
+        max_tokens: 8000,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Você é roteirista de novelinhas em português do Brasil. Siga exatamente o formato solicitado, mantenha os personagens adultos e use a imagem anexada como referência visual obrigatória quando houver. Não omita seções.',
+          },
+          { role: 'user', content: userContent },
+        ],
+      }),
+      signal: controller.signal,
+    });
+
+    const payload: any = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      recordAiMetric({
+        agent: 'novelinhas',
+        provider: 'agnes',
+        model: 'agnes-2.5-flash',
+        outcome: 'error',
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+      });
+      console.warn('[novelinhas] agnes falhou:', response.status, String(payload?.error?.message || '').slice(0, 160));
+      return null;
+    }
+
+    const content = payload?.choices?.[0]?.message?.content;
+    const text = Array.isArray(content)
+      ? content.map((part: any) => part?.text || '').join('').trim()
+      : String(content || '').trim();
+
+    recordAiMetric({
+      agent: 'novelinhas',
+      provider: 'agnes',
+      model: 'agnes-2.5-flash',
+      outcome: text ? 'success' : 'empty',
+      durationMs: Date.now() - startedAt,
+    });
+    return text || null;
+  } catch (err: any) {
+    recordAiMetric({
+      agent: 'novelinhas',
+      provider: 'agnes',
+      model: 'agnes-2.5-flash',
+      outcome: 'error',
+      code: String(err?.name || err?.code || 'ERROR'),
+      durationMs: Date.now() - startedAt,
+    });
+    console.warn('[novelinhas] agnes erro:', String(err?.message || err).slice(0, 140));
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function generateWithOpenRouter(
   promptInstructions: string,
   temperature: number,
@@ -319,6 +402,12 @@ async function generateWithModelFallback(
   if (groqText) {
     console.log('[novelinhas] gerado pelo Groq (fallback)');
     return { text: groqText, modelUsed: 'groq/gpt-oss-120b' };
+  }
+
+  const agnesText = await generateWithAgnes(promptInstructions, temperature, referenceImage);
+  if (agnesText) {
+    console.log('[novelinhas] gerado pela Agnes (fallback)');
+    return { text: agnesText, modelUsed: 'agnes-2.5-flash' };
   }
 
   const openRouterText = await generateWithOpenRouter(promptInstructions, temperature, referenceImage);

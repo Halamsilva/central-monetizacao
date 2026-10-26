@@ -416,9 +416,8 @@ const Transcritor: React.FC = () => {
           </div>
         )}
 
-        <p className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-[11px] font-semibold leading-relaxed text-slate-500">
-          O video nao e enviado: o navegador extrai so o audio e manda em blocos para a Groq transcrever. Cada aluno
-          precisa ter acesso ativo.
+        <p className="mt-4 text-[11px] font-semibold text-slate-400">
+          Cada aluno precisa ter acesso ativo para transcrever.
         </p>
       </section>
 

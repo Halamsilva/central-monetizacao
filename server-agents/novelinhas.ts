@@ -88,7 +88,7 @@ async function generateWithModelFallback(
   // Antes eram 2 tentativas de 75s e um unico modelo lento travava tudo por 150s.
   const attemptsPerModel = options.attemptsPerModel ?? 1;
   const timeoutMs = options.timeoutMs ?? 45000;
-  const deadline = Date.now() + (options.totalBudgetMs ?? 240000);
+  const deadline = Date.now() + (options.totalBudgetMs ?? 90000);
   let lastError: any = null;
 
   for (const apiKey of keys) {
@@ -520,7 +520,7 @@ const generateLongVideo = async (ctx: LongVideoContext) => {
     await generateWithModelFallback(biblePrompt, ctx.apiKey, 0.7, {
       attemptsPerModel: 1,
       timeoutMs: 45000,
-      totalBudgetMs: 120000,
+      totalBudgetMs: 90000,
     })
   ).text || '';
 
@@ -580,7 +580,7 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
         generateWithModelFallback(blockPrompt, ctx.apiKey, temperature, {
           attemptsPerModel: 1,
           timeoutMs: 45000,
-          totalBudgetMs: 120000,
+          totalBudgetMs: 90000,
         }).then((result) => result.text || '');
 
       let blockText = await callBlock(0.75);

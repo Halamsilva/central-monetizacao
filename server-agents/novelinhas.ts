@@ -16,6 +16,55 @@ const withTimeout = <T>(promise: Promise<T>, ms: number, label: string) =>
 // Helper with retry and fallback across multiple models for high demand resilience.
 // Tenta varias chaves (a do aluno e a da plataforma): se o Google negar uma delas,
 // passa para a proxima em vez de derrubar a geracao.
+// Fallback final: quando o Gemini esta em alta demanda/cota, o Groq assume.
+async function generateWithGroq(promptInstructions: string, temperature: number) {
+  const apiKey = String(process.env.GROQ_API_KEY || '').trim();
+  if (!apiKey) return null;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 90000);
+
+  try {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-oss-120b',
+        temperature,
+        max_tokens: 8000,
+        reasoning_effort: 'low',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Voce e um roteirista profissional. Siga exatamente o formato e as regras do pedido, sem comentarios extras.',
+          },
+          { role: 'user', content: promptInstructions },
+        ],
+      }),
+      signal: controller.signal,
+    });
+
+    const payload: any = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      console.warn('[novelinhas] groq falhou:', response.status, String(payload?.error?.message || '').slice(0, 140));
+      return null;
+    }
+
+    const text = String(payload?.choices?.[0]?.message?.content || '').trim();
+    return text || null;
+  } catch (err: any) {
+    console.warn('[novelinhas] groq erro:', String(err?.message || err).slice(0, 140));
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function generateWithModelFallback(
   promptInstructions: string,
   apiKeys: string | string[],
@@ -88,6 +137,12 @@ async function generateWithModelFallback(
         }
       }
     }
+  }
+
+  const groqText = await generateWithGroq(promptInstructions, temperature);
+  if (groqText) {
+    console.log('[novelinhas] gerado pelo Groq (fallback)');
+    return { text: groqText, modelUsed: 'groq/gpt-oss-120b' };
   }
 
   throw lastError || new Error('Não foi possível gerar o roteiro devido à alta demanda temporária.');
@@ -464,7 +519,8 @@ const generateLongVideo = async (ctx: LongVideoContext) => {
   let bible = (
     await generateWithModelFallback(biblePrompt, ctx.apiKey, 0.7, {
       attemptsPerModel: 1,
-      timeoutMs: 60000,
+      timeoutMs: 45000,
+      totalBudgetMs: 120000,
     })
   ).text || '';
 
@@ -488,7 +544,7 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
 - a seção "ROTEIRO DE CONTINUIDADE (${ctx.numScenes} CENAS)" com EXATAMENTE ${ctx.numScenes} linhas, uma para cada cena, no formato "PLANO - CENA N | LOCAL: ... | QUEM FALA: Nome | QUEM RESPONDE: Nome (ou "ninguem") | ACAO: ... | FALA: "texto exato" | RESPOSTA: "texto exato" (ou "sem resposta") | GANCHO PARA A PROXIMA: ...". A atribuicao de fala e obrigatoria: cada nome e o dono real da fala escrita ao lado.`,
       ctx.apiKey,
       0.6,
-      { attemptsPerModel: 1, timeoutMs: 60000 },
+      { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 90000 },
     );
 
     const retryText = retry.text || '';
@@ -523,7 +579,8 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
       const callBlock = (temperature: number) =>
         generateWithModelFallback(blockPrompt, ctx.apiKey, temperature, {
           attemptsPerModel: 1,
-          timeoutMs: 120000,
+          timeoutMs: 45000,
+          totalBudgetMs: 120000,
         }).then((result) => result.text || '');
 
       let blockText = await callBlock(0.75);
@@ -544,7 +601,7 @@ CORRECAO OBRIGATORIA DO BLOCO
 Reescreva APENAS as cenas ${range.start} a ${range.end} (${expected} cenas), todas completas, numeradas em sequencia e com TODAS as 10 secoes entre colchetes em cada cena. Comece direto em "PROMPT CENA ${range.start} (SEEDANCE 2.5):" e nao inclua o PROMPT 00 nem o plano.`,
           ctx.apiKey,
           0.7,
-          { attemptsPerModel: 1, timeoutMs: 120000 },
+          { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 90000 },
         );
 
         if (retry.text && countSceneBlocks(retry.text) >= countSceneBlocks(blockText)) {
@@ -575,7 +632,7 @@ Reescreva as cenas ${range.start} a ${range.end} obeying a regra de ouro:
 Comece direto em "PROMPT CENA ${range.start} (SEEDANCE 2.5):".`,
           ctx.apiKey,
           0.5,
-          { attemptsPerModel: 1, timeoutMs: 120000 },
+          { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 90000 },
         );
 
         if (fixed.text && countSceneBlocks(fixed.text) >= countSceneBlocks(blockText)) {

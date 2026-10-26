@@ -1,8 +1,6 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getActiveGeminiApiKey } from './gemini-key.js';
-
-let ai: any = null;
+import { createGeminiGatewayForUser } from './aiGateway.js';
 
 // Helper to extract clean base64 data and mime type
 function extractBase64AndMime(dataUrl: string): { mimeType: string; data: string } {
@@ -178,88 +176,8 @@ function sanitizeResult(result: any): any {
   return result;
 }
 
-// Helper to call generateContent with fast retry, timeout protection and multi-model fallback for maximum uptime
-async function generateContentWithResilience(contents: any[], config: any): Promise<any> {
-  // Use high-availability models with distinct server quotas and fast inference times.
-  // gemini-3.1-flash-lite, gemini-3.1-flash-lite-preview, and gemini-3.5-flash-lite provide superior availability
-  // and bypass the high-demand bottlenecks that occasionally affect general flash models.
-  const modelsToTry = [
-    "gemini-flash-latest",
-    "gemini-3.1-flash-lite",
-    "gemini-3.1-flash-lite-preview",
-    "gemini-3.5-flash-lite",
-    "gemini-flash-lite-latest",
-    "gemini-3.8-flash"
-  ];
-  
-  let lastError: any = null;
-
-  // Round 1: Try each model with a 25s timeout and instant cascade on 503/429
-  for (const modelName of modelsToTry) {
-    try {
-      console.log(`[Gemini] Attempting request using model: ${modelName}...`);
-      const response = await Promise.race([
-        ai.models.generateContent({
-          model: modelName,
-          contents,
-          config,
-        }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error(`Timeout de resposta no modelo ${modelName} após 25s`)), 25000)
-        )
-      ]);
-      console.log(`[Gemini] Success using model: ${modelName}`);
-      return response;
-    } catch (error: any) {
-      lastError = error;
-      const errMessage = error?.message || String(error);
-
-      const isRateLimitOrUnavailable = 
-        errMessage.includes("503") || 
-        errMessage.includes("UNAVAILABLE") || 
-        errMessage.includes("high demand") ||
-        errMessage.includes("429") ||
-        errMessage.includes("RESOURCE_EXHAUSTED") ||
-        errMessage.includes("Quota exceeded");
-
-      if (isRateLimitOrUnavailable) {
-        console.warn(`[Gemini] Model ${modelName} busy/unavailable (503/429/quota). Cascading immediately to next model...`);
-        continue;
-      }
-
-      console.warn(`[Gemini] Model ${modelName} failed (${errMessage.slice(0, 100)}). Cascading to next model...`);
-    }
-  }
-
-  // Round 2 (Recovery): If all models failed due to transient network or spike, wait 1.2s and retry top 2 fastest models
-  console.warn("[Gemini] Round 1 failed. Waiting 1200ms before recovery attempt on top fast models...");
-  await new Promise((resolve) => setTimeout(resolve, 1200));
-
-  const recoveryModels = ["gemini-3.1-flash-lite-preview", "gemini-3.1-flash-lite"];
-  for (const modelName of recoveryModels) {
-    try {
-      console.log(`[Gemini Recovery] Attempting request using: ${modelName}...`);
-      const response = await Promise.race([
-        ai.models.generateContent({
-          model: modelName,
-          contents,
-          config,
-        }),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error(`Recovery timeout no modelo ${modelName}`)), 20000)
-        )
-      ]);
-      console.log(`[Gemini Recovery] Success using model: ${modelName}`);
-      return response;
-    } catch (recError: any) {
-      lastError = recError;
-      console.warn(`[Gemini Recovery] Model ${modelName} failed: ${recError?.message?.slice(0, 80)}`);
-    }
-  }
-  
-  throw new Error(
-    "Os servidores de IA estão com alta demanda temporária. Por favor, tente enviar novamente em instantes."
-  );
+async function generateContentWithResilience(ai: any, contents: any[], config: any): Promise<any> {
+  return ai.models.generateContent({ model: 'gemini-flash-latest', contents, config });
 }
 
 // API endpoint for prompt generation
@@ -780,7 +698,7 @@ REGRAS OBRIGATÓRIAS:
 
     promptContents.push({ text: userPrompt });
 
-    const response = await generateContentWithResilience(promptContents, {
+    const response = await generateContentWithResilience((req as any).ai, promptContents, {
       systemInstruction,
       responseMimeType: "application/json",
       responseSchema: {
@@ -993,7 +911,7 @@ Cena Original:
 ${JSON.stringify(scene)}
 `;
 
-    const response = await generateContentWithResilience([{ text: contents }], {
+    const response = await generateContentWithResilience((req as any).ai, [{ text: contents }], {
       systemInstruction,
       responseMimeType: "application/json",
       responseSchema: {
@@ -1209,7 +1127,7 @@ Projeto Atual:
 ${JSON.stringify(currentProject)}
 `;
 
-    const response = await generateContentWithResilience([{ text: contents }], {
+    const response = await generateContentWithResilience((req as any).ai, [{ text: contents }], {
       systemInstruction,
       responseMimeType: "application/json",
       responseSchema: {
@@ -1360,12 +1278,22 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'seedance', {
+    fallbackModels: [
+      'gemini-3.1-flash-lite',
+      'gemini-3.1-flash-lite-preview',
+      'gemini-3.5-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3.8-flash',
+    ],
+    timeoutMs: 20000,
+    totalBudgetMs: 90000,
+  });
+  if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
-  ai = new GoogleGenAI({ apiKey, httpOptions: { headers: { 'User-Agent': 'aistudio-build' } } });
+  req.ai = ai;
 
   const action = String(req.body?.action || '');
 

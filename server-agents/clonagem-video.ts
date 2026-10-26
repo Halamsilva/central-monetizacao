@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { getActiveGeminiApiKey } from './gemini-key.js';
+import { recordAiMetric } from './aiGateway.js';
 import { buildForensicVideoPrompt } from './clonagemPrompt.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 
@@ -208,6 +209,7 @@ const videoPart: any = { fileData: { fileUri, mimeType } };
   let result = '';
 
   for (const model of CANDIDATE_MODELS) {
+    const startedAt = Date.now();
     try {
       const response = await withTimeout(
         ai.models.generateContent({
@@ -221,12 +223,23 @@ const videoPart: any = { fileData: { fileUri, mimeType } };
       const text = extractText(response);
       if (text) {
         result = text;
+        recordAiMetric({ agent: 'clonagem-video', provider: 'gemini', model, outcome: 'success', durationMs: Date.now() - startedAt });
         break;
       }
 
       lastError = new Error(`O modelo ${model} nao retornou texto.`);
+      recordAiMetric({ agent: 'clonagem-video', provider: 'gemini', model, outcome: 'empty', durationMs: Date.now() - startedAt });
     } catch (error: any) {
       lastError = error;
+      recordAiMetric({
+        agent: 'clonagem-video',
+        provider: 'gemini',
+        model,
+        outcome: 'error',
+        status: Number(error?.status || error?.code) || undefined,
+        code: String(error?.name || error?.code || 'ERROR'),
+        durationMs: Date.now() - startedAt,
+      });
       console.error(`[clonagem-video] modelo ${model} falhou:`, String(error?.message || error).slice(0, 400));
 
       if (isPermissionDenied(error)) break;
@@ -242,6 +255,7 @@ const videoPart: any = { fileData: { fileUri, mimeType } };
     await sleep(1500);
 
     for (const model of ['gemini-3.6-flash', 'gemini-3-flash-preview', 'gemini-flash-lite-latest']) {
+      const startedAt = Date.now();
       try {
         const response = await withTimeout(
           ai.models.generateContent({
@@ -255,10 +269,20 @@ const videoPart: any = { fileData: { fileUri, mimeType } };
         const text = extractText(response);
         if (text) {
           result = text;
+          recordAiMetric({ agent: 'clonagem-video', provider: 'gemini', model, outcome: 'success', durationMs: Date.now() - startedAt });
           break;
         }
       } catch (error: any) {
         lastError = error;
+        recordAiMetric({
+          agent: 'clonagem-video',
+          provider: 'gemini',
+          model,
+          outcome: 'error',
+          status: Number(error?.status || error?.code) || undefined,
+          code: String(error?.name || error?.code || 'ERROR'),
+          durationMs: Date.now() - startedAt,
+        });
       }
     }
   }

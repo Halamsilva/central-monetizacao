@@ -1,9 +1,7 @@
-import { GoogleGenAI, Type } from '@google/genai';
+import { Type } from '@google/genai';
 import { analyzeRawImageBytes, VisualAnalysisMetrics } from '../src/pages/povProduto/services/imageAiVision.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getActiveGeminiApiKey } from './gemini-key.js';
-
-let ai: any = null;
+import { createGeminiGatewayForUser } from './aiGateway.js';
 
 const AGENT_SYSTEM_INSTRUCTION = `==================================================
 SISTEMA INTELIGENTE DE CRIAÇÃO DAS FALAS
@@ -915,7 +913,7 @@ const handleGenerate = async (req: any, res: any) => {
 
     let parsedData = null;
 
-    if (process.env.GEMINI_API_KEY) {
+    if ((req as any).ai) {
       try {
         const userPromptText = `Analise detalhadamente a imagem do produto anexada e gere os 3 PROMPTS DE VÍDEO POV DE 9 SEGUNDOS rigorosamente de acordo com o padrão exigido.
 ${brandName ? `Nome/marca informado pelo usuário: ${brandName}. (Você pode citar esta marca de forma natural na fala)` : 'Nenhuma marca foi informada pelo usuário. NUNCA invente nome de marca.'}
@@ -933,7 +931,7 @@ ATENÇÃO CRÍTICA PARA AS FALAS:
 - PROMPT 3: Benefício final (custo-benefício/utilidade) + CTA curto pro carrinho laranja (~9s).
 - Cada prompt deve estar completo e autossuficiente em inglês para gerador de vídeo, com descrição minuciosa do produto visualmente identificado, câmera de ação na testa, braço direito no canto inferior direito, e a fala exata em português brasileiro incluída no prompt e no campo de fala.`;
 
-        const response = await ai.models.generateContent({
+        const response = await (req as any).ai.models.generateContent({
           model: 'gemini-3.8-flash',
           contents: {
             parts: [
@@ -1092,13 +1090,16 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'pov-produto', {
+    fallbackModels: [],
+    timeoutMs: 20000,
+    totalBudgetMs: 40000,
+  });
+  if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
-  process.env.GEMINI_API_KEY = apiKey;
-  ai = new GoogleGenAI({ apiKey, httpOptions: { headers: { 'User-Agent': 'aistudio-build' } } });
+  req.ai = ai;
 
   if (String(req.body?.action || '') === 'analyze-product') {
     return handleAnalyze(req, res);

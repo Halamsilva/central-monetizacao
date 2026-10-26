@@ -1,4 +1,5 @@
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
+import { recordAiMetric } from './aiGateway.js';
 
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
 
@@ -112,6 +113,7 @@ export default async function handler(req: any, res: any) {
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 190000);
+  const startedAt = Date.now();
 
   try {
     const response = await fetch('https://apihub.agnes-ai.com/v1/images/generations', {
@@ -128,6 +130,7 @@ export default async function handler(req: any, res: any) {
 
     if (!response.ok) {
       const detail = String(payload?.error?.message || payload?.message || '').trim();
+      recordAiMetric({ agent: 'agnes-imagens', provider: 'agnes', model, outcome: 'error', status: response.status, durationMs: Date.now() - startedAt });
       console.warn('[agnes-imagens] falhou:', response.status, detail.slice(0, 160));
       return res.status(response.status).json({ error: friendlyError(response.status, detail) });
     }
@@ -136,8 +139,11 @@ export default async function handler(req: any, res: any) {
     const imageUrl = String(item?.url || '').trim();
 
     if (!imageUrl) {
+      recordAiMetric({ agent: 'agnes-imagens', provider: 'agnes', model, outcome: 'empty', durationMs: Date.now() - startedAt });
       return res.status(502).json({ error: 'A Agnes nao devolveu a imagem. Tente novamente.' });
     }
+
+    recordAiMetric({ agent: 'agnes-imagens', provider: 'agnes', model, outcome: 'success', durationMs: Date.now() - startedAt });
 
     return res.json({
       ok: true,
@@ -148,6 +154,14 @@ export default async function handler(req: any, res: any) {
     });
   } catch (err: any) {
     const message = String(err?.message || err);
+    recordAiMetric({
+      agent: 'agnes-imagens',
+      provider: 'agnes',
+      model,
+      outcome: 'error',
+      code: String(err?.name || err?.code || 'ERROR'),
+      durationMs: Date.now() - startedAt,
+    });
 
     if (err?.name === 'AbortError' || /aborted|timeout/i.test(message)) {
       return res.status(504).json({ error: 'A imagem demorou demais para sair. Tente novamente.' });

@@ -1,7 +1,7 @@
-import { GoogleGenAI, Type } from '@google/genai';
+import { Type } from '@google/genai';
 import { getRandomThemeSuggestions } from '../src/pages/receitasEbook/data/presets.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { createGeminiGatewayForUser } from './aiGateway.js';
 import { getOutputLanguage, buildLanguageDirective } from './output-language.js';
 
 const CORPO_REVELADO_SYSTEM_INSTRUCTION = `
@@ -137,58 +137,9 @@ ATENÇÃO: NÃO incluir a fala "OSS!" na locução nem na ação do apresentador
 - Sem filtros artificiais, sem cortes impossíveis, mantendo a autenticidade crua e viral do formato.
 `;
 
-// Helper to get initialized Gemini client
-function getGeminiClient() {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return null;
-  }
-  return new GoogleGenAI({
-    apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      },
-    },
-  });
-}
-
-// Multi-tier model fallback with immediate cascade for high-demand / 503 / 429 conditions
-async function generateWithGeminiFallback(ai: GoogleGenAI, contents: any, config: any) {
-  // Candidate models prioritized by stability, capacity and speed:
-  // gemini-3.1-flash-lite is the fastest (~1.1s) and avoids 503 high-demand queues and quota bottlenecks.
-  // gemini-flash-latest and gemini-3.1-pro-preview provide robust backup tiers.
-  const candidateModels = [
-    'gemini-flash-latest',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash',
-    'gemini-3.8-flash',
-    'gemini-3-flash-preview',
-    'gemini-flash-lite-latest',
-    'gemini-3.5-flash-lite',
-    'gemini-3.1-flash-lite',
-  ];
-  let lastError: any = null;
-
-  for (const model of candidateModels) {
-    try {
-      const response = await ai.models.generateContent({
-        model,
-        contents,
-        config,
-      });
-      if (response && response.text) {
-        return { response, modelUsed: model };
-      }
-    } catch (err: any) {
-      lastError = err;
-      // Smooth internal cascade without dumping raw error JSON to stdout
-      console.log(`[Gemini Engine] Primary route busy (${model}), routing automatically to alternate tier...`);
-      continue;
-    }
-  }
-
-  throw lastError || new Error('Todos os modelos Gemini estão temporariamente indisponíveis.');
+async function generateWithGeminiFallback(ai: any, contents: any, config: any) {
+  const response = await ai.models.generateContent({ model: 'gemini-flash-latest', contents, config });
+  return { response, modelUsed: response?.__aiGateway?.model || 'gemini-fallback' };
 }
 
 // Enforce strict ban on subtitles and on-screen text across all prompts
@@ -984,7 +935,7 @@ const handleGenerateScript = async (req: any, res: any) => {
       return res.status(400).json({ error: 'Forneça ao menos um tema, vídeo viral, texto, livro ou imagem de referência.' });
     }
 
-    const ai = getGeminiClient();
+    const ai = (req as any).ai;
 
     if (!ai) {
       // Fallback to our engineered script generator
@@ -1454,7 +1405,7 @@ const handleChat = async (req: any, res: any) => {
     }
 
     // Direct theme provided! If it looks like a theme or instruction, generate script directly!
-    const ai = getGeminiClient();
+    const ai = (req as any).ai;
 
     if (!ai) {
       const script = enforceZeroTextAndSubtitles(generateLocalScript(message));
@@ -1511,7 +1462,7 @@ const handleRecommend = async (req: any, res: any) => {
       : typeof req.body?.exclude === 'string'
         ? req.body.exclude.split(',')
         : [];
-    const ai = getGeminiClient();
+    const ai = (req as any).ai;
 
     if (!ai) {
       const suggestions = getRandomThemeSuggestions(6, exclude);
@@ -1602,7 +1553,7 @@ const handleAutofillTheme = async (req: any, res: any) => {
     return res.status(400).json({ error: 'Digite o tema antes de usar o preenchimento com IA.' });
   }
 
-  const ai = getGeminiClient();
+  const ai = (req as any).ai;
   if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
@@ -1696,12 +1647,12 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'receitas-ebook');
+  if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
-  process.env.GEMINI_API_KEY = apiKey;
+  req.ai = ai;
 
   const action = req.body?.action || 'generate-script';
 

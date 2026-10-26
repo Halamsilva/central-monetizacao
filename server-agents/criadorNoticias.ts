@@ -1,19 +1,6 @@
-import { GoogleGenAI, ThinkingLevel } from '@google/genai';
+import { ThinkingLevel } from '@google/genai';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getGeminiApiKeyCandidates, describeGeminiError } from './gemini-key.js';
-
-// O cliente e criado por requisicao (a chave depende do aluno), nunca no topo do arquivo.
-let ai: GoogleGenAI | null = null;
-
-const getGeminiClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
-
-  return new GoogleGenAI({
-    apiKey,
-    httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
-  });
-};
+import { createGeminiGatewayForUser } from './aiGateway.js';
 
 function callWithTimeout<T>(promise: Promise<T>, ms = 25000): Promise<T> {
   let timer: any;
@@ -379,7 +366,7 @@ Responda ESTRITAMENTE em formato JSON válido com esta estrutura exata:
       }
 
       response = await callWithTimeout(
-        ai.models.generateContent({
+        (req as any).ai.models.generateContent({
           model: 'gemini-3.1-flash-lite',
           contents: userPrompt,
           config: configObj,
@@ -392,7 +379,7 @@ Responda ESTRITAMENTE em formato JSON válido com esta estrutura exata:
       // Tier 2: Try gemini-3.8-flash with ThinkingLevel.LOW
       try {
         response = await callWithTimeout(
-          ai.models.generateContent({
+          (req as any).ai.models.generateContent({
             model: 'gemini-3.8-flash',
             contents: userPrompt,
             config: {
@@ -497,8 +484,8 @@ const handleGenerateTts = async (req: any, res: any) => {
 
     const cleanText = text.slice(0, 2500);
 
-    const response = await callWithTimeout(
-      ai.models.generateContent({
+    const response: any = await callWithTimeout(
+      (req as any).ai.models.generateContent({
         model: 'gemini-3.8-flash-lite-tts',
         contents: [
           {
@@ -600,20 +587,16 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKeyCandidates = await getGeminiApiKeyCandidates(serviceSupabase, user.id);
-  if (!apiKeyCandidates.length) {
-    return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
-  }
-
-  for (const apiKey of apiKeyCandidates) {
-    process.env.GEMINI_API_KEY = apiKey;
-    ai = getGeminiClient();
-    if (ai) break;
-  }
-
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'criador-noticias', {
+    fallbackModels: [],
+    timeoutMs: 20000,
+    totalBudgetMs: 35000,
+  });
   if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
+
+  req.ai = ai;
 
   const action = req.body?.action || 'generate-news';
 

@@ -1,5 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { createGeminiGatewayForUser } from './aiGateway.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 
 const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
@@ -97,8 +96,8 @@ export default async function handler(req: any, res: any) {
     const user = await checkAccess(serviceSupabase, req, res);
     if (!user) return;
 
-    const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-    if (!apiKey) {
+    const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'configurable-agent');
+    if (!ai) {
       return sendError(res, 400, 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.');
     }
 
@@ -182,7 +181,6 @@ Regras finais:
 `.trim()
       : basePrompt;
 
-    const ai = new GoogleGenAI({ apiKey });
     const contents: any = image
       ? { parts: [{ inlineData: image }, { text: prompt }] }
       : prompt;

@@ -1,5 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { createGeminiGatewayForUser } from './aiGateway.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 
 const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
@@ -300,8 +299,12 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'ganchos', {
+    fallbackModels: [],
+    timeoutMs: 10000,
+    totalBudgetMs: 12000,
+  });
+  if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
@@ -315,11 +318,6 @@ export default async function handler(req: any, res: any) {
   const languageTag = `fala no idioma e estilo de ${languageLabel}:`;
 
   const rawInput = originalPrompt.trim();
-
-  const ai = new GoogleGenAI({
-    apiKey,
-    httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
-  });
 
   const userMessage = `Reescreva o prompt completo preservando rigorosamente todos os personagens, a cena e o enredo do usuário, gerando falas INÉDITAS, impactantes e completas EM ${languageName} com EXATAMENTE 9 SEGUNDOS de duração cada (~27 a 30 palavras), identificando quem fala em cada momento. Use a etiqueta "${languageTag}" antes da fala de cada personagem:
 

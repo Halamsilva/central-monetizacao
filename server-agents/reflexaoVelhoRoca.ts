@@ -1,70 +1,22 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
 import { createServiceClient, isFirebaseAdminConfigured } from "../api/_firebase.js";
-import { getActiveGeminiApiKey } from "./gemini-key.js";
+import { createGeminiGatewayForUser } from "./aiGateway.js";
 
-const getGenAI = (req: any): GoogleGenAI | null => {
-  const apiKey = req?.geminiApiKey;
-  if (!apiKey) {
-    return null;
-  }
-  return new GoogleGenAI({
-    apiKey,
-    httpOptions: {
-      headers: {
-        "User-Agent": "aistudio-build",
-      },
-    },
-  });
-};
-// Executa chamada ao Gemini com retry automático em caso de picos de demanda (503/429) e fallback para modelos alternativos estáveis
+const getGenAI = (req: any): any => req?.geminiGateway || null;
+
 async function callGeminiWithFallback(
-  ai: GoogleGenAI,
+  ai: any,
   params: {
     contents: any;
     config?: any;
     preferredModel?: string;
   }
 ) {
-  const preferred = params.preferredModel || "gemini-3.8-flash";
-  const candidateModels = Array.from(
-    new Set([preferred, "gemini-3.1-flash-lite", "gemini-flash-latest"])
-  );
-
-  let lastError: any = null;
-
-  for (const model of candidateModels) {
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const response = await ai.models.generateContent({
-          model,
-          contents: params.contents,
-          config: params.config,
-        });
-        return response;
-      } catch (err: any) {
-        lastError = err;
-        const errMsg = (err?.message || "").toLowerCase();
-        const isTemporarySpike =
-          err?.status === 503 ||
-          err?.status === 429 ||
-          errMsg.includes("503") ||
-          errMsg.includes("429") ||
-          errMsg.includes("high demand") ||
-          errMsg.includes("unavailable") ||
-          errMsg.includes("overloaded") ||
-          errMsg.includes("resource exhausted");
-
-        if (isTemporarySpike && attempt === 1) {
-          // Breve pausa para superar pico momentâneo de demanda
-          await new Promise((resolve) => setTimeout(resolve, 600 + Math.random() * 300));
-          continue;
-        }
-        break;
-      }
-    }
-  }
-
-  throw lastError;
+  return ai.models.generateContent({
+    model: params.preferredModel || "gemini-flash-latest",
+    contents: params.contents,
+    config: params.config,
+  });
 }
 
 const AGENT_SYSTEM_PROMPT = `
@@ -162,7 +114,7 @@ No subtitles, captions, text, logos, watermarks or graphical overlays anywhere i
 `;
 
 async function extractAvatarVisualProfile(
-  ai: GoogleGenAI | null,
+  ai: any,
   avatarUrl?: string,
   userDescription?: string,
   gender: "male" | "female" = "male"
@@ -1213,12 +1165,12 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const geminiGateway = await createGeminiGatewayForUser(serviceSupabase, user.id, 'reflexao-velho-roca');
+  if (!geminiGateway) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
-  req.geminiApiKey = apiKey;
+  req.geminiGateway = geminiGateway;
 
   const action = req.body?.action || 'generate-reflection';
 

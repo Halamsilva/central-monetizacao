@@ -1,11 +1,8 @@
 import express, { Request, Response } from 'express';
-import { GoogleGenAI } from '@google/genai';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { createGeminiGatewayForUser } from './aiGateway.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 
 const app = express();
-
-let ai!: GoogleGenAI;
 
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
 
@@ -785,7 +782,7 @@ app.post('/api/analyze-character', async (req: Request, res: Response) => {
 
     const result = await callGeminiWithFallbacks(
       async (modelName) => {
-        const response = await ai.models.generateContent({
+        const response = await (req as any).ai.models.generateContent({
           model: modelName,
           contents: {
             parts: [
@@ -859,7 +856,7 @@ app.post('/api/analyze-supplement', async (req: Request, res: Response) => {
 
     const result = await callGeminiWithFallbacks(
       async (modelName) => {
-        const response = await ai.models.generateContent({
+        const response = await (req as any).ai.models.generateContent({
           model: modelName,
           contents: {
             parts: [
@@ -942,7 +939,7 @@ Responda rigorosamente em JSON no formato:
 
     const result = await callGeminiWithFallbacks(
       async (modelName) => {
-        const response = await ai.models.generateContent({
+        const response = await (req as any).ai.models.generateContent({
           model: modelName,
           contents: prompt,
           config: {
@@ -1190,7 +1187,7 @@ Você deve gerar a resposta rigorosamente em formato JSON com o seguinte schema 
 
     const parsed = await callGeminiWithFallbacks(
       async (modelName) => {
-        const response = await ai.models.generateContent({
+        const response = await (req as any).ai.models.generateContent({
           model: modelName,
           contents: systemPrompt,
           config: {
@@ -1236,7 +1233,7 @@ app.post('/api/refine-prompt', async (req: Request, res: Response) => {
 
     const result = await callGeminiWithFallbacks(
       async (modelName) => {
-        const response = await ai.models.generateContent({
+        const response = await (req as any).ai.models.generateContent({
           model: modelName,
           contents: `Você é um diretor de vídeo IA para VSL do nicho de limpeza doméstica, donas de casa e cuidados com o lar no Brasil.
 REGRA INVIOLÁVEL 1: NUNCA USE FRASES CLICHÊS! Use linguagem brasileira coloquial, natural e empática de dona de casa para dona de casa.
@@ -1358,17 +1355,18 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'limpeza', {
+    fallbackModels: [],
+    timeoutMs: 15000,
+    totalBudgetMs: 25000,
+  });
+  if (!ai) {
     return res.status(400).json({
       error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.',
     });
   }
 
-  ai = new GoogleGenAI({
-    apiKey,
-    httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
-  });
+  req.ai = ai;
 
   await ensureJsonBody(req);
 

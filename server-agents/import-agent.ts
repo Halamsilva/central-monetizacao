@@ -1,5 +1,5 @@
-import { GoogleGenAI, Type } from '@google/genai';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { Type } from '@google/genai';
+import { createGeminiGatewayForUser } from './aiGateway.js';
 import { createServiceClient, isFirebaseAdminConfigured, isVerifiedOwner } from '../api/_firebase.js';
 
 const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
@@ -85,8 +85,8 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'Nao recebi os arquivos do zip.' });
   }
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, admin.user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, admin.user.id, 'import-agent');
+  if (!ai) {
     return res.status(500).json({ error: 'GEMINI_API_KEY nao esta configurada.' });
   }
 
@@ -104,7 +104,6 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
     const result = await ai.models.generateContent({
       model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
       contents: `${INSTRUCTION}\n\n${corpus}`,

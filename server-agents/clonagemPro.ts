@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { getActiveGeminiApiKey } from './gemini-key.js';
+import { recordAiMetric } from './aiGateway.js';
 import { buildForensicVideoPromptPro } from './clonagemProPrompt.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 
@@ -214,6 +215,7 @@ STRICT MANDATORY RULES:
   let translatedText = '';
 
   for (const model of TRANSLATE_MODELS) {
+    const startedAt = Date.now();
     try {
       const response: any = await withTimeout(
         ai.models.generateContent({
@@ -231,9 +233,19 @@ STRICT MANDATORY RULES:
       const extracted = extractText(response);
       if (extracted) {
         translatedText = extracted;
+        recordAiMetric({ agent: 'clonagem-pro', provider: 'gemini', model, outcome: 'success', durationMs: Date.now() - startedAt });
         break;
       }
     } catch (error: any) {
+      recordAiMetric({
+        agent: 'clonagem-pro',
+        provider: 'gemini',
+        model,
+        outcome: 'error',
+        status: Number(error?.status || error?.code) || undefined,
+        code: String(error?.name || error?.code || 'ERROR'),
+        durationMs: Date.now() - startedAt,
+      });
       console.error(`[clonagem-pro:[translate] modelo ${model} falhou:`, String(error?.message || error).slice(0, 300));
     }
   }
@@ -292,6 +304,7 @@ export default async function handler(req: any, res: any) {
   let result = '';
 
   for (const model of CANDIDATE_MODELS) {
+    const startedAt = Date.now();
     try {
       const response = await withTimeout(
         ai.models.generateContent({
@@ -305,12 +318,22 @@ export default async function handler(req: any, res: any) {
       const text = extractText(response);
       if (text) {
         result = text;
+        recordAiMetric({ agent: 'clonagem-pro', provider: 'gemini', model, outcome: 'success', durationMs: Date.now() - startedAt });
         break;
       }
 
       lastError = new Error(`O modelo ${model} nao retornou texto.`);
     } catch (error: any) {
       lastError = error;
+      recordAiMetric({
+        agent: 'clonagem-pro',
+        provider: 'gemini',
+        model,
+        outcome: 'error',
+        status: Number(error?.status || error?.code) || undefined,
+        code: String(error?.name || error?.code || 'ERROR'),
+        durationMs: Date.now() - startedAt,
+      });
       console.error(`[clonagem-pro] modelo ${model} falhou:`, String(error?.message || error).slice(0, 400));
 
       if (isPermissionDenied(error)) break;
@@ -323,6 +346,7 @@ export default async function handler(req: any, res: any) {
     await sleep(1500);
 
     for (const model of ['gemini-3.6-flash', 'gemini-3-flash-preview', 'gemini-flash-lite-latest']) {
+      const startedAt = Date.now();
       try {
         const response = await withTimeout(
           ai.models.generateContent({
@@ -336,10 +360,20 @@ export default async function handler(req: any, res: any) {
         const text = extractText(response);
         if (text) {
           result = text;
+          recordAiMetric({ agent: 'clonagem-pro', provider: 'gemini', model, outcome: 'success', durationMs: Date.now() - startedAt });
           break;
         }
       } catch (error: any) {
         lastError = error;
+        recordAiMetric({
+          agent: 'clonagem-pro',
+          provider: 'gemini',
+          model,
+          outcome: 'error',
+          status: Number(error?.status || error?.code) || undefined,
+          code: String(error?.name || error?.code || 'ERROR'),
+          durationMs: Date.now() - startedAt,
+        });
       }
     }
   }

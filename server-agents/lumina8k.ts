@@ -1,6 +1,5 @@
-import { GoogleGenAI } from '@google/genai';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { createGeminiGatewayForUser } from './aiGateway.js';
 
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
 
@@ -69,8 +68,12 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'lumina8k', {
+    fallbackModels: MODELS.slice(1),
+    timeoutMs: 20000,
+    totalBudgetMs: 60000,
+  });
+  if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
@@ -83,47 +86,34 @@ export default async function handler(req: any, res: any) {
   const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
   const base64Data = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
 
-  const ai = new GoogleGenAI({ apiKey });
   let lastError: any = null;
 
-  for (const model of MODELS) {
-    try {
-      const response = await ai.models.generateContent({
-        model,
-        contents: {
-          parts: [
-            { inlineData: { data: base64Data, mimeType } },
-            { text: UPSCALE_PROMPT },
-          ],
-        },
-        config: { responseMimeType: 'application/json' },
-      });
+  try {
+    const response = await ai.models.generateContent({
+      model: MODELS[0],
+      contents: {
+        parts: [
+          { inlineData: { data: base64Data, mimeType } },
+          { text: UPSCALE_PROMPT },
+        ],
+      },
+      config: { responseMimeType: 'application/json' },
+    });
 
-      const text = response.text || '';
-      if (text.trim()) {
-        let parsed: any = {};
-        try {
-          parsed = JSON.parse(text);
-        } catch {
-          parsed = { mode: 'image_to_image', copy_prompt: text, negative_prompt: '' };
-        }
-        return res.json({ success: true, ...parsed });
+    const text = response.text || '';
+    if (text.trim()) {
+      let parsed: any = {};
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        parsed = { mode: 'image_to_image', copy_prompt: text, negative_prompt: '' };
       }
-    } catch (error: any) {
-      lastError = error;
-      const message = String(error?.message || '');
-      const retryable =
-        message.includes('429') ||
-        message.includes('RESOURCE_EXHAUSTED') ||
-        message.includes('quota') ||
-        message.includes('503') ||
-        message.includes('UNAVAILABLE') ||
-        message.includes('high demand') ||
-        message.includes('overloaded') ||
-        message.includes('not found') ||
-        message.includes('NOT_FOUND');
-      if (!retryable) break;
+      return res.json({ success: true, ...parsed });
     }
+
+    lastError = new Error('Resposta vazia do Gemini.');
+  } catch (error: any) {
+    lastError = error;
   }
 
   console.error('Lumina 8K error:', lastError);

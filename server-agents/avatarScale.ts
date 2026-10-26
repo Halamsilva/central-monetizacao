@@ -1,10 +1,7 @@
-import { GoogleGenAI } from '@google/genai';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { createGeminiGatewayForUser } from './aiGateway.js';
 
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
-
-let ai: any = null;
 
 const checkAccess = async (serviceSupabase: any, req: any, res: any) => {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
@@ -56,12 +53,14 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'avatar-scale', {
+    fallbackModels: ['gemini-flash-latest', 'gemini-3.1-flash-lite'],
+    timeoutMs: 20000,
+    totalBudgetMs: 60000,
+  });
+  if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
-
-  ai = new GoogleGenAI({ apiKey, httpOptions: { headers: { 'User-Agent': 'aistudio-build' } } });
 
   try {
     const { image, stage, contextPrompt, gender = 'auto' } = req.body || {};
@@ -190,41 +189,13 @@ export default async function handler(req: any, res: any) {
       `;
     }
 
-    const models = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
-    let rawText = '';
-    let lastError: any = null;
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: { parts: [imagePart, { text: prompt }] },
+    });
+    const rawText = String(response.text || '').trim();
 
-    for (const model of models) {
-      try {
-        const response = await ai.models.generateContent({
-          model,
-          contents: { parts: [imagePart, { text: prompt }] },
-        });
-        const text = response.text || '';
-        if (text.trim()) {
-          rawText = text;
-          lastError = null;
-          break;
-        }
-      } catch (err: any) {
-        lastError = err;
-        const msg = String(err?.message || err || '');
-        const retryable =
-          msg.includes('429') ||
-          msg.includes('RESOURCE_EXHAUSTED') ||
-          msg.includes('quota') ||
-          msg.includes('503') ||
-          msg.includes('UNAVAILABLE') ||
-          msg.includes('high demand') ||
-          msg.includes('overloaded');
-        if (!retryable) throw err;
-      }
-    }
-
-    if (!rawText) {
-      if (lastError) throw lastError;
-      throw new Error('A IA nao retornou resultado. Tente novamente.');
-    }
+    if (!rawText) throw new Error('A IA nao retornou resultado. Tente novamente.');
 
     const genderMatch = rawText.match(/\[GENDER:\s*(FEMALE|MALE)\]/i);
     const detectedGender = genderMatch

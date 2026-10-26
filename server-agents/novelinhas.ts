@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getActiveGeminiApiKey, getGeminiApiKeyCandidates, describeGeminiError } from './gemini-key.js';
+import { getGeminiApiKeyCandidates, describeGeminiError } from './gemini-key.js';
+import { recordAiMetric } from './aiGateway.js';
 
 const withTimeout = <T>(promise: Promise<T>, ms: number, label: string) =>
   Promise.race([
@@ -23,6 +24,7 @@ async function generateWithGroq(promptInstructions: string, temperature: number)
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 30000);
+  const startedAt = Date.now();
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -51,13 +53,36 @@ async function generateWithGroq(promptInstructions: string, temperature: number)
     const payload: any = await response.json().catch(() => ({}));
 
     if (!response.ok) {
+      recordAiMetric({
+        agent: 'novelinhas',
+        provider: 'groq',
+        model: 'openai/gpt-oss-120b',
+        outcome: 'error',
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+      });
       console.warn('[novelinhas] groq falhou:', response.status, String(payload?.error?.message || '').slice(0, 140));
       return null;
     }
 
     const text = String(payload?.choices?.[0]?.message?.content || '').trim();
+    recordAiMetric({
+      agent: 'novelinhas',
+      provider: 'groq',
+      model: 'openai/gpt-oss-120b',
+      outcome: text ? 'success' : 'empty',
+      durationMs: Date.now() - startedAt,
+    });
     return text || null;
   } catch (err: any) {
+    recordAiMetric({
+      agent: 'novelinhas',
+      provider: 'groq',
+      model: 'openai/gpt-oss-120b',
+      outcome: 'error',
+      code: String(err?.name || err?.code || 'ERROR'),
+      durationMs: Date.now() - startedAt,
+    });
     console.warn('[novelinhas] groq erro:', String(err?.message || err).slice(0, 140));
     return null;
   } finally {
@@ -80,6 +105,7 @@ async function generateWithOpenRouter(
   for (const model of models) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 25000);
+    const startedAt = Date.now();
 
     try {
       const userContent = referenceImage
@@ -119,6 +145,14 @@ async function generateWithOpenRouter(
       const payload: any = await response.json().catch(() => ({}));
 
       if (!response.ok) {
+        recordAiMetric({
+          agent: 'novelinhas',
+          provider: 'openrouter',
+          model,
+          outcome: 'error',
+          status: response.status,
+          durationMs: Date.now() - startedAt,
+        });
         console.warn(
           `[novelinhas] openrouter ${model} falhou:`,
           response.status,
@@ -133,10 +167,32 @@ async function generateWithOpenRouter(
         : String(content || '').trim();
 
       if (text) {
+        recordAiMetric({
+          agent: 'novelinhas',
+          provider: 'openrouter',
+          model,
+          outcome: 'success',
+          durationMs: Date.now() - startedAt,
+        });
         console.log('[novelinhas] gerado pelo OpenRouter (fallback)', model);
         return text;
       }
+      recordAiMetric({
+        agent: 'novelinhas',
+        provider: 'openrouter',
+        model,
+        outcome: 'empty',
+        durationMs: Date.now() - startedAt,
+      });
     } catch (err: any) {
+      recordAiMetric({
+        agent: 'novelinhas',
+        provider: 'openrouter',
+        model,
+        outcome: 'error',
+        code: String(err?.name || err?.code || 'ERROR'),
+        durationMs: Date.now() - startedAt,
+      });
       console.warn(`[novelinhas] openrouter ${model} erro:`, String(err?.message || err).slice(0, 140));
     } finally {
       clearTimeout(timer);
@@ -191,6 +247,7 @@ async function generateWithModelFallback(
       if (Date.now() > deadline) break;
 
       for (let attempt = 0; attempt < attemptsPerModel; attempt++) {
+        const startedAt = Date.now();
         try {
           const response = await withTimeout(
             ai.models.generateContent({
@@ -207,11 +264,34 @@ async function generateWithModelFallback(
 
           const generatedText = response.text || '';
           if (generatedText && generatedText.trim().length > 0) {
+            recordAiMetric({
+              agent: 'novelinhas',
+              provider: 'gemini',
+              model,
+              outcome: 'success',
+              durationMs: Date.now() - startedAt,
+            });
             return { text: generatedText, modelUsed: model };
           }
+          recordAiMetric({
+            agent: 'novelinhas',
+            provider: 'gemini',
+            model,
+            outcome: 'empty',
+            durationMs: Date.now() - startedAt,
+          });
         } catch (err: any) {
           lastError = err;
           const description = describeGeminiError(err);
+          recordAiMetric({
+            agent: 'novelinhas',
+            provider: 'gemini',
+            model,
+            outcome: 'error',
+            status: Number(err?.status || err?.code) || undefined,
+            code: description.code,
+            durationMs: Date.now() - startedAt,
+          });
 
           // Chave negada pelo Google: nao adianta tentar outros modelos, proxima chave.
           if (description.accessDenied) {

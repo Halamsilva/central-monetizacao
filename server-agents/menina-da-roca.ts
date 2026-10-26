@@ -1,5 +1,5 @@
-import { GoogleGenAI, Type } from '@google/genai';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { Type } from '@google/genai';
+import { createGeminiGatewayForUser } from './aiGateway.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 import { CTAS, LIST_OF_TASKS, type RuralTask } from '../src/roca-types.js';
 
@@ -136,7 +136,7 @@ Retorne somente JSON puro com exatamente 5 objetos. Cada objeto deve ter:
 `.trim();
 };
 
-async function generateWithFallback(ai: GoogleGenAI, payload: { contents: any; config?: any }) {
+async function generateWithFallback(ai: any, payload: { contents: any; config?: any }) {
   const models = [
     process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
     'gemini-3-flash-preview',
@@ -312,10 +312,16 @@ export default async function handler(req: any, res: any) {
   if (!user) return;
 
   const serviceSupabase = getServiceSupabase();
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'menina-da-roca', {
+    fallbackModels: [],
+    timeoutMs: 12000,
+    totalBudgetMs: 20000,
+  });
+  if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
+
+  req.ai = ai;
 
   const action = cleanText(req.body?.action, 40);
   if (action === 'analyze-image') {
@@ -326,7 +332,7 @@ export default async function handler(req: any, res: any) {
     }
 
     try {
-      const genAI = new GoogleGenAI({ apiKey });
+      const genAI = (req as any).ai;
       const result = await generateWithFallback(genAI, {
         contents: {
           parts: [
@@ -362,7 +368,7 @@ Retorne apenas o texto descritivo simples e direto, pronto para prompt de imagem
     const languageConfig = getLanguageConfig(req.body?.language);
 
     try {
-      const genAI = new GoogleGenAI({ apiKey });
+      const genAI = (req as any).ai;
       const textPart = {
         text: image
           ? `${buildRocaGenerationPrompt(req.body, task)}
@@ -468,8 +474,7 @@ Retorne tambem uma descricao curta da referencia quando houver imagem.
       parts.push({ inlineData: image });
     }
 
-    const genAI = new GoogleGenAI({ apiKey });
-    const result = await genAI.models.generateContent({
+    const result = await (req as any).ai.models.generateContent({
       model: process.env.GEMINI_MODEL || 'gemini-3-flash-preview',
       contents: [{ role: 'user', parts }],
       config: {

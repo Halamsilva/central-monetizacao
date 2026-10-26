@@ -1,6 +1,6 @@
-import { GoogleGenAI, Type } from '@google/genai';
+import { Type } from '@google/genai';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { createGeminiGatewayForUser } from './aiGateway.js';
 
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
 
@@ -56,8 +56,12 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'mestre30s', {
+    fallbackModels: MODELS.slice(1),
+    timeoutMs: 20000,
+    totalBudgetMs: 60000,
+  });
+  if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
@@ -180,22 +184,12 @@ A receita deve conter:
       },
     });
 
-    const ai = new GoogleGenAI({ apiKey });
-    let response: any = null;
-    let lastError: any = null;
-
-    for (const model of MODELS) {
-      try {
-        response = await ai.models.generateContent({ model, contents: promptText, config: buildConfig() as any });
-        if (response?.text) break;
-      } catch (error) {
-        lastError = error;
-      }
-    }
-
-    if (!response?.text) {
-      throw lastError || new Error('Falha ao gerar a receita.');
-    }
+    const response = await ai.models.generateContent({
+      model: MODELS[0],
+      contents: promptText,
+      config: buildConfig() as any,
+    });
+    if (!response?.text) throw new Error('Falha ao gerar a receita.');
 
     const parsedData = JSON.parse(response.text || '{}');
     return res.json(parsedData);

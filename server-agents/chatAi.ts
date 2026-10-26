@@ -1,5 +1,6 @@
 ﻿import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 import { getGeminiApiKeyCandidates, describeGeminiError } from './gemini-key.js';
+import { recordAiMetric } from './aiGateway.js';
 
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
 
@@ -138,6 +139,7 @@ const streamGemini = async (
 ): Promise<AttemptResult> => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 90000);
+  const startedAt = Date.now();
 
   try {
     const response = await fetch(
@@ -159,6 +161,7 @@ const streamGemini = async (
 
     if (!response.ok || !response.body) {
       const detail = await response.text().catch(() => '');
+      recordAiMetric({ agent: 'chat-ia', provider: 'gemini', model, outcome: 'error', status: response.status, durationMs: Date.now() - startedAt });
       console.warn(`[chat] gemini ${model} falhou: ${response.status} ${detail.slice(0, 160)}`);
       return { streamed: false, error: `${response.status} ${detail.slice(0, 200)}` };
     }
@@ -175,8 +178,10 @@ const streamGemini = async (
       }
     );
 
+    recordAiMetric({ agent: 'chat-ia', provider: 'gemini', model, outcome: streamed ? 'success' : 'empty', durationMs: Date.now() - startedAt });
     return { streamed, error: streamed ? '' : 'Resposta vazia do Gemini.' };
   } catch (err: any) {
+    recordAiMetric({ agent: 'chat-ia', provider: 'gemini', model, outcome: 'error', code: String(err?.name || err?.code || 'ERROR'), durationMs: Date.now() - startedAt });
     console.warn(`[chat] gemini ${model} erro:`, String(err?.message || err).slice(0, 160));
     return { streamed: false, error: String(err?.message || err) };
   } finally {
@@ -193,6 +198,7 @@ const streamOpenAiCompatible = async (
 ): Promise<AttemptResult> => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 90000);
+  const startedAt = Date.now();
 
   const baseUrl = provider === 'groq' ? 'https://api.groq.com/openai/v1' : 'https://openrouter.ai/api/v1';
 
@@ -221,6 +227,7 @@ const streamOpenAiCompatible = async (
 
     if (!response.ok || !response.body) {
       const detail = await response.text().catch(() => '');
+      recordAiMetric({ agent: 'chat-ia', provider, model, outcome: 'error', status: response.status, durationMs: Date.now() - startedAt });
       console.warn(`[chat] ${provider} ${model} falhou: ${response.status} ${detail.slice(0, 160)}`);
       return { streamed: false, error: `${response.status} ${detail.slice(0, 200)}` };
     }
@@ -236,8 +243,10 @@ const streamOpenAiCompatible = async (
       }
     );
 
+    recordAiMetric({ agent: 'chat-ia', provider, model, outcome: streamed ? 'success' : 'empty', durationMs: Date.now() - startedAt });
     return { streamed, error: streamed ? '' : `Resposta vazia do ${provider}.` };
   } catch (err: any) {
+    recordAiMetric({ agent: 'chat-ia', provider, model, outcome: 'error', code: String(err?.name || err?.code || 'ERROR'), durationMs: Date.now() - startedAt });
     console.warn(`[chat] ${provider} ${model} erro:`, String(err?.message || err).slice(0, 160));
     return { streamed: false, error: String(err?.message || err) };
   } finally {

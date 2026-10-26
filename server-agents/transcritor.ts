@@ -1,4 +1,5 @@
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
+import { recordAiMetric } from './aiGateway.js';
 
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
 
@@ -117,6 +118,7 @@ export default async function handler(req: any, res: any) {
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 180000);
+  const startedAt = Date.now();
 
   try {
     const form = new FormData();
@@ -138,6 +140,14 @@ export default async function handler(req: any, res: any) {
 
     if (!response.ok) {
       const detail = String(payload?.error?.message || payload?.message || '').trim();
+      recordAiMetric({
+        agent: 'transcritor',
+        provider: 'groq',
+        model: 'whisper-large-v3-turbo',
+        outcome: 'error',
+        status: response.status,
+        durationMs: Date.now() - startedAt,
+      });
       console.warn('[transcritor] falhou:', response.status, detail.slice(0, 160));
       return res.status(response.status).json({ error: friendlyGroqError(response.status, detail) });
     }
@@ -153,6 +163,14 @@ export default async function handler(req: any, res: any) {
           .filter((segment: any) => segment.text && segment.noSpeech < 0.85)
       : [];
 
+    recordAiMetric({
+      agent: 'transcritor',
+      provider: 'groq',
+      model: 'whisper-large-v3-turbo',
+      outcome: 'success',
+      durationMs: Date.now() - startedAt,
+    });
+
     return res.json({
       ok: true,
       text: String(payload?.text || '').trim(),
@@ -162,6 +180,14 @@ export default async function handler(req: any, res: any) {
     });
   } catch (err: any) {
     const message = String(err?.message || err);
+    recordAiMetric({
+      agent: 'transcritor',
+      provider: 'groq',
+      model: 'whisper-large-v3-turbo',
+      outcome: 'error',
+      code: String(err?.name || err?.code || 'ERROR'),
+      durationMs: Date.now() - startedAt,
+    });
 
     if (err?.name === 'AbortError' || /aborted|timeout/i.test(message)) {
       return res.status(504).json({ error: 'A transcricao demorou demais. Tente novamente.' });

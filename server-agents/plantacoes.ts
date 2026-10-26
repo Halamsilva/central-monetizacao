@@ -1,5 +1,5 @@
-import { GoogleGenAI, Type } from '@google/genai';
-import { getActiveGeminiApiKey } from './gemini-key.js';
+import { Type } from '@google/genai';
+import { createGeminiGatewayForUser } from './aiGateway.js';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
 
 const getServiceSupabase = () => isFirebaseAdminConfigured() ? createServiceClient() : null;
@@ -134,8 +134,12 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'O tema e obrigatorio.' });
   }
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'plantacoes', {
+    fallbackModels: MODELS.slice(1),
+    timeoutMs: 20000,
+    totalBudgetMs: 60000,
+  });
+  if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
@@ -160,64 +164,49 @@ Gere exatamente 4 cenas conectadas (A Descoberta, O Segredo, A Produção, A Col
 
   contentsPayload.push({ text: instructionsPrompt });
 
-  const ai = new GoogleGenAI({
-    apiKey,
-    httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
-  });
-
   let lastError: any = null;
 
-  for (const model of MODELS) {
-    try {
-      const response = await ai.models.generateContent({
-        model,
-        contents: contentsPayload,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          temperature: 0.85,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              theme: { type: Type.STRING, description: 'O tema de cultivo' },
-              characterProfile: { type: Type.STRING, description: 'Perfil descritivo e estável do personagem principal em português' },
-              scenographyDescription: { type: Type.STRING, description: 'Configuração cênico-espacial estável do local em português' },
-              scenes: {
-                type: Type.ARRAY,
-                description: 'Lista de exatamente 4 cenas coerentes e cronológicas',
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    title: { type: Type.STRING, description: 'Título padrão da cena (ex: CENA 1 — A DESCOBERTA)' },
-                    visualPrompt: { type: Type.STRING, description: 'Prompt cinematográfico detalhado em inglês contendo os termos do padrão visual obrigatório' },
-                    narration: { type: Type.STRING, description: 'A fala coloquial em português, de aproximadamente 8 segundos' },
-                    ambientSound: { type: Type.STRING, description: 'Som ambiente rústico e natural em português' },
-                  },
-                  required: ['title', 'visualPrompt', 'narration', 'ambientSound'],
+  try {
+    const response = await ai.models.generateContent({
+      model: MODELS[0],
+      contents: contentsPayload,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        temperature: 0.85,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            theme: { type: Type.STRING, description: 'O tema de cultivo' },
+            characterProfile: { type: Type.STRING, description: 'Perfil descritivo e estável do personagem principal em português' },
+            scenographyDescription: { type: Type.STRING, description: 'Configuração cênico-espacial estável do local em português' },
+            scenes: {
+              type: Type.ARRAY,
+              description: 'Lista de exatamente 4 cenas coerentes e cronológicas',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING, description: 'Título padrão da cena (ex: CENA 1 — A DESCOBERTA)' },
+                  visualPrompt: { type: Type.STRING, description: 'Prompt cinematográfico detalhado em inglês contendo os termos do padrão visual obrigatório' },
+                  narration: { type: Type.STRING, description: 'A fala coloquial em português, de aproximadamente 8 segundos' },
+                  ambientSound: { type: Type.STRING, description: 'Som ambiente rústico e natural em português' },
                 },
+                required: ['title', 'visualPrompt', 'narration', 'ambientSound'],
               },
-              seo: { type: Type.STRING, description: "Texto corrido de SEO contendo Título, Descrição do vídeo e exatamente 5 hashtags separadas por espaço. IMPORTANTE: Não utilize NENHUMA marcação markdown ou títulos para separar as informações." },
             },
-            required: ['theme', 'characterProfile', 'scenographyDescription', 'scenes', 'seo'],
+            seo: { type: Type.STRING, description: "Texto corrido de SEO contendo Título, Descrição do vídeo e exatamente 5 hashtags separadas por espaço. IMPORTANTE: Não utilize NENHUMA marcação markdown ou títulos para separar as informações." },
           },
+          required: ['theme', 'characterProfile', 'scenographyDescription', 'scenes', 'seo'],
         },
-      });
+      },
+    });
 
-      const resultText = extractText(response);
-      if (!resultText) {
-        lastError = new Error('O modelo Gemini retornou uma resposta vazia.');
-        continue;
-      }
-
-      const parsedData = JSON.parse(resultText);
-      return res.status(200).json(parsedData);
-    } catch (error: any) {
-      lastError = error;
-      console.error(`[plantacoes] modelo ${model} falhou:`, String(error?.message || error).slice(0, 400));
-
-      const message = String(error?.message || '');
-      if (message.includes('PERMISSION_DENIED') || message.includes('API key not valid')) break;
-    }
+    const resultText = extractText(response);
+    if (!resultText) throw new Error('O modelo Gemini retornou uma resposta vazia.');
+    return res.status(200).json(JSON.parse(resultText));
+  } catch (error: any) {
+    lastError = error;
+    console.error('[plantacoes] falha na geracao:', String(error?.message || error).slice(0, 400));
   }
 
   console.error('Erro na geracao do script de plantacoes:', lastError);

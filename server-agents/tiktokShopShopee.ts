@@ -1,16 +1,6 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
 import { createServiceClient, isFirebaseAdminConfigured } from "../api/_firebase.js";
-import { getActiveGeminiApiKey } from "./gemini-key.js";
-
-const getAi = (apiKey: string) =>
-  new GoogleGenAI({
-    apiKey,
-    httpOptions: {
-      headers: {
-        "User-Agent": "aistudio-build",
-      },
-    },
-  });
+import { createGeminiGatewayForUser } from "./aiGateway.js";
 
 const GEMINI_MODELS = ["gemini-3.8-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
 
@@ -29,7 +19,7 @@ const friendlyAiError = (error: any) => {
 };
 
 // Tenta varios modelos (cada um tem cota propria) com retry curto em 503/high demand.
-async function callGeminiWithRetry<T>(fn: (model: string) => Promise<T>, retries = 2, delay = 1500): Promise<T> {
+async function callGeminiWithRetry<T>(fn: (model: string) => Promise<T>, retries = 0, delay = 1500): Promise<T> {
   let lastError: any = null;
   for (const model of GEMINI_MODELS) {
     for (let attempt = 0; attempt <= retries; attempt++) {
@@ -55,7 +45,7 @@ async function callGeminiWithRetry<T>(fn: (model: string) => Promise<T>, retries
 }
 
 const handleGeneratePrompts = async (req: any, res: any) => {
-  const ai = req.geminiApiKey ? getAi(String(req.geminiApiKey)) : null;
+  const ai = req.ai || null;
   try {
     const { platform, productName, productDescription, mainBenefit, productImage, avatarImage, videoStyle = "presenter", voiceGender = "female" } = req.body;
 
@@ -200,7 +190,7 @@ INFORMAÇÕES DE MULTIMÍDIA FORNECIDAS:`;
       text: promptText,
     });
 
-    const response = await callGeminiWithRetry((model) =>
+    const response: any = await callGeminiWithRetry((model) =>
       ai.models.generateContent({
         model,
         contents: { parts: contentParts },
@@ -269,7 +259,7 @@ INFORMAÇÕES DE MULTIMÍDIA FORNECIDAS:`;
 
 // API endpoint to analyze a product image via Vision multimodal API
 const handleAnalyzeProduct = async (req: any, res: any) => {
-  const ai = req.geminiApiKey ? getAi(String(req.geminiApiKey)) : null;
+  const ai = req.ai || null;
   try {
     const { productImage } = req.body;
 
@@ -306,7 +296,7 @@ ATENÇÃO: Não use jargões chatos ou formais demais, use português coloquial 
       },
     ];
 
-    const response = await callGeminiWithRetry((model) =>
+    const response: any = await callGeminiWithRetry((model) =>
       ai.models.generateContent({
         model,
         contents: { parts: contentParts },
@@ -409,12 +399,16 @@ export default async function handler(req: any, res: any) {
   const user = await checkAccess(serviceSupabase, req, res);
   if (!user) return;
 
-  const apiKey = await getActiveGeminiApiKey(serviceSupabase, user.id);
-  if (!apiKey) {
+  const ai = await createGeminiGatewayForUser(serviceSupabase, user.id, 'tiktok-shop-shopee', {
+    fallbackModels: [],
+    timeoutMs: 12000,
+    totalBudgetMs: 18000,
+  });
+  if (!ai) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
-  req.geminiApiKey = apiKey;
+  req.ai = ai;
 
   const action = req.body?.action || 'generate-prompts';
 

@@ -53,6 +53,7 @@ const themes = [
   { label: 'Roça', icon: '🤠' },
   { label: 'Comédia Br', icon: '😂' },
   { label: 'Frutas', icon: '🍎' },
+  { label: 'Objetos', icon: '🍗' },
   { label: 'Soldado voltando da guerra', icon: '🪖' },
   { label: 'Viagem no Tempo', icon: '⏳' },
   { label: 'Cartoon Emocionante', icon: '🎨' },
@@ -1225,6 +1226,41 @@ const mergePartTwo = (previousText: string, nextText: string) => {
               </div>
             )}
 
+            {theme === 'Objetos' && (
+              <div className="mb-4 overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-950/40 via-zinc-950 to-black p-4 sm:p-5 shadow-lg">
+                <div className="mb-2 flex items-center gap-2 text-amber-300">
+                  <span className="text-2xl">🍗</span>
+                  <div>
+                    <h4 className="text-xs font-black uppercase tracking-wider text-amber-300 sm:text-sm">
+                      Modo Objetos Humanizados • CGI Hiper-realista Vertical (9:16)
+                    </h4>
+                    <p className="text-[11px] font-semibold text-amber-200/80">
+                      Corpo humano com cabeça gigante de objeto ou comida: coxinha, carro, latinha, celular, tênis
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 text-[11px] font-semibold">
+                  <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-2.5">
+                    <span className="block font-black text-amber-300">🍗 Coxinhão</span>
+                    <span className="text-zinc-400">Vilão de sobretudo preto, farinha crocante</span>
+                  </div>
+                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-2.5">
+                    <span className="block font-black text-red-300">🚗 Carrão</span>
+                    <span className="text-zinc-400">Playboy arrogante, lataria vermelha brilhante</span>
+                  </div>
+                  <div className="rounded-xl border border-sky-500/30 bg-sky-500/10 p-2.5">
+                    <span className="block font-black text-sky-300">🥤 Latinha</span>
+                    <span className="text-zinc-400">Mocinha batalhadora, metal escovado</span>
+                  </div>
+                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2.5">
+                    <span className="block font-black text-emerald-300">📱 Celular</span>
+                    <span className="text-zinc-400">Herdeiro ou rival, tela como olhos</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <p className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 sm:text-xs sm:tracking-[0.24em]">
               Adicione detalhes específicos para {effectiveTheme} ou selecione uma ideia rápida abaixo
             </p>
@@ -1237,6 +1273,8 @@ const mergePartTwo = (previousText: string, nextText: string) => {
               placeholder={
                 theme === 'Frutas'
                   ? 'Ex: Moranguinha (vestido rosa elegante, sementes douradas) confronta seu noivo Bananão (terno amarelo) em um baile de gala ao descobrir a farsa de Uva Vitória...'
+                  : theme === 'Objetos'
+                  ? 'Ex: Coxinhão (sobretudo preto, cronômetro na mão) humilha a Latinha (vestido simples) em uma loja de relógios de luxo, mas ela descobre que é a verdadeira herdeira da fortuna...'
                   : theme === 'Deuses Gregos'
                   ? 'Ex: Zeus desce à Terra disfarçado de mendigo em Atenas para testar a compaixão dos mortais...'
                   : theme === 'Roça'

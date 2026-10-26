@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -43,6 +43,7 @@ import {
   Newspaper,
   Puzzle,
   Cherry,
+  Drumstick,
   Images,
   Users2,
 } from 'lucide-react';
@@ -122,9 +123,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const mainMenu: MenuItem[] = [
-    { title: 'Início', icon: Home, path: '/' },
+    { title: 'InÃ­cio', icon: Home, path: '/' },
     { title: 'Chat IA', icon: MessageCircle, path: '/chat-ia' },
-    { title: 'Automações do FLOW', icon: Workflow, path: '/automacoes-flow' },
+    { title: 'AutomaÃ§Ãµes do FLOW', icon: Workflow, path: '/automacoes-flow' },
   ];
 
   // Dupla checagem: so mostra itens administrativos quando o perfil e realmente admin.
@@ -137,8 +138,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const videoToolsMenu: MenuItem[] = [
-    { title: 'Menina da Roça', icon: Camera, path: '/menina-da-roca' },
-    { title: 'Clonagem de Vídeo', icon: FileVideo, path: '/clonagem-video' },
+    { title: 'Menina da RoÃ§a', icon: Camera, path: '/menina-da-roca' },
+    { title: 'Clonagem de VÃ­deo', icon: FileVideo, path: '/clonagem-video' },
     { title: 'Novelinhas Universal', icon: Film, path: '/novelinhas' },
     { title: 'Mestre 30s', icon: ChefHat, path: '/mestre-30s' },
     { title: 'Receitas Anti-Pragas', icon: Bug, path: '/insetos' },
@@ -148,18 +149,19 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const newAgentsMenu: MenuItem[] = [
     { title: 'Gordo para Magro', icon: Scale, path: '/avatar-scale' },
-    { title: 'Reflexão do Velho da Roça', icon: Heart, path: '/reflexao-velho-roca' },
-    { title: 'Estúdio de Vídeos IA', icon: Clapperboard, path: '/video-studio' },
+    { title: 'ReflexÃ£o do Velho da RoÃ§a', icon: Heart, path: '/reflexao-velho-roca' },
+    { title: 'EstÃºdio de VÃ­deos IA', icon: Clapperboard, path: '/video-studio' },
     { title: 'Imagens IA', icon: ImageIcon, path: '/imagens-ia' },
     { title: 'Gerador de Ganchos', icon: Flame, path: '/ganchos' },
-    { title: 'Vídeos de Plantações', icon: Sprout, path: '/plantacoes' },
-    { title: 'Vídeos de Limpeza', icon: Sparkles, path: '/limpeza' },
+    { title: 'VÃ­deos de PlantaÃ§Ãµes', icon: Sprout, path: '/plantacoes' },
+    { title: 'VÃ­deos de Limpeza', icon: Sparkles, path: '/limpeza' },
     { title: 'Novelinhas Gordos', icon: HeartHandshake, path: '/novelinhas-gordos' },
-    { title: 'Criador de Notícias', icon: Newspaper, path: '/criador-noticias' },
+    { title: 'Criador de NotÃ­cias', icon: Newspaper, path: '/criador-noticias' },
     { title: 'Clonagem PRO', icon: Puzzle, path: '/clonagem-pro' },
     { title: 'Novelinhas Frutas', icon: Cherry, path: '/novelinhas-frutas' },
+    { title: 'Novelinhas Objetos', icon: Drumstick, path: '/novelinhas-objetos' },
     { title: 'Extrator de Quadros', icon: Images, path: '/extrator-frames' },
-    { title: 'Transcritor de Vídeo', icon: FileAudio, path: '/transcritor' },
+    { title: 'Transcritor de VÃ­deo', icon: FileAudio, path: '/transcritor' },
     { title: 'Perfis Virais', icon: Users2, path: '/perfis-virais' },
     { title: 'Upscale de Imagem', icon: ImageIcon, path: '/lumina-8k' },
     { title: 'TikTok Shop & Shopee', icon: ShoppingBag, path: '/tiktok-shop-shopee' },
@@ -188,7 +190,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const accountMenu: MenuItem[] = [
     { title: 'Perfil', icon: User, path: '/profile' },
-    { title: 'Configurações', icon: Settings, path: '/settings' },
+    { title: 'ConfiguraÃ§Ãµes', icon: Settings, path: '/settings' },
   ];
 
   const adminMenu: MenuItem[] = [
@@ -197,7 +199,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { title: 'Gerenciar Avisos', icon: Megaphone, path: '/admin/notices' },
     { title: 'Gerenciar Alunos', icon: Users, path: '/admin/students' },
     { title: 'Gerenciar Blog', icon: FileText, path: '/admin/blog' },
-    { title: 'Página de Assinatura', icon: CircleDollarSign, path: '/admin/assinatura' },
+    { title: 'PÃ¡gina de Assinatura', icon: CircleDollarSign, path: '/admin/assinatura' },
   ];
 
   const renderMenuItem = (item: MenuItem) => {
@@ -286,7 +288,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             <h1 className="text-xl font-black leading-none text-slate-900">
               CENTRAL
               <br />
-              MONETIZAÇÃO
+              MONETIZAÃ‡ÃƒO
             </h1>
             <p className="mt-1 text-xs font-bold uppercase tracking-wider text-orange-500">
               Redes Sociais
@@ -308,14 +310,14 @@ const Sidebar: React.FC<SidebarProps> = ({
           {filterHiddenItems(mainMenu).map(renderMenuItem)}
         </div>
 
-        {renderSection('Estratégias', primaryStrategyMenu)}
-        {renderSection('Vídeos', videoToolsMenu)}
+        {renderSection('EstratÃ©gias', primaryStrategyMenu)}
+        {renderSection('VÃ­deos', videoToolsMenu)}
         {renderSection('Novos Agentes', newAgentsMenu)}
         {renderSection('Redes Sociais', socialToolsMenu)}
         {renderSection('Ferramentas', utilityMenu)}
         {renderSection('Conta', accountMenu)}
 
-        {isAdmin && renderSection('Administração', adminMenu)}
+        {isAdmin && renderSection('AdministraÃ§Ã£o', adminMenu)}
       </nav>
 
       <div className="border-t border-slate-100 bg-white p-4">
@@ -324,7 +326,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {showAvatar ? (
               <img
                 src={profile?.avatar_url || ''}
-                alt={profile?.full_name || 'Usuário'}
+                alt={profile?.full_name || 'UsuÃ¡rio'}
                 decoding="async"
                 onError={() => setAvatarFailed(true)}
                 className="h-full w-full object-cover"
@@ -336,7 +338,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           <div className="min-w-0">
             <p className="truncate text-base font-black text-slate-900">
-              {profile?.full_name || 'Usuário'}
+              {profile?.full_name || 'UsuÃ¡rio'}
             </p>
             <p className="truncate text-sm text-slate-500">
               {profile?.email}

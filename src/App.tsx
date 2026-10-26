@@ -90,6 +90,7 @@ const routeTitles: Record<string, string> = {
   '/reflexao-velho-roca': 'ReflexÃ£o do Velho da RoÃ§a',
   '/novelinhas-gordos': 'Novelinhas Gordos',
   '/novelinhas-frutas': 'Novelinhas Frutas',
+  '/novelinhas-objetos': 'Novelinhas Objetos',
   '/extrator-frames': 'Extrator de Quadros',
   '/perfis-virais': 'Perfis Virais',
   '/chat-ia': 'Chat IA',
@@ -269,7 +270,8 @@ export default function App() {
           <Route path="criador-noticias" element={<CriadorNoticias />} />
           <Route path="video-studio" element={<VideoStudio />} />
           <Route path="novelinhas-gordos" element={<NovelinhasUni lockedTheme="Gordos" extraThemes={['Gordos Suados']} />} />
-          <Route path="novelinhas-frutas" element={<NovelinhasUni lockedTheme="Frutas" />} />
+          <Route path="novelinhas-frutas" element={<NovelinhasUni lockedTheme="Frutas" extraThemes={['Objetos']} />} />
+          <Route path="novelinhas-objetos" element={<NovelinhasUni lockedTheme="Objetos" extraThemes={['Frutas']} />} />
           <Route path="extrator-frames" element={<FrameExtractor />} />
           <Route path="perfis-virais" element={<ViralProfiles />} />
           <Route path="chat-ia" element={<ChatIA />} />

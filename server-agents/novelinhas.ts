@@ -653,6 +653,38 @@ Os cenários devem ser ambientes 3D cinematográficos na escala das frutas ou ce
 ILUMINAÇÃO OBRIGATÓRIA: luz quente e suave, atmosfera de filme familiar de animação (Pixar / Disney), com sombras macias e profundidade.
 É ESTRITAMENTE PROIBIDO fazer humanos comuns como protagonistas neste tema. Os personagens DEVEM SER AS FRUTAS HUMANIZADAS!`,
 
+      'Objetos': `O TEMA OBRIGATÓRIO É 'OBJETOS HUMANIZADOS (NOVELINHA DE OBJETOS E COMIDAS ANTROPOMÓRFICAS)' 🍗🚗🥤📱.
+DIRETRIZ MÁXIMA DE PERSONAGENS DE OBJETO:
+Neste tema, TODOS os personagens são OBRIGATORIAMENTE OBJETOS OU COMIDAS HUMANIZADOS: o corpo é humano, mas a CABEÇA é o objeto em tamanho grande (exatamente como nos vídeos virais de coxinha, carro, latinha, celular). Aparência estritamente consistente em todos os episódios e cenas!
+
+ESTILO VISUAL OBRIGATÓRIO:
+- CGI HIPER-REALISTA de cinema / campanha de luxo (NÃO é cartoon, NÃO é desenho animado, NÃO é Pixar).
+- Textura real e tátil do objeto: farinha de rosca dourada e crocante da coxinha, lataria pintada e brilhante do carro, metal escovado da latinha, plástico polido do celular, couro e costura do tênis.
+- Iluminação cinematográfica dramática, profundidade de campo, formato vertical 9:16.
+
+ESTRUTURA OBRIGATÓRIA PARA CRIAR CADA PERSONAGEM (SEGUIR À RISCA NO PROMPT 00 E REPETIR EM TODAS AS CENAS):
+- Objeto: qual é exatamente (Coxinha, Pastel, Pão de queijo, Hambúrguer, Pizza, Latinha de refrigerante, Garrafa de cerveja, Carro esportivo, Celular, Tênis, Fone de ouvido, Controle de videogame, Sorvete).
+- Gênero: Feminino ou Masculino.
+- Idade aparente: Jovem, adulto ou idoso.
+- Cabeça: o objeto em tamanho grande e reconhecível, com volume, brilho e textura reais (a cabeça ocupa boa parte do quadro).
+- Rosto: olhos humanos grandes e expressivos com íris colorida embutidos no objeto, sobrancelhas grossas e arqueadas, boca larga e articulada com dentes perfeitos para lip-sync (quando o objeto permitir, a boca pode estar na parte frontal ou na "tampa").
+- Corpo: corpo humano atlético e imponente (ombros, braços, pernas e mãos de cinco dedos), pele humana normal ou levemente tingida com a cor do objeto.
+- Roupa: figurino humano de luxo coerente com a personalidade (sobretudo preto, terno risca de giz, camisa social, relógio de ouro, vestido de gala), tecidos e cores fixos que JAMAIS mudam entre as cenas.
+- Expressão e postura: descreva o olhar e a emoção de cada momento (arrogante, apaixonado, traído, ameaçador, engraçado) e a posição do corpo (em pé na vitrine, sentado no trono, apontando o dedo, segurando um cronômetro).
+- Personalidade: marcante de novela (vilão frio e calculista, playboy arrogante, mocinha batalhadora, amigo engraçado).
+- Papel na novela: Protagonista, vilão/vilã, namorado(a), rival, chefe, herdeiro ou mentor.
+- Estilo: CGI hiper-realista cinematográfico vertical 9:16.
+
+EXEMPLO CANÔNICO DE REFERÊNCIA:
+Coxinhão, o protagonista:
+"Um homem alto e imponente com corpo humano atlético e cabeça gigante de coxinha dourada e crocante, com farinha de rosca visível e textura real de salgado frito. Seu rosto tem olhos humanos intensos e escuros, sobrancelhas grossas franzidas, nariz definido e boca larga com dentes brancos. Usa sobretudo preto longo, gola alta preta, calça social preta, cinto de fivela dourada e sapatos de couro brilhantes. Segura um cronômetro digital com números vermelhos. Está em uma loja de relógios de luxo com vitrines iluminadas e vista noturna da cidade. Expressão séria, autoritária e ameaçadora. Estilo: CGI hiper-realista cinematográfico, iluminação dramática, textura real, formato vertical 9:16."
+
+CENÁRIOS DO TEMA OBJETOS:
+Ambientes reais e sofisticados em escala humana: loja de relógios de luxo, cobertura com vista noturna da cidade, showroom de carros, tribunal, mansão com escadaria de mármore, restaurante chique, camarim de teatro, academia de luxo, estacionamento subterrâneo iluminado.
+ILUMINAÇÃO OBRIGATÓRIA: cinematográfica, contraste alto, luz quente e dramática, sombras profundas.
+
+É ESTRITAMENTE PROIBIDO fazer humanos comuns como protagonistas neste tema. Os personagens DEVEM SER OS OBJETOS/COMIDAS HUMANIZADOS!`,
+
       'Deuses Gregos': `O TEMA OBRIGATÓRIO É 'DEUSES GREGOS' ⚡🏛️.
 A história DEVE se passar na mitologia grega, com divindades do Olimpo (Zeus, Hades, Poseidon, Atena, Afrodite, Ares, etc.), poderes divinos, raios, templos de mármore e confrontos épicos.`,
 
@@ -820,7 +852,9 @@ COTIDIANO BRASILEIRO PRECÁRIO REAL (FONTE OBRIGATÓRIA DAS HISTÓRIAS):
     const skinDirective =
       theme === 'Frutas'
         ? 'Estilo de animação 3D cinematográfica de alto nível (estilo Pixar / Disney feature animation), textura orgânica e tátil hiper-realista da fruta (pequenas sementes douradas na pele do morango, brilho natural da casca cerosa, translucidez e subsurface scattering), personagens antropomórficos humanizados expressivos com proporções anatômicas estilizadas, roupas humanas elegantes bem ajustadas (vestido, terno, etc.), iluminação profissional e formato vertical 9:16.'
-        : (skinDescriptorMap[skinRealism] || skinDescriptorMap.ultimate);
+        : theme === 'Objetos'
+          ? 'Estilo CGI hiper-realista de cinema (fotorrealista, NÃO cartoon), cabeça gigante do objeto com textura real (farinha de rosca da coxinha, pintura automotiva, metal escovado, plástico polido), rosto humano expressivo embutido no objeto, corpo humano atlético com figurino de luxo, iluminação cinematográfica dramática e formato vertical 9:16.'
+          : (skinDescriptorMap[skinRealism] || skinDescriptorMap.ultimate);
 
     const languageConfig: Record<
       string,

@@ -36,6 +36,7 @@ import {
   Newspaper,
   Puzzle,
   Cherry,
+  Drumstick,
   Images,
   Users2,
 } from 'lucide-react';
@@ -171,12 +172,19 @@ const tools: Tool[] = [
     icon: Puzzle,
     accent: 'bg-indigo-100 text-indigo-600',
   },
-{
+  {
     title: 'Novelinhas Frutas',
     description: 'Novelinhas com personagens frutas antropomórficas em 3D.',
     path: '/novelinhas-frutas',
     icon: Cherry,
     accent: 'bg-pink-100 text-pink-600',
+  },
+  {
+    title: 'Novelinhas Objetos',
+    description: 'Personagens com cabeça de coxinha, carro e outros objetos.',
+    path: '/novelinhas-objetos',
+    icon: Drumstick,
+    accent: 'bg-amber-100 text-amber-600',
   },
   {
     title: 'Extrator de Quadros',

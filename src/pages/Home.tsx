@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Camera,
+  FileAudio,
   FileVideo,
   Film,
   ChefHat,
@@ -78,6 +79,13 @@ const tools: Tool[] = [
     path: '/imagens-ia',
     icon: ImageIcon,
     accent: 'bg-fuchsia-100 text-fuchsia-600',
+  },
+  {
+    title: 'Transcritor de Vídeo',
+    description: 'Transforme vídeo ou áudio em texto com timestamps e legenda SRT.',
+    path: '/transcritor',
+    icon: FileAudio,
+    accent: 'bg-violet-100 text-violet-600',
   },
   {
     title: 'Menina da Roça',

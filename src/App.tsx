@@ -43,6 +43,7 @@ const FlowAutomations = lazy(() => import('./pages/flowAutomations/App'));
 const CriadorNoticias = lazy(() => import('./pages/criadorNoticias/App'));
 const ChatIA = lazy(() => import('./pages/ChatIA/App'));
 const ImagensIA = lazy(() => import('./pages/ImagensIA/App'));
+const Transcritor = lazy(() => import('./pages/Transcritor/App'));
 const Assinar = lazy(() => import('./pages/Assinar'));
 const BoasVindas = lazy(() => import('./pages/BoasVindas'));
 const ConfigurableAgent = lazy(() => import('./pages/ConfigurableAgent'));
@@ -93,6 +94,7 @@ const routeTitles: Record<string, string> = {
   '/perfis-virais': 'Perfis Virais',
   '/chat-ia': 'Chat IA',
   '/imagens-ia': 'Imagens IA',
+  '/transcritor': 'Transcritor de Video',
   '/criador-noticias': 'Criador de NotÃ­cias',
   '/admin/assinatura': 'Pagina de Assinatura',
   '/tutoriais': 'Tutoriais',
@@ -272,6 +274,7 @@ export default function App() {
           <Route path="perfis-virais" element={<ViralProfiles />} />
           <Route path="chat-ia" element={<ChatIA />} />
           <Route path="imagens-ia" element={<ImagensIA />} />
+          <Route path="transcritor" element={<Transcritor />} />
               <Route path="custom-agent/:slug" element={<ConfigurableAgent />} />
               <Route path="tutoriais" element={<Tutorials />} />
               <Route path="downloads" element={<Downloads />} />

@@ -1,4 +1,4 @@
-import meninaDaRocaHandler from '../server-agents/menina-da-roca.js';
+﻿import meninaDaRocaHandler from '../server-agents/menina-da-roca.js';
 import configurableAgentHandler from '../server-agents/configurable-agent.js';
 import importAgentHandler from '../server-agents/import-agent.js';
 import clonagemVideoHandler from '../server-agents/clonagem-video.js';
@@ -23,6 +23,7 @@ import clonagemProHandler from '../server-agents/clonagemPro.js';
 import viralProfilesHandler from '../server-agents/viralProfiles.js';
 import chatAiHandler from '../server-agents/chatAi.js';
 import agnesImagesHandler from '../server-agents/agnesImages.js';
+import transcritorHandler from '../server-agents/transcritor.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
@@ -50,6 +51,7 @@ const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'perfis-virais': viralProfilesHandler,
   'chat-ia': chatAiHandler,
   'agnes-imagens': agnesImagesHandler,
+  transcritor: transcritorHandler,
 };
 
 export default function handler(req: any, res: any) {

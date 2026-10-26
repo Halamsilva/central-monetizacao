@@ -1235,7 +1235,7 @@ const mergePartTwo = (previousText: string, nextText: string) => {
                       Modo Objetos Humanizados • Render 3D Vertical (9:16)
                     </h4>
                     <p className="text-[11px] font-semibold text-amber-200/80">
-                      Cabeça de objeto com rosto cartoon no próprio objeto e corpo humano de roupa de luxo
+                      Personagem 100% do objeto, sem pele humana, com rosto cartoon no objeto e roupa de luxo
                     </p>
                   </div>
                 </div>

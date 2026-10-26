@@ -712,7 +712,13 @@ ILUMINAÇÃO OBRIGATÓRIA: luz quente e suave, atmosfera de filme familiar de an
 
       'Objetos': `O TEMA OBRIGATÓRIO É 'OBJETOS HUMANIZADOS (NOVELINHA DE OBJETOS E COMIDAS ANTROPOMÓRFICAS)' 🍗🚗🥤📱.
 DIRETRIZ MÁXIMA DE PERSONAGENS DE OBJETO:
-Neste tema, TODOS os personagens são OBRIGATORIAMENTE OBJETOS OU COMIDAS HUMANIZADOS: o corpo é humano (com mãos e postura humanas), mas a CABEÇA é o objeto em tamanho grande, e o ROSTO é CARTOON/ESTILIZADO formado na própria superfície do objeto (olhos grandes e expressivos, sobrancelhas grossas, boca articulada com dentes) — exatamente como nos vídeos virais de coxinha, carro, latinha e celular. Aparência estritamente consistente em todos os episódios e cenas!
+Neste tema, TODOS os personagens são OBRIGATORIAMENTE OBJETOS OU COMIDAS HUMANIZADOS: o corpo tem proporções humanas, mas é TODO feito do material do objeto (coxinha dourada, metal da lata, lataria, plástico), SEM NENHUMA pele humana. A CABEÇA é o objeto em tamanho grande e o ROSTO é CARTOON/ESTILIZADO formado na própria superfície do objeto (olhos grandes e expressivos, sobrancelhas grossas, boca articulada com dentes) — exatamente como nos vídeos virais de coxinha, carro, latinha e celular. Aparência estritamente consistente em todos os episódios e cenas!
+
+REGRA SEM PARTES HUMANAS (INEGOCIÁVEL):
+- NENHUMA parte do corpo pode ter pele humana: braços, mãos, dedos, pernas, pescoço e barriga são do MESMO material e cor do objeto (ex: massa dourada e crocante da coxinha, metal vermelho da latinha).
+- As mãos têm cinco dedos, mas os dedos são feitos do material do objeto, nunca de pele humana.
+- Roupas (ternos, sobretudos, vestidos, gravatas, sapatos) são tecido/couro normais e podem cobrir o corpo.
+- É PROIBIDO qualquer tom de pele humana aparecendo, qualquer mão humana, qualquer rosto humano. O personagem é 100% objeto/comida humanizado.
 
 REGRA DE ROSTO (INEGOCIÁVEL):
 - O rosto faz parte do OBJETO: é um rosto 3D cartunesco esculpido/pintado na coxinha, na lata, na lataria ou no plástico, com a mesma textura e cor do objeto ao redor.
@@ -730,7 +736,7 @@ ESTRUTURA OBRIGATÓRIA PARA CRIAR CADA PERSONAGEM (SEGUIR À RISCA NO PROMPT 00 
 - Idade aparente: Jovem, adulto ou idoso.
 - Cabeça: o objeto em tamanho GIGANTE (maior que uma cabeça humana normal), com volume, brilho, formato e textura bem reconhecíveis (metal, farinha de rosca, pintura automotiva, plástico). Elementos do objeto podem aparecer no rosto (ex: visor digital na testa da coxinha, tampa da lata no topo).
 - Rosto: rosto 3D CARTOON integrado na superfície do objeto — olhos grandes e expressivos com íris, sobrancelhas grossas e arqueadas, nariz pequeno, boca larga e articulada com dentes perfeitos para lip-sync. NUNCA rosto humano de pele, NUNCA recorte/foto de rosto, NUNCA máscara.
-- Corpo: corpo humano atlético e imponente (ombros, braços, pernas e mãos de cinco dedos).
+- Corpo: corpo com proporções humanas (ombros, braços, pernas e mãos de cinco dedos), mas 100% revestido do material e da cor do objeto — SEM pele humana em nenhum ponto.
 - Roupa: figurino humano de luxo coerente com a personalidade (sobretudo preto, terno risca de giz, camisa social, relógio de ouro, vestido de gala), tecidos e cores fixos que JAMAIS mudam entre as cenas.
 - Expressão e postura: descreva o olhar e a emoção de cada momento (arrogante, apaixonado, traído, ameaçador, engraçado) e a posição do corpo (em pé na vitrine, sentado no trono, apontando o dedo, segurando um cronômetro).
 - Personalidade: marcante de novela (vilão frio e calculista, playboy arrogante, mocinha batalhadora, amigo engraçado).
@@ -739,13 +745,13 @@ ESTRUTURA OBRIGATÓRIA PARA CRIAR CADA PERSONAGEM (SEGUIR À RISCA NO PROMPT 00 
 
 EXEMPLO CANÔNICO DE REFERÊNCIA:
 Coxinhão, o protagonista:
-"Um personagem alto e imponente com corpo humano atlético vestindo sobretudo preto longo, gola alta preta, calça social preta e sapatos de couro brilhantes. Sua cabeça é uma coxinha dourada e crocante gigante, coberta de farinha de rosca real, com um visor digital verde na testa e um rosto 3D cartunesco formado na própria massa: olhos grandes e furiosos, sobrancelhas grossas franzidas e boca aberta com dentes brancos. Ele segura um cronômetro digital com números vermelhos. Está em uma loja de relógios de luxo com vitrines iluminadas e vista noturna da cidade. Expressão séria, autoritária e ameaçadora. Estilo: render 3D cinematográfico, iluminação dramática, textura real, formato vertical 9:16."
+"Um personagem alto e imponente com corpo de proporções humanas feito inteiramente de massa de coxinha dourada e crocante, coberto de farinha de rosca real, sem nenhuma pele humana. Braços, mãos e dedos são do mesmo material dourado da coxinha. Veste sobretudo preto longo, gola alta preta, calça social preta e sapatos de couro brilhantes. Sua cabeça é uma coxinha gigante com um visor digital verde na testa e um rosto 3D cartunesco formado na própria massa: olhos grandes e furiosos, sobrancelhas grossas franzidas e boca aberta com dentes brancos. Ele segura um cronômetro digital com números vermelhos. Está em uma loja de relógios de luxo com vitrines iluminadas e vista noturna da cidade. Expressão séria, autoritária e ameaçadora. Estilo: render 3D cinematográfico, iluminação dramática, textura real, formato vertical 9:16."
 
 CENÁRIOS DO TEMA OBJETOS:
 Ambientes reais e sofisticados em escala humana: loja de relógios de luxo, cobertura com vista noturna da cidade, showroom de carros, tribunal, mansão com escadaria de mármore, restaurante chique, camarim de teatro, academia de luxo, estacionamento subterrâneo iluminado.
 ILUMINAÇÃO OBRIGATÓRIA: cinematográfica, contraste alto, luz quente e dramática, sombras profundas.
 
-É ESTRITAMENTE PROIBIDO usar rosto humano, pessoa fantasiada, máscara de objeto ou cabeça humana neste tema. Os personagens DEVEM SER OS OBJETOS/COMIDAS HUMANIZADOS COM ROSTO CARTOON NO PRÓPRIO OBJETO!`,
+É ESTRITAMENTE PROIBIDO usar pele humana, mão humana, rosto humano, pessoa fantasiada, máscara de objeto ou cabeça humana neste tema. Os personagens DEVEM SER OS OBJETOS/COMIDAS HUMANIZADOS, 100% feitos do material do objeto, COM ROSTO CARTOON NO PRÓPRIO OBJETO!`,
 
       'Deuses Gregos': `O TEMA OBRIGATÓRIO É 'DEUSES GREGOS' ⚡🏛️.
 A história DEVE se passar na mitologia grega, com divindades do Olimpo (Zeus, Hades, Poseidon, Atena, Afrodite, Ares, etc.), poderes divinos, raios, templos de mármore e confrontos épicos.`,
@@ -915,7 +921,7 @@ COTIDIANO BRASILEIRO PRECÁRIO REAL (FONTE OBRIGATÓRIA DAS HISTÓRIAS):
       theme === 'Frutas'
         ? 'Estilo de animação 3D cinematográfica de alto nível (estilo Pixar / Disney feature animation), textura orgânica e tátil hiper-realista da fruta (pequenas sementes douradas na pele do morango, brilho natural da casca cerosa, translucidez e subsurface scattering), personagens antropomórficos humanizados expressivos com proporções anatômicas estilizadas, roupas humanas elegantes bem ajustadas (vestido, terno, etc.), iluminação profissional e formato vertical 9:16.'
         : theme === 'Objetos'
-          ? 'Estilo render 3D cinematográfico de altíssima qualidade: cabeça gigante do objeto com textura real (farinha de rosca da coxinha, pintura automotiva, metal escovado, plástico polido) e ROSTO CARTOON 3D formado na própria superfície do objeto (olhos grandes, sobrancelhas grossas, boca com dentes), corpo humano realista com figurino de luxo, iluminação cinematográfica dramática e formato vertical 9:16. PROIBIDO rosto humano de pele, recorte de rosto ou máscara dentro do objeto.'
+          ? 'Estilo render 3D cinematográfico de altíssima qualidade: cabeça gigante do objeto com textura real (farinha de rosca da coxinha, pintura automotiva, metal escovado, plástico polido) e ROSTO CARTOON 3D formado na própria superfície do objeto (olhos grandes, sobrancelhas grossas, boca com dentes), corpo com proporções humanas mas 100% feito do material do objeto (SEM pele humana), figurino de luxo, iluminação cinematográfica dramática e formato vertical 9:16. PROIBIDO qualquer pele humana, mão humana ou rosto humano.'
           : (skinDescriptorMap[skinRealism] || skinDescriptorMap.ultimate);
 
     const languageConfig: Record<

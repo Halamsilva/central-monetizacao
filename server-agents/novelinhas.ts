@@ -70,8 +70,20 @@ async function generateWithModelFallback(
   apiKeys: string | string[],
   temperature = 0.85,
   options: { attemptsPerModel?: number; timeoutMs?: number; totalBudgetMs?: number } = {},
+  referenceImage?: { mimeType: string; data: string } | null,
 ) {
   const keys = (Array.isArray(apiKeys) ? apiKeys : [apiKeys]).filter(Boolean);
+  const contents = referenceImage
+    ? [
+        {
+          role: 'user',
+          parts: [
+            { text: promptInstructions },
+            { inlineData: { mimeType: referenceImage.mimeType, data: referenceImage.data } },
+          ],
+        },
+      ]
+    : promptInstructions;
 // Lista ampla: quando um modelo entra em alta demanda (503), os proximos assumem.
   // Os "flash" genericos vem primeiro, os "lite" fecham a fila como rede de seguranca.
   const models = [
@@ -102,7 +114,7 @@ async function generateWithModelFallback(
           const response = await withTimeout(
             ai.models.generateContent({
               model,
-              contents: promptInstructions,
+              contents,
               config: {
                 temperature,
                 topP: 0.95,
@@ -176,6 +188,7 @@ type LongVideoContext = {
   context: string;
   previousStory: string;
   isContinuing: boolean;
+  referenceImage?: { mimeType: string; data: string } | null;
 };
 
 const countSceneBlocks = (value: string) =>
@@ -251,6 +264,12 @@ PARÂMETROS DA PRODUÇÃO:
 - Tom do roteiro: ${ctx.tone} | Emoção dominante: ${ctx.emotion}
 - Realismo de pele e imagem: ${ctx.skinDirective}
 - TOTAL DE CENAS DO VÍDEO: ${ctx.numScenes} cenas de 8 segundos (episódio longo de aproximadamente ${Math.round(ctx.numScenes * 8)} segundos).
+${ctx.referenceImage ? `REFERÊNCIA VISUAL ANEXADA (PRIORIDADE MÁXIMA):
+- A imagem anexada é a FICHA OFICIAL dos personagens. Observe com atenção e descreva EXATAMENTE os personagens que aparecem nela: quantidade, formato do rosto/cabeça, material, textura, cores, roupas peça por peça, acessórios e proporções.
+- O PROMPT 00 e TODAS as cenas DEVEM usar ESSES MESMOS personagens da imagem. É PROIBIDO inventar personagens diferentes, trocar roupas, mudar cores, mudar o estilo ou criar novas frutas/objetos que não estão na imagem.
+- Se a imagem tiver mais de um personagem, use todos como elenco principal da história.
+- Os personagens da imagem SUBSTITUEM os exemplos do tema: use as frutas/objetos EXATOS da imagem, não os do exemplo.
+` : ''}
 
 ################################################################
 ETAPA 1 DE 2 - CONTRATO DE IDENTIDADE E PLANO DE CONTINUIDADE
@@ -521,11 +540,17 @@ ${
 const generateLongVideo = async (ctx: LongVideoContext) => {
   const biblePrompt = buildBiblePrompt(ctx);
   let bible = (
-    await generateWithModelFallback(biblePrompt, ctx.apiKey, 0.7, {
-      attemptsPerModel: 1,
-      timeoutMs: 45000,
-      totalBudgetMs: 90000,
-    })
+    await generateWithModelFallback(
+      biblePrompt,
+      ctx.apiKey,
+      0.7,
+      {
+        attemptsPerModel: 1,
+        timeoutMs: 45000,
+        totalBudgetMs: 90000,
+      },
+      ctx.referenceImage
+    )
   ).text || '';
 
   if (!bible.trim()) {
@@ -549,6 +574,7 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
       ctx.apiKey,
       0.6,
       { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 90000 },
+      ctx.referenceImage,
     );
 
     const retryText = retry.text || '';
@@ -581,11 +607,17 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
       });
 
       const callBlock = (temperature: number) =>
-        generateWithModelFallback(blockPrompt, ctx.apiKey, temperature, {
-          attemptsPerModel: 1,
-          timeoutMs: 45000,
-          totalBudgetMs: 90000,
-        }).then((result) => result.text || '');
+        generateWithModelFallback(
+          blockPrompt,
+          ctx.apiKey,
+          temperature,
+          {
+            attemptsPerModel: 1,
+            timeoutMs: 45000,
+            totalBudgetMs: 90000,
+          },
+          ctx.referenceImage
+        ).then((result) => result.text || '');
 
       let blockText = await callBlock(0.75);
 
@@ -606,6 +638,7 @@ Reescreva APENAS as cenas ${range.start} a ${range.end} (${expected} cenas), tod
           ctx.apiKey,
           0.7,
           { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 90000 },
+          ctx.referenceImage,
         );
 
         if (retry.text && countSceneBlocks(retry.text) >= countSceneBlocks(blockText)) {
@@ -637,6 +670,7 @@ Comece direto em "PROMPT CENA ${range.start} (SEEDANCE 2.5):".`,
           ctx.apiKey,
           0.5,
           { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 90000 },
+          ctx.referenceImage,
         );
 
         if (fixed.text && countSceneBlocks(fixed.text) >= countSceneBlocks(blockText)) {
@@ -991,6 +1025,19 @@ COTIDIANO BRASILEIRO PRECÁRIO REAL (FONTE OBRIGATÓRIA DAS HISTÓRIAS):
     const numScenes = Math.min(60, Math.max(4, Number(scenes) || 6));
     const isContinuing = Boolean(previousStory && previousStory.trim().length > 0);
 
+    const referenceBase64 = String(req.body?.referenceImageBase64 || '').replace(
+      /^data:image\/[a-z0-9.+-]+;base64,/i,
+      '',
+    );
+    const referenceImage =
+      referenceBase64 && referenceBase64.length <= 4200000
+        ? {
+            mimeType: String(req.body?.referenceImageMime || 'image/jpeg'),
+            data: referenceBase64,
+          }
+        : null;
+    req.referenceImage = referenceImage;
+
     // O usuario pode colar um roteiro ja pronto. Nesse caso a historia dele e CANONICA:
     // a IA nao reescreve, nao troca o desfecho e nao inventa outra trama.
     const ownScript = String(userScript || '').trim();
@@ -1044,6 +1091,13 @@ REGRAS ANTI-MAGREZA (VIOLAR É PROIBIDO):
     const promptInstructions = `
 Você é o mais consagrado diretor cinematográfico e roteirista de novelinhas curtas dramáticas ultra-virais para redes sociais (Kwai, TikTok, Instagram Reels, YouTube Shorts).
 Você cria descrições de cenas completas e prompts visuais ultra-realistas no padrão oficial do SEEDANCE 2.5 (ByteDance / Dreamina / CapCut) e GOOGLE FLOW.
+${req.referenceImage ? `
+REFERÊNCIA VISUAL ANEXADA (PRIORIDADE MÁXIMA):
+- A imagem anexada é a FICHA OFICIAL dos personagens. Observe e descreva EXATAMENTE os personagens que aparecem nela: quantidade, formato da cabeça/objeto, material, textura, cores, roupas peça por peça, acessórios e proporções.
+- O PROMPT 00 e TODAS as cenas DEVEM usar ESSES MESMOS personagens da imagem. É TERMINANTEMENTE PROIBIDO inventar personagens diferentes, trocar roupas, mudar cores ou mudar o estilo.
+- Se a imagem tiver mais de um personagem, use todos como elenco principal.
+- Os personagens da imagem SUBSTITUEM os exemplos do tema: use as frutas/objetos EXATOS da imagem, não os do exemplo.
+` : ''}
 
 ################################################################
 REGRA #0 - IDIOMA DE DESTINO (PRIORIDADE MÁXIMA - VALE ACIMA DE TUDO, SEM EXCEÇÃO)
@@ -1377,6 +1431,7 @@ Hashtags Recomendadas: #novelinhas #cenas #dramatiktok #historiasreais #viralvid
         context: String(context || ''),
         previousStory: String(previousStory || ''),
         isContinuing,
+        referenceImage: req.referenceImage,
       });
 
       let longSceneOrder = 0;
@@ -1393,7 +1448,13 @@ Hashtags Recomendadas: #novelinhas #cenas #dramatiktok #historiasreais #viralvid
     const countSubject = (value: string) => (value.match(/\[Subject & Character Consistency\]/gi) || []).length;
     const countDialogue = (value: string) => (value.match(/\[Dialogue & Native Audio\]/gi) || []).length;
 
-    let generatedText = (await generateWithModelFallback(promptInstructions, req.geminiApiKey)).text || '';
+    let generatedText = (await generateWithModelFallback(
+      promptInstructions,
+      req.geminiApiKey,
+      0.85,
+      {},
+      req.referenceImage,
+    )).text || '';
 
     if (!generatedText) {
       throw new Error('Nenhum texto foi gerado pelo modelo.');
@@ -1415,7 +1476,13 @@ A resposta anterior veio incompleta ou com cenas faltando secao. Gere a historia
 - EXATAMENTE ${numScenes} cenas, numeradas de "PROMPT CENA 1" ate "PROMPT CENA ${numScenes}", SEM PULAR numeros e SEM cabeçalhos diferentes (nada de "GANCHO CHAMATIVO CENA 1": use "PROMPT CENA 1 (SEEDANCE 2.5)" igual as demais);
 - TODAS as secoes de INSTRUCOES VISUAIS em CADA cena ([Subject & Character Consistency], [Environment & Scene Setting], [Background Override], [Action & First-Frame Blocking], [Optics & Camera Movement], [Dialogue & Native Audio], [Lighting & Atmosphere], [Audio & Ambience (SFX)], [Global Style & Physical Realism], [Negative Prompt]).`;
 
-      const retry = await generateWithModelFallback(retryPrompt, req.geminiApiKey);
+      const retry = await generateWithModelFallback(
+        retryPrompt,
+        req.geminiApiKey,
+        0.85,
+        {},
+        req.referenceImage,
+      );
       if (
         retry.text &&
         countScenes(retry.text) >= countScenes(generatedText) &&

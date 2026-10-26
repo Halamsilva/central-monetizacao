@@ -14,6 +14,7 @@ import {
   Download,
   FileText,
   Film,
+  ImagePlus,
   Layers,
   Lightbulb,
   Loader2,
@@ -37,6 +38,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { describeHttpError } from '../lib/httpError';
+import { compressImageFile } from './receitasEbook/utils/imageCompressor';
 
 const themes = [
   { label: 'Racismo', icon: '✊' },
@@ -584,6 +586,13 @@ const Novelinhas: React.FC<NovelinhasProps> = ({ lockedTheme, extraThemes = [] }
   const [scenes, setScenes] = useState(6);
   const [context, setContext] = useState('');
   const [result, setResult] = useState('');
+  const [referenceImage, setReferenceImage] = useState<{
+    preview: string;
+    base64: string;
+    mimeType: string;
+    name: string;
+  } | null>(null);
+  const [referenceBusy, setReferenceBusy] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -924,6 +933,33 @@ const mergePartTwo = (previousText: string, nextText: string) => {
   return `${partOne.trim()}\n\n${partTwo}`.trim();
 };
 
+  const handleReferenceImage = async (file?: File | null) => {
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Escolha uma imagem JPG ou PNG para usar como referência.');
+      return;
+    }
+
+    setReferenceBusy(true);
+    setError('');
+
+    try {
+      const compressed = await compressImageFile(file, 1400, 0.88);
+
+      setReferenceImage({
+        preview: `data:${compressed.mimeType};base64,${compressed.base64}`,
+        base64: compressed.base64,
+        mimeType: compressed.mimeType,
+        name: file.name,
+      });
+    } catch (err: any) {
+      setError(err?.message || 'Não consegui preparar a imagem de referência.');
+    } finally {
+      setReferenceBusy(false);
+    }
+  };
+
   const generateScript = async (previousResult?: string) => {
     if (!canGenerate) return;
 
@@ -955,6 +991,8 @@ const mergePartTwo = (previousText: string, nextText: string) => {
           previousStory: previousResult ? buildContinuationPayload(previousResult) : '',
           userScript: ownScript.trim(),
           userScriptMode: ownScript.trim() ? ownScriptMode : '',
+          referenceImageBase64: referenceImage?.base64 || '',
+          referenceImageMime: referenceImage?.mimeType || '',
         }),
       });
 
@@ -1260,6 +1298,61 @@ const mergePartTwo = (previousText: string, nextText: string) => {
                 </div>
               </div>
             )}
+
+            <div className="mb-4 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/70 p-3.5 sm:p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
+                    Ficha dos personagens (opcional)
+                  </p>
+                  <p className="mt-1 text-[11px] font-semibold leading-relaxed text-zinc-500">
+                    Anexe a imagem dos personagens: a IA vai descrever exatamente esses personagens (rosto, roupa, cores)
+                    em todas as cenas.
+                  </p>
+                </div>
+
+                {referenceImage && (
+                  <button
+                    type="button"
+                    onClick={() => setReferenceImage(null)}
+                    className="rounded-lg p-1.5 text-zinc-500 transition hover:bg-zinc-800 hover:text-red-400"
+                    title="Remover imagem"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
+
+              <label className="mt-3 flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-zinc-700 bg-zinc-900/60 p-2.5 transition hover:border-orange-500/60">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(event) => {
+                    handleReferenceImage(event.target.files?.[0]);
+                    event.target.value = '';
+                  }}
+                />
+
+                <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-900 text-zinc-500">
+                  {referenceImage ? (
+                    <img src={referenceImage.preview} alt="Referência" className="h-full w-full object-cover" />
+                  ) : referenceBusy ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <ImagePlus size={22} />
+                  )}
+                </span>
+
+                <span className="min-w-0 flex-1 text-[11px] font-bold text-zinc-400">
+                  {referenceBusy
+                    ? 'Preparando imagem...'
+                    : referenceImage
+                      ? referenceImage.name
+                      : 'Clique para anexar a ficha (JPG/PNG)'}
+                </span>
+              </label>
+            </div>
 
             <p className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-zinc-500 sm:text-xs sm:tracking-[0.24em]">
               Adicione detalhes específicos para {effectiveTheme} ou selecione uma ideia rápida abaixo

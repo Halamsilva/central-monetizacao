@@ -1232,10 +1232,10 @@ const mergePartTwo = (previousText: string, nextText: string) => {
                   <span className="text-2xl">🍗</span>
                   <div>
                     <h4 className="text-xs font-black uppercase tracking-wider text-amber-300 sm:text-sm">
-                      Modo Objetos Humanizados • CGI Hiper-realista Vertical (9:16)
+                      Modo Objetos Humanizados • Render 3D Vertical (9:16)
                     </h4>
                     <p className="text-[11px] font-semibold text-amber-200/80">
-                      Corpo humano com cabeça gigante de objeto ou comida: coxinha, carro, latinha, celular, tênis
+                      Cabeça de objeto com rosto cartoon no próprio objeto e corpo humano de roupa de luxo
                     </p>
                   </div>
                 </div>

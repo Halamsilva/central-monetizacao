@@ -263,6 +263,7 @@ PROMPT 00 - FICHA DE PERSONAGENS E CENÁRIO MESTRE (REFERENCE SHEET):
 [Reference ID: Subject 1 - Nome]: ficha fixa, completa e IMUTÁVEL: nome, idade exata, altura em cm, porte/biotipo, tom e textura de pele, formato do rosto, cor dos olhos, corte e textura do cabelo (barba/bigode se houver), ROUPA completa peça por peça com tecidos e cores, CALÇADOS e ACESSÓRIOS identificadores.
 [Reference ID: Subject 2 - Nome]: ... (repita o nível de detalhe para cada personagem, sem exceção)
 [Reference ID: Subject N - Nome]: ...
+[MARCAS ÚNICAS IMUTÁVEIS (CHARACTER FINGERPRINT)]: para CADA personagem, liste 2 a 3 detalhes visuais exclusivos que NUNCA mudam entre as cenas (ex: visor digital verde na testa, falha na farinha de rosca do lado esquerdo, botão prateado no sobretudo, reflexo azul no olho direito). Esses detalhes são a âncora de consistência e devem ser repetidos em todas as cenas.
 [Master Environment Specification - Primary Setting]: descrição detalhada e fixa do cenário mestre (materiais, texturas, janelas, móveis, objetos recorrentes e paleta de luz) que será repetida em todas as cenas.
 [Camera, Lighting & Specs]: lente, luz e estilo de imagem fixos do episódio.
 
@@ -310,6 +311,7 @@ QUEM RESPONDE: [Nome + FICHA FÍSICA FIXA COMPLETA + reação física imediata]
 RESPOSTA: "[réplica real e curta]" (ou a cena fica sem esta linha, se a resposta no plano for "sem resposta")
 INSTRUÇÕES VISUAIS (PROMPT SEEDANCE 2.5 & GOOGLE FLOW):
 [Subject & Character Consistency]: Subject N - Nome (ficha por extenso, idêntica ao PROMPT 00). NUNCA escreva "mesmo personagem".
+[Reference Lock - FICHA OBRIGATÓRIA]: ANEXE a ficha do PROMPT 00 (character sheet: frente, 3/4 e corpo inteiro) como IMAGEM DE REFERÊNCIA na ferramenta. O personagem deve sair IDÊNTICO à ficha: rosto, formato do objeto/fruta, textura, cor, roupa, calçados, acessórios, proporções e as MARCAS ÚNICAS (fingerprint) do PROMPT 00. PROIBIDO redesenhar, trocar roupa, mudar cor/textura, envelhecer ou alterar proporções; mantenha a mesma seed e enquadramento quando a ferramenta permitir.
 [Environment & Scene Setting]: cenário 3D real e detalhado da cena (piso, paredes, janelas, móveis de fundo, iluminação, profundidade).
 [Background Override]: CRITICAL: the reference image has a white studio background. COMPLETELY DISCARD AND OVERRIDE THE WHITE BACKGROUND. Ground the characters inside the 3D environment with contact shadows. No empty white studio void.
 [Action & First-Frame Blocking]: posição inicial, movimento orgânico com causa antes do efeito, postura e respiração.
@@ -338,6 +340,8 @@ OUTRAS REGRAS INEGOCIÁVEIS:
 3. Cenhas de diálogo devem coerir: quem conversa está no MESMO ambiente, se olhando (nada de "ao telefone" numa conversa frente a frente).
 4. Fala curta, seca e filmável, em ${ctx.langName}. Proibido discurso, monólogo ou frase genérica de novela.
 5. Nenhum "..." ou "mesmo de antes": cada cena sai completa, com o mesmo nível de detalhe das outras.
+6. CONSISTÊNCIA COM REFERÊNCIA: toda cena começa com a ficha do PROMPT 00 anexada como imagem de referência. A cena só é válida se o personagem estiver idêntico à ficha (mesmo rosto, roupa, textura, cores e MARCAS ÚNICAS). Se a ferramenta permitir seed, use sempre a mesma.
+7. MARCAS ÚNICAS (FINGERPRINT): repita em cada cena os 2-3 detalhes exclusivos de cada personagem definidos no PROMPT 00 (ex: visor verde na testa, falha na farinha do lado esquerdo, botão prateado). Eles são a âncora visual da identidade.
 `;
 
 const normalizeName = (value: unknown) =>
@@ -1237,7 +1241,7 @@ REGRA DE OURO DA FALA: CADA FALA NO SEU DONO E NO SEU MOMENTO (INVIOLAVEL)
    - ACESSÓRIOS: óculos, brincos, colares, relógio, anéis/aliança, boné/chapéu, bolsa, cinto, tatuagens, pintas e marcas visuais — todos os itens que diferenciam o personagem.
    - Características suficientemente distintas para que cada personagem tenha identidade cinematográfica única e inconfundível.
    Esta FICHA é um CONTRATO CANÔNICO: NUNCA mude roupa, cor, cabelo, acessórios, altura, idade ou tom de pele de um personagem entre as cenas ou entre as partes da história.
-   TRAVA DE IDENTIDADE VISUAL (VERIFICAÇÃO FINAL ANTES DE ENTREGAR): compare a descrição de CADA personagem em CADA cena com a do PROMPT 00. Nome, idade, altura, tom de pele, cabelo, roupa (peças, tecidos e cores), calçados e acessórios DEVEM ser IDÊNTICOS palavra por palavra. Qualquer diferença = reescreva a cena usando a versão do PROMPT 00.
+   TRAVA DE IDENTIDADE VISUAL (VERIFICAÇÃO FINAL ANTES DE ENTREGAR): compare a descrição de CADA personagem em CADA cena com a do PROMPT 00. Nome, idade, altura, tom de pele, cabelo, roupa (peças, tecidos e cores), calçados e acessórios DEVEM ser IDÊNTICOS palavra por palavra, e as MARCAS ÚNICAS (fingerprint) do PROMPT 00 DEVEM aparecer em todas as cenas. Toda cena leva o bloco [Reference Lock] instruindo a anexar a ficha do PROMPT 00 como imagem de referência. Qualquer diferença = reescreva a cena usando a versão do PROMPT 00.
 
 DIRETRIZES DE ENGENHARIA DE PROMPT PARA SEEDANCE 2.5 E GOOGLE FLOW (BYTEDANCE / FLOW INGREDIENTS / CAPCUT):
 Você DEVE estruturar todos os prompts visuais de vídeo seguindo rigorosamente a arquitetura do SEEDANCE 2.5 e GOOGLE FLOW (Director's Brief com seções rotuladas em colchetes). O Seedance 2.5 e o Flow geram vídeo fotorrealista 4K, física gravitacional precisa e ÁUDIO NATIVO com sincronismo labial.
@@ -1277,6 +1281,7 @@ PROMPT 00 - FICHA DE PERSONAGENS E CENÁRIO MESTRE (REFERENCE SHEET):
 [Prompt fotográfico detalhado de referência multimodal em fundo branco puro (#FFFFFF) com a descrição visual rica de todos os personagens principais lado a lado e a especificação completa do cenário mestre:
 [Reference ID: Subject 1 - Name]: Full body, standing pose, neutral expression, clean seamless solid pure white studio background (#FFFFFF), rich detailed facial features, exact garments, colors, fabrics, shoes and textures.
 [Reference ID: Subject 2 - Name]: Full body, standing side by side with Subject 1, proportional height, detailed wardrobe and facial features.
+[CHARACTER FINGERPRINT - IMMUTABLE UNIQUE MARKS]: for EACH character, list 2-3 exclusive visual details that NEVER change between scenes (ex: a digital green display on the forehead, a crack on the left side of the breading, a silver button on the coat, a blue reflection in the right eye). These details are the consistency anchor and MUST be repeated in every scene.
 [Master Environment Specification - Primary Setting]: Detailed physical description of the primary set (exact floor materials, wall textures, windows, architectural features, main furniture, props, and ambient lighting palette) to be maintained consistently across all video scenes.
 [Camera, Lighting & Specs]: Shot on Hasselblad H6D-100c, 100mm f/2.8 lens, softbox commercial photography lighting, clean solid white background (#FFFFFF), ultra-sharp focus head-to-toe, raw uncompressed 8K textures, neutral studio poses.]
 
@@ -1291,6 +1296,7 @@ QUEM RESPONDE: [Nome + FICHA FÍSICA FIXA COMPLETA (idade exata, altura, porte/b
 RESPOSTA: "[Diálogo real da réplica OBRIGATORIAMENTE NO IDIOMA ${currentLang.langName.toUpperCase()} entre aspas com pontuação final]"
 INSTRUÇÕES VISUAIS (PROMPT SEEDANCE 2.5 & GOOGLE FLOW):
 [Subject & Character Consistency]: [REPETIÇÃO OBRIGATÓRIA da FICHA FÍSICA FIXA COMPLETA de TODOS os personagens da cena, INCLUINDO quem fala E quem responde: Subject N - Nome (idade exata, ALTURA em cm, porte/biotipo, tom e textura de pele com ${skinDirective}, formato do rosto, cor dos olhos, cabelo/barba, ROUPA completo com peças/tecidos/cores, CALÇADOS e ACESSÓRIOS exatos estabelecidos no Prompt 00). NUNCA resuma e NUNCA use "mesmo personagem" ou "personagem anterior": repita a ficha por extenso para cada um.]
+[Reference Lock - MANDATORY REFERENCE SHEET]: ATTACH the PROMPT 00 character sheet (front, three-quarter and full body) as the REFERENCE IMAGE in the tool. The character must be IDENTICAL to the sheet: face, object/fruit shape, texture, color, outfit, shoes, accessories, proportions and the CHARACTER FINGERPRINT unique marks. NEVER redesign, change outfit, change color/texture, age the character or alter proportions. If the tool supports seed, keep the same seed and framing across scenes.
 [Environment & Scene Setting]: [DESCRIÇÃO COMPLETA DO CENÁRIO 3D REAL DA CENA: tipo e acabamento do piso, paredes, janelas, móveis de fundo, iluminação do ambiente e profundidade do cômodo, repetindo os elementos arquitetônicos fixos]
 [Background Override]: CRITICAL FOR FLOW INGREDIENTS & SEEDANCE: The character reference image/ingredient has a plain white studio background. COMPLETELY DISCARD AND OVERRIDE THE WHITE BACKGROUND. Ground the characters naturally inside the detailed 3D environment described above with contact shadows and environmental ambient lighting. DO NOT render an empty white studio void or blank cyclorama.
 [Action & First-Frame Blocking]: [Ação detalhada com causa e efeito, gestos físicos e respiração - os dois personagens da conversa ESTÃO juntos no mesmo ambiente, se olhando; a ação NUNCA contradiz o diálogo (nada de "ao telefone" numa conversa frente a frente)]

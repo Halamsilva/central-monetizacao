@@ -22,7 +22,7 @@ async function generateWithGroq(promptInstructions: string, temperature: number)
   if (!apiKey) return null;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 90000);
+  const timer = setTimeout(() => controller.abort(), 30000);
 
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -65,6 +65,87 @@ async function generateWithGroq(promptInstructions: string, temperature: number)
   }
 }
 
+async function generateWithOpenRouter(
+  promptInstructions: string,
+  temperature: number,
+  referenceImage?: { mimeType: string; data: string } | null,
+) {
+  const apiKey = String(process.env.OPENROUTER_API_KEY || '').trim();
+  if (!apiKey) return null;
+
+  const models = referenceImage
+    ? ['google/gemma-4-31b-it:free', 'google/gemma-4-26b-a4b-it:free', 'nvidia/nemotron-3.5-super-vl:free']
+    : ['xingchen-agi/xing4.0-29b-a4b:free', 'recursive/flint-v1.0:free', 'google/gemma-4-31b-it:free'];
+
+  for (const model of models) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 25000);
+
+    try {
+      const userContent = referenceImage
+        ? [
+            { type: 'text', text: promptInstructions },
+            {
+              type: 'image_url',
+              image_url: { url: `data:${referenceImage.mimeType};base64,${referenceImage.data}` },
+            },
+          ]
+        : promptInstructions;
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://www.halamsilva.com.br',
+          'X-Title': 'Central Monetizacao',
+        },
+        body: JSON.stringify({
+          model,
+          temperature,
+          max_tokens: 8000,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Você é roteirista profissional. Siga o formato solicitado e mantenha todos os personagens adultos. Não omita seções nem invente informações fora do pedido.',
+            },
+            { role: 'user', content: userContent },
+          ],
+        }),
+        signal: controller.signal,
+      });
+
+      const payload: any = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        console.warn(
+          `[novelinhas] openrouter ${model} falhou:`,
+          response.status,
+          String(payload?.error?.message || '').slice(0, 160),
+        );
+        continue;
+      }
+
+      const content = payload?.choices?.[0]?.message?.content;
+      const text = Array.isArray(content)
+        ? content.map((part: any) => part?.text || '').join('').trim()
+        : String(content || '').trim();
+
+      if (text) {
+        console.log('[novelinhas] gerado pelo OpenRouter (fallback)', model);
+        return text;
+      }
+    } catch (err: any) {
+      console.warn(`[novelinhas] openrouter ${model} erro:`, String(err?.message || err).slice(0, 140));
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  return null;
+}
+
 async function generateWithModelFallback(
   promptInstructions: string,
   apiKeys: string | string[],
@@ -100,7 +181,7 @@ async function generateWithModelFallback(
   // Antes eram 2 tentativas de 75s e um unico modelo lento travava tudo por 150s.
   const attemptsPerModel = options.attemptsPerModel ?? 1;
   const timeoutMs = options.timeoutMs ?? 45000;
-  const deadline = Date.now() + (options.totalBudgetMs ?? 90000);
+  const deadline = Date.now() + (options.totalBudgetMs ?? 45000);
   let lastError: any = null;
 
   for (const apiKey of keys) {
@@ -151,10 +232,18 @@ async function generateWithModelFallback(
     }
   }
 
-  const groqText = await generateWithGroq(promptInstructions, temperature);
+  // Groq free-tier TPM rejeita prompts longos (413); mantenha-o para pedidos curtos.
+  const groqText = !referenceImage && promptInstructions.length <= 10000
+    ? await generateWithGroq(promptInstructions, temperature)
+    : null;
   if (groqText) {
     console.log('[novelinhas] gerado pelo Groq (fallback)');
     return { text: groqText, modelUsed: 'groq/gpt-oss-120b' };
+  }
+
+  const openRouterText = await generateWithOpenRouter(promptInstructions, temperature, referenceImage);
+  if (openRouterText) {
+    return { text: openRouterText, modelUsed: 'openrouter/free-fallback' };
   }
 
   throw lastError || new Error('Não foi possível gerar o roteiro devido à alta demanda temporária.');
@@ -558,7 +647,7 @@ const generateLongVideo = async (ctx: LongVideoContext) => {
       {
         attemptsPerModel: 1,
         timeoutMs: 45000,
-        totalBudgetMs: 90000,
+      totalBudgetMs: 45000,
       },
       ctx.referenceImage
     )
@@ -584,7 +673,7 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
 - a seção "ROTEIRO DE CONTINUIDADE (${ctx.numScenes} CENAS)" com EXATAMENTE ${ctx.numScenes} linhas, uma para cada cena, no formato "PLANO - CENA N | LOCAL: ... | QUEM FALA: Nome | QUEM RESPONDE: Nome (ou "ninguem") | ACAO: ... | FALA: "texto exato" | RESPOSTA: "texto exato" (ou "sem resposta") | GANCHO PARA A PROXIMA: ...". A atribuicao de fala e obrigatoria: cada nome e o dono real da fala escrita ao lado.`,
       ctx.apiKey,
       0.6,
-      { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 90000 },
+      { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 45000 },
       ctx.referenceImage,
     );
 
@@ -625,7 +714,7 @@ A resposta anterior ficou incompleta. Gere de novo o contrato completo contendo:
           {
             attemptsPerModel: 1,
             timeoutMs: 45000,
-            totalBudgetMs: 90000,
+          totalBudgetMs: 45000,
           },
           ctx.referenceImage
         ).then((result) => result.text || '');
@@ -648,7 +737,7 @@ CORRECAO OBRIGATORIA DO BLOCO
 Reescreva APENAS as cenas ${range.start} a ${range.end} (${expected} cenas), todas completas, numeradas em sequencia e com TODAS as 10 secoes entre colchetes em cada cena. Comece direto em "PROMPT CENA ${range.start} (SEEDANCE 2.5):" e nao inclua o PROMPT 00 nem o plano.`,
           ctx.apiKey,
           0.7,
-          { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 90000 },
+          { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 45000 },
           ctx.referenceImage,
         );
 
@@ -680,7 +769,7 @@ Reescreva as cenas ${range.start} a ${range.end} obeying a regra de ouro:
 Comece direto em "PROMPT CENA ${range.start} (SEEDANCE 2.5):".`,
           ctx.apiKey,
           0.5,
-          { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 90000 },
+          { attemptsPerModel: 1, timeoutMs: 45000, totalBudgetMs: 45000 },
           ctx.referenceImage,
         );
 

@@ -114,7 +114,7 @@ async function generateWithAgnes(
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'agnes-2.5-flash',
+        model: 'agnes-3.0-flash',
         temperature,
         max_tokens: 8000,
         messages: [
@@ -135,7 +135,7 @@ async function generateWithAgnes(
       recordAiMetric({
         agent: 'novelinhas',
         provider: 'agnes',
-        model: 'agnes-2.5-flash',
+        model: 'agnes-3.0-flash',
         outcome: 'error',
         status: response.status,
         durationMs: Date.now() - startedAt,
@@ -152,7 +152,7 @@ async function generateWithAgnes(
     recordAiMetric({
       agent: 'novelinhas',
       provider: 'agnes',
-      model: 'agnes-2.5-flash',
+      model: 'agnes-3.0-flash',
       outcome: text ? 'success' : 'empty',
       durationMs: Date.now() - startedAt,
     });
@@ -161,7 +161,7 @@ async function generateWithAgnes(
     recordAiMetric({
       agent: 'novelinhas',
       provider: 'agnes',
-      model: 'agnes-2.5-flash',
+      model: 'agnes-3.0-flash',
       outcome: 'error',
       code: String(err?.name || err?.code || 'ERROR'),
       durationMs: Date.now() - startedAt,
@@ -182,12 +182,12 @@ async function generateWithOpenRouter(
   if (!apiKey) return null;
 
   const models = referenceImage
-    ? ['google/gemma-4-31b-it:free', 'google/gemma-4-26b-a4b-it:free', 'nvidia/nemotron-3.5-super-vl:free']
+    ? ['google/gemma-4-31b-it:free', 'google/gemma-4-26b-a4b-it:free', 'dots-studio/dots-3-note-preview:free']
     : ['xingchen-agi/xing4.0-29b-a4b:free', 'recursive/flint-v1.0:free', 'google/gemma-4-31b-it:free'];
 
   for (const model of models) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 25000);
+    const timer = setTimeout(() => controller.abort(), 12000);
     const startedAt = Date.now();
 
     try {
@@ -307,14 +307,14 @@ async function generateWithModelFallback(
 // Lista ampla: quando um modelo entra em alta demanda (503), os proximos assumem.
   // Os "flash" genericos vem primeiro, os "lite" fecham a fila como rede de seguranca.
   const models = [
-    'gemini-flash-latest',
-    'gemini-3.6-flash',
-    'gemini-3.5-flash',
-    'gemini-3.8-flash',
-    'gemini-3-flash-preview',
     'gemini-flash-lite-latest',
-    'gemini-3.5-flash-lite',
     'gemini-3.1-flash-lite',
+    'gemini-flash-latest',
+    'gemini-3.8-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.5-flash',
+    'gemini-3.6-flash',
+    'gemini-3-flash-preview',
   ];
   // 1 tentativa por modelo e 45s: se um modelo engasga, o proximo assume rapido.
   // Antes eram 2 tentativas de 75s e um unico modelo lento travava tudo por 150s.
@@ -407,7 +407,7 @@ async function generateWithModelFallback(
   const agnesText = await generateWithAgnes(promptInstructions, temperature, referenceImage);
   if (agnesText) {
     console.log('[novelinhas] gerado pela Agnes (fallback)');
-    return { text: agnesText, modelUsed: 'agnes-2.5-flash' };
+    return { text: agnesText, modelUsed: 'agnes-3.0-flash' };
   }
 
   const openRouterText = await generateWithOpenRouter(promptInstructions, temperature, referenceImage);
@@ -415,7 +415,10 @@ async function generateWithModelFallback(
     return { text: openRouterText, modelUsed: 'openrouter/free-fallback' };
   }
 
-  throw lastError || new Error('Não foi possível gerar o roteiro devido à alta demanda temporária.');
+  throw Object.assign(
+    new Error('AI_PROVIDERS_EXHAUSTED: Gemini, Groq, Agnes e OpenRouter nao conseguiram concluir o roteiro.'),
+    { code: 'AI_PROVIDERS_EXHAUSTED', cause: lastError },
+  );
 }
 
 // ---------------------------------------------------------------------------

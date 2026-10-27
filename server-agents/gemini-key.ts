@@ -89,6 +89,11 @@ export const getGeminiApiKeyCandidates = async (serviceSupabase?: any, userId?: 
 
 const GEMINI_FRIENDLY_MESSAGES: Array<{ test: (value: string) => boolean; message: string }> = [
   {
+    test: (value) => /AI_PROVIDERS_EXHAUSTED/i.test(value),
+    message:
+      'Todos os provedores de IA estao temporariamente limitados. Tente novamente em alguns minutos ou cadastre outra chave em Configuracoes > Chave de IA.',
+  },
+  {
     test: (value) => /PERMISSION_DENIED|denied access|403/i.test(value),
     message:
       'A chave de IA em uso foi negada pelo Google (acesso ao Gemini negado neste projeto). Cadastre uma nova chave do Google AI Studio em Configuracoes ou aguarde a troca da chave da plataforma.',

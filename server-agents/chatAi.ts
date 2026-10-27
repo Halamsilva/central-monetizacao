@@ -5,10 +5,10 @@ import { recordAiMetric } from './aiGateway.js';
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
 
 const GEMINI_MODELS = [
-  'gemini-flash-latest',
-  'gemini-3.8-flash',
   'gemini-flash-lite-latest',
   'gemini-3.1-flash-lite',
+  'gemini-flash-latest',
+  'gemini-3.8-flash',
 ];
 
 const GROQ_MODELS = ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];

@@ -1,7 +1,8 @@
 import { GoogleGenAI } from '@google/genai';
 import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getGeminiApiKeyCandidates, describeGeminiError } from './gemini-key.js';
+import { getGeminiApiKeyCandidates, getUserGeminiApiKey, describeGeminiError } from './gemini-key.js';
 import { recordAiMetric } from './aiGateway.js';
+import { markStudentGeminiQuotaExceeded } from './aiRequestContext.js';
 
 const withTimeout = <T>(promise: Promise<T>, ms: number, label: string) =>
   Promise.race([
@@ -366,6 +367,13 @@ async function generateWithModelFallback(
         } catch (err: any) {
           lastError = err;
           const description = describeGeminiError(err);
+          const rawError = String(err?.message || err);
+          if (
+            Number(err?.status || err?.code) === 429 ||
+            /RESOURCE_EXHAUSTED|quota exceeded|quota limit/i.test(rawError)
+          ) {
+            markStudentGeminiQuotaExceeded(apiKey);
+          }
           recordAiMetric({
             agent: 'novelinhas',
             provider: 'gemini',
@@ -1957,6 +1965,7 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'IA nao configurada. Adicione uma chave do Google AI Studio em Configuracoes.' });
   }
 
+  req.aiStudentGeminiApiKey = await getUserGeminiApiKey(serviceSupabase, user.id);
   req.geminiApiKey = apiKeyCandidates;
   req.geminiApiKeys = apiKeyCandidates;
 

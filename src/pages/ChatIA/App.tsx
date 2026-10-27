@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { notifyQuotaExceeded } from '../../lib/missingApiKey';
 
 type StoredMessage = {
   id: string;
@@ -258,6 +259,10 @@ const ChatIA: React.FC = () => {
             const parsed = JSON.parse(raw);
 
             if (parsed === '[DONE]') continue;
+
+            if (parsed?.warning === 'student-key-quota') {
+              notifyQuotaExceeded();
+            }
 
             if (parsed?.error) {
               throw new Error(String(parsed.error));

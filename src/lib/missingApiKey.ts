@@ -32,7 +32,7 @@ const stringifyPayload = (payload: unknown) => {
   }
 };
 
-// Para cota, olhamos SOMENTE a mensagem que o usuario ve (error/message).
+// Para cota, olhamos a mensagem visivel ao aluno e o aviso do gateway.
 // O campo "detail" traz o texto cru do Google e podia conter "429" em erros que
 // nao eram de cota, causando falso positivo no aviso.
 const messageOnly = (payload: unknown) => {
@@ -41,9 +41,10 @@ const messageOnly = (payload: unknown) => {
 
   try {
     const record = payload as Record<string, unknown>;
-    const message = record.error || record.message;
+    const messages = [record.aiWarning, record.error, record.message]
+      .filter((value): value is string => typeof value === 'string' && Boolean(value.trim()));
 
-    if (typeof message === 'string' && message.trim()) return message;
+    if (messages.length) return messages.join(' ');
   } catch {
     return '';
   }

@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
-import { describeGeminiError, getGeminiApiKeyCandidates } from './gemini-key.js';
+import { describeGeminiError, getGeminiApiKeyCandidateDetails } from './gemini-key.js';
+import { markStudentGeminiQuotaExceeded } from './aiRequestContext.js';
 
 const DEFAULT_GEMINI_FALLBACKS = [
   'gemini-flash-lite-latest',
@@ -12,6 +13,7 @@ type GeminiGatewayOptions = {
   fallbackModels?: string[];
   timeoutMs?: number;
   totalBudgetMs?: number;
+  studentApiKey?: string;
 };
 
 type AiMetric = {
@@ -131,6 +133,12 @@ export const createGeminiGateway = (
               const rawStatus = Number(error?.status || error?.code || 0);
               const status = Number.isFinite(rawStatus) && rawStatus > 0 ? rawStatus : undefined;
               const raw = String(error?.message || '');
+              const personalKeyQuota =
+                Boolean(options.studentApiKey) &&
+                keys[keyIndex] === options.studentApiKey &&
+                (status === 429 || /RESOURCE_EXHAUSTED|quota exceeded|quota limit/i.test(raw));
+
+              if (personalKeyQuota) markStudentGeminiQuotaExceeded(keys[keyIndex]);
 
               recordAiMetric({
                 agent,
@@ -168,6 +176,8 @@ export const createGeminiGatewayForUser = async (
   agent: string,
   options: GeminiGatewayOptions = {},
 ) => {
-  const apiKeys = await getGeminiApiKeyCandidates(serviceSupabase, userId);
-  return apiKeys.length ? createGeminiGateway(apiKeys, agent, options) : null;
+  const candidates = await getGeminiApiKeyCandidateDetails(serviceSupabase, userId);
+  const apiKeys = candidates.map((candidate) => candidate.apiKey);
+  const studentApiKey = candidates.find((candidate) => candidate.source === 'student')?.apiKey;
+  return apiKeys.length ? createGeminiGateway(apiKeys, agent, { ...options, studentApiKey }) : null;
 };

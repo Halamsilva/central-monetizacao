@@ -77,14 +77,37 @@ export const getActiveGeminiApiKey = async (serviceSupabase?: any, userId?: stri
 // Lista ordenada de chaves para tentar uma apos a outra: chave do aluno, chave da
 // plataforma e, por ultimo, a variavel de ambiente. Se o Google negar o acesso a uma
 // delas (PERMISSION_DENIED), o agente tenta a proxima em vez de quebrar.
-export const getGeminiApiKeyCandidates = async (serviceSupabase?: any, userId?: string) => {
+export type GeminiApiKeySource = 'student' | 'platform' | 'environment';
+
+export type GeminiApiKeyCandidate = {
+  apiKey: string;
+  source: GeminiApiKeySource;
+};
+
+export const getGeminiApiKeyCandidateDetails = async (serviceSupabase?: any, userId?: string) => {
   const supabase = serviceSupabase || getServiceSupabase();
 
   const userKey = await getUserGeminiApiKey(supabase, userId);
   const storedKey = await getStoredGeminiApiKey(supabase);
   const envKey = cleanApiKey(process.env.GEMINI_API_KEY);
 
-  return Array.from(new Set([userKey, storedKey, envKey].filter((key) => key.length > 20)));
+  const candidates = ([
+    { apiKey: userKey, source: 'student' },
+    { apiKey: storedKey, source: 'platform' },
+    { apiKey: envKey, source: 'environment' },
+  ] as GeminiApiKeyCandidate[]).filter((candidate) => candidate.apiKey.length > 20);
+
+  const seen = new Set<string>();
+  return candidates.filter((candidate) => {
+    if (seen.has(candidate.apiKey)) return false;
+    seen.add(candidate.apiKey);
+    return true;
+  });
+};
+
+export const getGeminiApiKeyCandidates = async (serviceSupabase?: any, userId?: string) => {
+  const candidates = await getGeminiApiKeyCandidateDetails(serviceSupabase, userId);
+  return candidates.map((candidate) => candidate.apiKey);
 };
 
 const GEMINI_FRIENDLY_MESSAGES: Array<{ test: (value: string) => boolean; message: string }> = [

@@ -24,6 +24,7 @@ import viralProfilesHandler from '../server-agents/viralProfiles.js';
 import chatAiHandler from '../server-agents/chatAi.js';
 import agnesImagesHandler from '../server-agents/agnesImages.js';
 import transcritorHandler from '../server-agents/transcritor.js';
+import { runWithAiRequestContext } from '../server-agents/aiRequestContext.js';
 
 const handlers: Record<string, (req: any, res: any) => Promise<any> | any> = {
   'menina-da-roca': meninaDaRocaHandler,
@@ -63,5 +64,5 @@ export default function handler(req: any, res: any) {
     return res.status(404).json({ error: 'Agent not found' });
   }
 
-  return selectedHandler(req, res);
+  return runWithAiRequestContext({ req, res, agent: String(agent) }, () => selectedHandler(req, res));
 }

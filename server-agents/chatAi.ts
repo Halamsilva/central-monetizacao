@@ -1,6 +1,7 @@
 ﻿import { createServiceClient, isFirebaseAdminConfigured } from '../api/_firebase.js';
-import { getGeminiApiKeyCandidates, describeGeminiError } from './gemini-key.js';
+import { getGeminiApiKeyCandidates, getUserGeminiApiKey, describeGeminiError } from './gemini-key.js';
 import { recordAiMetric } from './aiGateway.js';
+import { markStudentGeminiQuotaExceeded } from './aiRequestContext.js';
 
 const getServiceSupabase = () => (isFirebaseAdminConfigured() ? createServiceClient() : null);
 
@@ -161,6 +162,9 @@ const streamGemini = async (
 
     if (!response.ok || !response.body) {
       const detail = await response.text().catch(() => '');
+      if (response.status === 429 || /RESOURCE_EXHAUSTED|quota/i.test(detail)) {
+        markStudentGeminiQuotaExceeded(apiKey);
+      }
       recordAiMetric({ agent: 'chat-ia', provider: 'gemini', model, outcome: 'error', status: response.status, durationMs: Date.now() - startedAt });
       console.warn(`[chat] gemini ${model} falhou: ${response.status} ${detail.slice(0, 160)}`);
       return { streamed: false, error: `${response.status} ${detail.slice(0, 200)}` };
@@ -181,6 +185,9 @@ const streamGemini = async (
     recordAiMetric({ agent: 'chat-ia', provider: 'gemini', model, outcome: streamed ? 'success' : 'empty', durationMs: Date.now() - startedAt });
     return { streamed, error: streamed ? '' : 'Resposta vazia do Gemini.' };
   } catch (err: any) {
+    if (Number(err?.status || err?.code) === 429 || /RESOURCE_EXHAUSTED|quota/i.test(String(err?.message || err))) {
+      markStudentGeminiQuotaExceeded(apiKey);
+    }
     recordAiMetric({ agent: 'chat-ia', provider: 'gemini', model, outcome: 'error', code: String(err?.name || err?.code || 'ERROR'), durationMs: Date.now() - startedAt });
     console.warn(`[chat] gemini ${model} erro:`, String(err?.message || err).slice(0, 160));
     return { streamed: false, error: String(err?.message || err) };
@@ -275,6 +282,7 @@ export default async function handler(req: any, res: any) {
   }
 
   const geminiKeys = await getGeminiApiKeyCandidates(serviceSupabase, user.id);
+  req.aiStudentGeminiApiKey = await getUserGeminiApiKey(serviceSupabase, user.id);
   const groqKey = String(process.env.GROQ_API_KEY || '').trim();
   const openrouterKey = String(process.env.OPENROUTER_API_KEY || '').trim();
 
@@ -304,6 +312,7 @@ export default async function handler(req: any, res: any) {
   const onText = (text: string) => send({ text });
 
   const finish = () => {
+    if (req.aiStudentKeyQuotaExceeded) send({ warning: 'student-key-quota' });
     send('[DONE]');
     res.end();
   };
@@ -335,6 +344,7 @@ export default async function handler(req: any, res: any) {
     }
   }
 
+  if (req.aiStudentKeyQuotaExceeded) send({ warning: 'student-key-quota' });
   const friendly = describeGeminiError(new Error(lastError || 'Nenhum provedor respondeu.'));
   send({ error: friendly.message });
   res.end();
